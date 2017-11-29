@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/lib/pq"
@@ -38,6 +40,30 @@ func DBConnect(pgConnStr string) (*DB, error) {
 		conn: conn,
 		log:  log,
 	}, nil
+}
+
+func (db *DB) transactional(f func(tx *DB) error) error {
+	start := time.Now().Format(time.ANSIC)
+	e := db.log.WithField("transaction_at", start)
+	e.Debug("Begin transaction")
+	tx := db.conn.Begin()
+	if err := f(&DB{
+		conn: tx,
+		log:  e.Logger,
+	}); err != nil {
+		e.WithError(err).Debug("Rollback transaction")
+		if rerr := tx.Rollback().Error; rerr != nil {
+			e.WithError(rerr).Error("Rollback error")
+			return rerr
+		}
+		return err
+	}
+	e.Debug("Commit transaction")
+	if cerr := tx.Commit().Error; cerr != nil {
+		e.WithError(cerr).Error("Commit error")
+		return cerr
+	}
+	return nil
 }
 
 func (db *DB) Close() error {
