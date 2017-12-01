@@ -20,7 +20,7 @@ type User struct {
 func (db *DB) GetUserByLogin(login string) (*User, error) {
 	db.log.Debug("Get user by login", login)
 	var user User
-	res := db.conn.Where("login = ?", login).First(&user)
+	res := db.conn.Where("login = ? AND is_deleted = false", login).First(&user)
 	if res.RecordNotFound() {
 		return nil, nil
 	}
@@ -30,7 +30,7 @@ func (db *DB) GetUserByLogin(login string) (*User, error) {
 func (db *DB) GetUserByID(id string) (*User, error) {
 	db.log.Debug("Get user by id", id)
 	var user User
-	res := db.conn.Where("id = ?", id).First(&user)
+	res := db.conn.Where("id = ? AND is_deleted = false", id).First(&user)
 	if res.RecordNotFound() {
 		return nil, nil
 	}
