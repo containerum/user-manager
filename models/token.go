@@ -13,7 +13,7 @@ type Token struct {
 func (db *DB) GetUserByToken(token string) (*User, error) {
 	db.log.Debug("Get user by token", token)
 	var user User
-	resp := db.conn.Where("token = ? AND is_active = true").First(&user)
+	resp := db.conn.Where(&Token{Token: token, IsActive: true}).First(&user)
 	if resp.RecordNotFound() {
 		return nil, nil
 	}
