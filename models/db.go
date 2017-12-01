@@ -3,6 +3,8 @@ package models
 import (
 	"time"
 
+	"errors"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/lib/pq"
@@ -23,6 +25,11 @@ var migrateModels = []interface{}{
 	&User{},
 }
 
+var (
+	ErrTransactionRollback = errors.New("transaction rollback error")
+	ErrTransactionCommit   = errors.New("transaction commit error")
+)
+
 func DBConnect(pgConnStr string) (*DB, error) {
 	log := logrus.WithField("component", "db").Logger
 	log.Info("Connecting to", pgConnStr)
@@ -42,7 +49,7 @@ func DBConnect(pgConnStr string) (*DB, error) {
 	}, nil
 }
 
-func (db *DB) transactional(f func(tx *DB) error) error {
+func (db *DB) Transactional(f func(tx *DB) error) error {
 	start := time.Now().Format(time.ANSIC)
 	e := db.log.WithField("transaction_at", start)
 	e.Debug("Begin transaction")
@@ -54,14 +61,14 @@ func (db *DB) transactional(f func(tx *DB) error) error {
 		e.WithError(err).Debug("Rollback transaction")
 		if rerr := tx.Rollback().Error; rerr != nil {
 			e.WithError(rerr).Error("Rollback error")
-			return rerr
+			return ErrTransactionRollback
 		}
 		return err
 	}
 	e.Debug("Commit transaction")
 	if cerr := tx.Commit().Error; cerr != nil {
 		e.WithError(cerr).Error("Commit error")
-		return cerr
+		return ErrTransactionCommit
 	}
 	return nil
 }

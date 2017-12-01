@@ -17,3 +17,27 @@ type User struct {
 	IsDeleted    bool
 }
 
+func (db *DB) GetUserByLogin(login string) (*User, error) {
+	db.log.Debug("Get user by login", login)
+	var user User
+	res := db.conn.Where("login = ?", login).First(&user)
+	if res.RecordNotFound() {
+		return nil, nil
+	}
+	return &user, res.Error
+}
+
+func (db *DB) GetUserByID(id string) (*User, error) {
+	db.log.Debug("Get user by id", id)
+	var user User
+	res := db.conn.Where("id = ?", id).First(&user)
+	if res.RecordNotFound() {
+		return nil, nil
+	}
+	return &user, res.Error
+}
+
+func (db *DB) CreateUser(user *User) error {
+	db.log.Debug("Create user", user.Login)
+	return db.conn.Create(user).Error
+}

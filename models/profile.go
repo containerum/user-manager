@@ -12,3 +12,8 @@ type Profile struct {
 	NullBalanceAt time.Time
 	DeletedAt     time.Time
 }
+
+func (db *DB) CreateProfile(profile *Profile) error {
+	db.log.Debug("Create profile for", profile.User.Login)
+	return db.conn.Create(profile).Error
+}
