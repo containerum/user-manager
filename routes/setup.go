@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/user-manager/clients"
 	"git.containerum.net/ch/user-manager/models"
 	"github.com/gin-gonic/gin"
@@ -9,6 +10,7 @@ import (
 type Services struct {
 	MailClient *clients.MailClient
 	DB         *models.DB
+	AuthClient auth.AuthClient
 }
 
 var svc Services
