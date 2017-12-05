@@ -24,5 +24,6 @@ func SetupRoutes(app *gin.Engine, services Services) {
 	user := app.Group("/user")
 	{
 		user.POST("/create", userCreateHandler)
+		user.POST("/sign_up/resend", linkResendHandler)
 	}
 }

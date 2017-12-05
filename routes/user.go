@@ -7,6 +7,8 @@ import (
 
 	"strings"
 
+	"fmt"
+
 	"git.containerum.net/ch/mail-templater/upstreams"
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/utils"
@@ -25,6 +27,10 @@ type UserCreateResponse struct {
 	ID       string `json:"id"`
 	Login    string `json:"login"`
 	IsActive bool   `json:"is_active"`
+}
+
+type ResendLinkRequest struct {
+	UserName string `json:"username" binding:"required;email"`
 }
 
 func userCreateHandler(ctx *gin.Context) {
@@ -96,17 +102,19 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 
+	err = svc.MailClient.SendConfirmationMail(&upstreams.Recipient{
+		ID:        newUser.ID,
+		Name:      request.UserName,
+		Email:     request.UserName,
+		Variables: map[string]string{"CONFIRM": link.Link},
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 	err = svc.DB.Transactional(func(tx *models.DB) error {
-		err = svc.MailClient.SendConfirmationMail(&upstreams.Recipient{
-			ID:        newUser.ID,
-			Name:      request.UserName,
-			Email:     request.UserName,
-			Variables: map[string]string{"CONFIRM": link.Link},
-		})
-		if err != nil {
-			return err
-		}
-		link.SendAt = time.Now().UTC()
+		link.SentAt = time.Now().UTC()
 		return tx.UpdateLink(link)
 	})
 
@@ -120,5 +128,64 @@ func userCreateHandler(ctx *gin.Context) {
 		ID:       newUser.ID,
 		Login:    newUser.Login,
 		IsActive: newUser.IsActive,
+	})
+}
+
+func linkResendHandler(ctx *gin.Context) {
+	var request ResendLinkRequest
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{Error: err.Error()})
+		return
+	}
+
+	user, err := svc.DB.GetUserByLogin(request.UserName)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, Error{Error: "user " + request.UserName + " not found"})
+		return
+	}
+
+	link, err := svc.DB.GetLink(models.LinkTypeConfirm, user)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if tdiff := time.Now().UTC().Sub(link.SentAt); tdiff < 5*time.Minute {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{
+			Error: fmt.Sprintf("can`t resend link, wait %f seconds", tdiff.Seconds()),
+		})
+		return
+	}
+
+	if link == nil {
+		link, err = svc.DB.CreateLink(models.LinkTypeConfirm, 24*time.Hour, user)
+		if err != nil {
+			ctx.Error(err)
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	err = svc.MailClient.SendConfirmationMail(&upstreams.Recipient{
+		ID:        user.ID,
+		Name:      request.UserName,
+		Email:     request.UserName,
+		Variables: map[string]string{"CONFIRM": link.Link},
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+		link.SentAt = time.Now().UTC()
+		return tx.UpdateLink(link)
 	})
 }

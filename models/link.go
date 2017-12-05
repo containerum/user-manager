@@ -24,7 +24,7 @@ type Link struct {
 	CreatedAt time.Time
 	ExpiredAt time.Time
 	IsActive  bool
-	SendAt    time.Time
+	SentAt    time.Time
 }
 
 func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) (*Link, error) {
