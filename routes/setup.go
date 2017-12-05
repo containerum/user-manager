@@ -8,9 +8,10 @@ import (
 )
 
 type Services struct {
-	MailClient *clients.MailClient
-	DB         *models.DB
-	AuthClient auth.AuthClient
+	MailClient      *clients.MailClient
+	DB              *models.DB
+	AuthClient      auth.AuthClient
+	ReCaptchaClient *clients.ReCaptchaClient
 }
 
 var svc Services
@@ -23,7 +24,7 @@ func SetupRoutes(app *gin.Engine, services Services) {
 	svc = services
 	user := app.Group("/user")
 	{
-		user.POST("/create", userCreateHandler)
+		user.POST("/create", reCaptchaMiddleware, userCreateHandler)
 		user.POST("/sign_up/resend", linkResendHandler)
 	}
 }

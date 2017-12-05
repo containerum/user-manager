@@ -20,7 +20,7 @@ type UserCreateRequest struct {
 	UserName  string `json:"username" binding:"required;email"`
 	Password  string `json:"password" binding:"required"`
 	Referral  string `json:"referral" binding:"required"`
-	ReCaptcha string `json:"recapcha" binding:"required"`
+	ReCaptcha string `json:"recaptcha" binding:"required"`
 }
 
 type UserCreateResponse struct {
