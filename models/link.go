@@ -24,6 +24,7 @@ type Link struct {
 	CreatedAt time.Time
 	ExpiredAt time.Time
 	IsActive  bool
+	SendAt    time.Time
 }
 
 func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) (*Link, error) {
@@ -54,4 +55,10 @@ func (db *DB) GetLink(linkType LinkType, user *User) (*Link, error) {
 		return nil, nil
 	}
 	return &link, resp.Error
+}
+
+func (db *DB) UpdateLink(link *Link) error {
+	db.log.Debugf("Update link %#v", link)
+	resp := db.conn.Save(link)
+	return resp.Error
 }

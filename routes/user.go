@@ -69,32 +69,33 @@ func userCreateHandler(ctx *gin.Context) {
 			Access:    "rw",
 			CreatedAt: time.Now().UTC(),
 		}); err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatus(http.StatusInternalServerError)
 			return err
 		}
 
 		link, err = svc.DB.CreateLink(models.LinkTypeConfirm, 24*time.Hour, newUser)
-		if err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatus(http.StatusInternalServerError)
-			return err
-		}
-		return nil
+		return err
 	})
 
-	if err == models.ErrTransactionCommit || err == models.ErrTransactionRollback {
+	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 
-	err = svc.MailClient.SendConfirmationMail(&upstreams.Recipient{
-		ID:        newUser.ID,
-		Name:      request.UserName,
-		Email:     request.UserName,
-		Variables: map[string]string{"CONFIRM": link.Link},
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+		err = svc.MailClient.SendConfirmationMail(&upstreams.Recipient{
+			ID:        newUser.ID,
+			Name:      request.UserName,
+			Email:     request.UserName,
+			Variables: map[string]string{"CONFIRM": link.Link},
+		})
+		if err != nil {
+			return err
+		}
+		link.SendAt = time.Now().UTC()
+		return tx.UpdateLink(link)
 	})
+
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
