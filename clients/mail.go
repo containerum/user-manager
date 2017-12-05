@@ -12,7 +12,7 @@ type MailClient struct {
 }
 
 func NewMailClient(serverUrl string) *MailClient {
-	log := logrus.New().WithField("component", "mail_client").Logger
+	log := logrus.WithField("component", "mail_client").Logger
 	client := resty.New().SetHostURL(serverUrl).SetLogger(log.Writer())
 	return &MailClient{
 		rest: client,
