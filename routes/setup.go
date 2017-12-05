@@ -24,7 +24,7 @@ func SetupRoutes(app *gin.Engine, services Services) {
 	svc = services
 	user := app.Group("/user")
 	{
-		user.POST("/create", reCaptchaMiddleware, userCreateHandler)
+		user.POST("/sign_up", reCaptchaMiddleware, userCreateHandler)
 		user.POST("/sign_up/resend", linkResendHandler)
 	}
 }
