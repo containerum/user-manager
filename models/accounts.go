@@ -5,4 +5,5 @@ type Accounts struct {
 	User     User
 	Github   string
 	Facebook string
+	Google   string
 }
