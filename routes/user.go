@@ -5,6 +5,8 @@ import (
 
 	"time"
 
+	"strings"
+
 	"git.containerum.net/ch/mail-templater/upstreams"
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/utils"
@@ -13,9 +15,10 @@ import (
 )
 
 type UserCreateRequest struct {
-	UserName string `json:"username" binding:"required;email"`
-	Password string `json:"password" binding:"required"`
-	Referral string `json:"referral" binding:"required"`
+	UserName  string `json:"username" binding:"required;email"`
+	Password  string `json:"password" binding:"required"`
+	Referral  string `json:"referral" binding:"required"`
+	ReCaptcha string `json:"recapcha"`
 }
 
 type UserCreateResponse struct {
@@ -29,6 +32,17 @@ func userCreateHandler(ctx *gin.Context) {
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{Error: err.Error()})
+		return
+	}
+
+	blacklisted, err := svc.DB.IsInBlacklist(strings.Split(request.UserName, "@")[1])
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if blacklisted {
+		ctx.AbortWithStatusJSON(http.StatusForbidden, Error{Error: "user in blacklist"})
 		return
 	}
 
