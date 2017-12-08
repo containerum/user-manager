@@ -30,6 +30,21 @@ func basicLoginHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
 		return
 	}
+
+	user, err := svc.DB.GetUserByLogin(request.Login)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "user " + request.Login + " not exists"})
+		return
+	}
+	if user.IsInBlacklist {
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user " + user.Login + " banned"})
+		return
+	}
 }
 
 func oneTimeTokenLoginHandler(ctx *gin.Context) {
@@ -37,6 +52,21 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		return
+	}
+
+	user, err := svc.DB.GetUserByToken(request.Token)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "one-time " + request.Token + " not exists or invalid"})
+		return
+	}
+	if user.IsInBlacklist {
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user " + user.Login + " banned"})
 		return
 	}
 }
