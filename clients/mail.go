@@ -2,6 +2,7 @@ package clients
 
 import (
 	"git.containerum.net/ch/mail-templater/upstreams"
+	"git.containerum.net/ch/utils"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
 )
@@ -20,17 +21,27 @@ func NewMailClient(serverUrl string) *MailClient {
 	}
 }
 
-func (mc *MailClient) SendConfirmationMail(recipient *upstreams.Recipient) error {
-	mc.log.Info("Sending confirmation mail to", recipient.Email)
+func (mc *MailClient) sendOneTemplate(tmplName string, recipient *upstreams.Recipient) error {
 	req := &upstreams.SendRequest{}
 	req.Delay = 0
 	req.Message.Recipients = append(req.Message.Recipients, *recipient)
-	_, err := mc.rest.R().
+	resp, err := mc.rest.R().
 		SetBody(req).
-		SetResult(&upstreams.SendResponse{}).
-		Post("/templates/confirm_reg")
+		SetResult(upstreams.SendResponse{}).
+		SetError(utils.Error{}).
+		Post("/templates/" + tmplName)
 	if err != nil {
 		return err
 	}
-	return nil
+	return resp.Error().(*utils.Error)
+}
+
+func (mc *MailClient) SendConfirmationMail(recipient *upstreams.Recipient) error {
+	mc.log.Info("Sending confirmation mail to", recipient.Email)
+	return mc.sendOneTemplate("confirm_reg", recipient)
+}
+
+func (mc *MailClient) SendActivationMail(recipient *upstreams.Recipient) error {
+	mc.log.Info("Sending confirmation mail to", recipient.Email)
+	return mc.sendOneTemplate("activate_acc", recipient)
 }
