@@ -248,6 +248,7 @@ func activateHandler(ctx *gin.Context) {
 		UserAgent:   ctx.Request.UserAgent(),
 		UserId:      &common.UUID{Value: link.User.ID},
 		UserIp:      ctx.ClientIP(),
+		UserRole:    auth.Role_USER,
 		RwAccess:    true,
 		Access:      &auth.ResourcesAccess{},
 		PartTokenId: nil,
