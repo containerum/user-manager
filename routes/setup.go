@@ -18,6 +18,12 @@ var svc Services
 
 func SetupRoutes(app *gin.Engine, services Services) {
 	svc = services
+
+	root := app.Group("/")
+	{
+		root.POST("/logout", logoutHandler)
+	}
+
 	user := app.Group("/user")
 	{
 		user.POST("/sign_up", reCaptchaMiddleware, userCreateHandler)
