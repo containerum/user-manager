@@ -21,7 +21,7 @@ func SetupRoutes(app *gin.Engine, services Services) {
 
 	root := app.Group("/")
 	{
-		root.POST("/logout", logoutHandler)
+		root.POST("/logout/:token_id", logoutHandler)
 	}
 
 	user := app.Group("/user")
