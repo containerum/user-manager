@@ -24,4 +24,11 @@ func SetupRoutes(app *gin.Engine, services Services) {
 		user.POST("/sign_up/resend", linkResendHandler)
 		user.POST("/activation", activateHandler)
 	}
+
+	login := app.Group("/login")
+	{
+		login.POST("/basic", reCaptchaMiddleware, basicLoginHandler)
+		login.POST("/token", oneTimeTokenLoginHandler)
+		login.POST("/oauth", oauthLoginHandler)
+	}
 }
