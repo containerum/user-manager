@@ -3,6 +3,7 @@ package routes
 import (
 	"net/http"
 
+	"git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -27,6 +28,6 @@ func reCaptchaMiddleware(ctx *gin.Context) {
 	}
 
 	if !checkResp.Success {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, Error{Error: "ReCaptcha failed"})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, utils.Error{Text: "ReCaptcha failed"})
 	}
 }
