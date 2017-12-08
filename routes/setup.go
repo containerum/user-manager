@@ -8,22 +8,33 @@ import (
 )
 
 type Services struct {
-	MailClient *clients.MailClient
-	DB         *models.DB
-	AuthClient auth.AuthClient
+	MailClient      *clients.MailClient
+	DB              *models.DB
+	AuthClient      auth.AuthClient
+	ReCaptchaClient *clients.ReCaptchaClient
 }
 
 var svc Services
 
-type Error struct {
-	Error string `json:"error"`
-}
-
 func SetupRoutes(app *gin.Engine, services Services) {
 	svc = services
+
+	root := app.Group("/")
+	{
+		root.POST("/logout/:token_id", logoutHandler)
+	}
+
 	user := app.Group("/user")
 	{
-		user.POST("/create", userCreateHandler)
+		user.POST("/sign_up", reCaptchaMiddleware, userCreateHandler)
 		user.POST("/sign_up/resend", linkResendHandler)
+		user.POST("/activation", activateHandler)
+	}
+
+	login := app.Group("/login")
+	{
+		login.POST("/basic", reCaptchaMiddleware, basicLoginHandler)
+		login.POST("/token", oneTimeTokenLoginHandler)
+		login.POST("/oauth", oauthLoginHandler)
 	}
 }

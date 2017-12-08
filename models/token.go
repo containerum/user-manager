@@ -31,3 +31,18 @@ func (db *DB) CreateToken(user *User, sessionID string) (*Token, error) {
 	}
 	return ret, db.conn.Create(ret).Error
 }
+
+func (db *DB) GetTokenBySessionID(sessionID string) (*Token, error) {
+	db.log.Debug("Get token by session id ", sessionID)
+	var token Token
+	resp := db.conn.Where(Token{SessionID: sessionID}).First(&token)
+	if resp.RecordNotFound() {
+		return nil, nil
+	}
+	return &token, resp.Error
+}
+
+func (db *DB) DeleteToken(token string) error {
+	db.log.Debug("Remove token", token)
+	return db.conn.Where(Token{Token: token}).Delete(&Token{}).Error
+}

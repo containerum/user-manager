@@ -9,9 +9,12 @@ import (
 
 	"fmt"
 
+	"git.containerum.net/ch/grpc-proto-files/auth"
+	"git.containerum.net/ch/grpc-proto-files/common"
 	"git.containerum.net/ch/mail-templater/upstreams"
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/utils"
+	chutils "git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -20,13 +23,17 @@ type UserCreateRequest struct {
 	UserName  string `json:"username" binding:"required;email"`
 	Password  string `json:"password" binding:"required"`
 	Referral  string `json:"referral" binding:"required"`
-	ReCaptcha string `json:"recapcha" binding:"required"`
+	ReCaptcha string `json:"recaptcha" binding:"required"`
 }
 
 type UserCreateResponse struct {
 	ID       string `json:"id"`
 	Login    string `json:"login"`
 	IsActive bool   `json:"is_active"`
+}
+
+type ActivateRequest struct {
+	Link string `json:"link" binding:"required"`
 }
 
 type ResendLinkRequest struct {
@@ -37,7 +44,7 @@ func userCreateHandler(ctx *gin.Context) {
 	var request UserCreateRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{Error: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
 		return
 	}
 
@@ -48,7 +55,7 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 	if blacklisted {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, Error{Error: "user in blacklist"})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user in blacklist"})
 		return
 	}
 
@@ -59,7 +66,7 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 	if user != nil {
-		ctx.AbortWithStatusJSON(http.StatusConflict, Error{Error: "user already exists"})
+		ctx.AbortWithStatusJSON(http.StatusConflict, chutils.Error{Text: "user already exists"})
 		return
 	}
 
@@ -135,7 +142,7 @@ func linkResendHandler(ctx *gin.Context) {
 	var request ResendLinkRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{Error: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
 		return
 	}
 
@@ -146,20 +153,26 @@ func linkResendHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, Error{Error: "user " + request.UserName + " not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "user " + request.UserName + " not found"})
 		return
 	}
 
-	link, err := svc.DB.GetLink(models.LinkTypeConfirm, user)
+	link, err := svc.DB.GetLinkForUser(models.LinkTypeConfirm, user)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+	if link == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{
+			Text: "link type " + models.LinkTypeConfirm + " not found for user " + request.UserName,
+		})
+		return
+	}
 
 	if tdiff := time.Now().UTC().Sub(link.SentAt); tdiff < 5*time.Minute {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{
-			Error: fmt.Sprintf("can`t resend link, wait %f seconds", tdiff.Seconds()),
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{
+			Text: fmt.Sprintf("can`t resend link, wait %f seconds", tdiff.Seconds()),
 		})
 		return
 	}
@@ -188,4 +201,63 @@ func linkResendHandler(ctx *gin.Context) {
 		link.SentAt = time.Now().UTC()
 		return tx.UpdateLink(link)
 	})
+}
+
+func activateHandler(ctx *gin.Context) {
+	var request ActivateRequest
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		return
+	}
+
+	link, err := svc.DB.GetLinkFromString(request.Link)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if link == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{
+			Text: "link " + request.Link + " not found",
+		})
+		return
+	}
+	if !link.IsActive || time.Now().UTC().After(link.ExpiredAt) {
+		ctx.AbortWithStatusJSON(http.StatusGone, chutils.Error{
+			Text: "link " + request.Link + " expired",
+		})
+		return
+	}
+
+	// TODO: send request to billing manager
+
+	err = svc.MailClient.SendActivationMail(&upstreams.Recipient{
+		ID:        link.User.ID,
+		Name:      link.User.Login,
+		Email:     link.User.Login,
+		Variables: map[string]string{},
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	tokens, err := svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
+		UserAgent:   ctx.Request.UserAgent(),
+		UserId:      &common.UUID{Value: link.User.ID},
+		UserIp:      ctx.ClientIP(),
+		UserRole:    auth.Role_USER,
+		RwAccess:    true,
+		Access:      &auth.ResourcesAccess{},
+		PartTokenId: nil,
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, tokens)
 }
