@@ -44,13 +44,23 @@ func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) 
 	return ret, db.conn.Create(ret).Error
 }
 
-func (db *DB) GetLink(linkType LinkType, user *User) (*Link, error) {
+func (db *DB) GetLinkForUser(linkType LinkType, user *User) (*Link, error) {
 	db.log.Debug("Get link", linkType, "for", user.Login)
 	var link Link
 	resp := db.conn.
 		Where("type = ? AND is_active = true AND expires_at > ?", linkType, time.Now().UTC()).
 		Model(&link).
 		Related(user)
+	if resp.RecordNotFound() {
+		return nil, nil
+	}
+	return &link, resp.Error
+}
+
+func (db *DB) GetLinkFromString(strLink string) (*Link, error) {
+	db.log.Debug("Get link", strLink)
+	var link Link
+	resp := db.conn.Where(Link{Link: strLink}).First(&link)
 	if resp.RecordNotFound() {
 		return nil, nil
 	}
