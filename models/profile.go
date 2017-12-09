@@ -1,16 +1,35 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/json-iterator/go"
+)
 
 type Profile struct {
 	ID          string `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"` // use UUID v4 as primary key (good support in psql)
 	User        User
 	Referral    string
 	Access      string
-	Data        string
+	Data        map[string]string `gorm:"-"`
+	DataEncoded string            `gorm:"column:data"`
 	CreatedAt   time.Time
 	BlacklistAt time.Time
 	DeletedAt   time.Time
+}
+
+func (p *Profile) BeforeSave() (err error) {
+	p.DataEncoded, err = jsoniter.MarshalToString(p.Data)
+	return
+}
+
+func (p *Profile) BeforeUpdate() (err error) {
+	return p.BeforeSave()
+}
+
+func (p *Profile) AfterFind() (err error) {
+	err = jsoniter.UnmarshalFromString(p.DataEncoded, p.Data)
+	return
 }
 
 func (db *DB) CreateProfile(profile *Profile) error {
