@@ -48,5 +48,6 @@ func SetupRoutes(app *gin.Engine, services Services) {
 		password.PUT("/change", passwordChangeHandler)
 
 		password.POST("/reset", passwordResetHandler)
+		password.POST("/restore", passwordRestoreHandler)
 	}
 }
