@@ -50,3 +50,8 @@ func (mc *MailClient) SendBlockedMail(recipient *upstreams.Recipient) error {
 	mc.log.Info("Sending blocked mail to", recipient.Email)
 	return mc.sendOneTemplate("blocked_acc", recipient)
 }
+
+func (mc *MailClient) SendPasswordChangedMail(recipient *upstreams.Recipient) error {
+	mc.log.Info("Sending password changed mail to", recipient.Email)
+	return mc.sendOneTemplate("pwd_changed", recipient)
+}

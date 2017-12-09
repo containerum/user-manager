@@ -42,4 +42,9 @@ func SetupRoutes(app *gin.Engine, services Services) {
 		login.POST("/token", oneTimeTokenLoginHandler)
 		login.POST("/oauth", oauthLoginHandler)
 	}
+
+	password := app.Group("/password")
+	{
+		password.PUT("/change", passwordChangeHandler)
+	}
 }
