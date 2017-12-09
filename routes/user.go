@@ -40,7 +40,7 @@ type ResendLinkRequest struct {
 	UserName string `json:"username" binding:"required;email"`
 }
 
-type InfoByIDGetResponse struct {
+type UserInfoByIDGetResponse struct {
 	Login string            `json:"login"`
 	Data  map[string]string `json:"data"`
 }
@@ -56,6 +56,14 @@ type BlacklistGetResponse struct {
 
 type LinksGetResponse struct {
 	Links []*models.Link `json:"links"`
+}
+
+type UserInfoGetResponse struct {
+	Login     string            `json:"login"`
+	Data      map[string]string `json:"data"`
+	ID        string            `json:"id"`
+	IsActive  bool              `json:"is_active"`
+	CreatedAt time.Time         `json:"created_at"`
 }
 
 func userCreateHandler(ctx *gin.Context) {
@@ -280,7 +288,7 @@ func activateHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, tokens)
 }
 
-func infoByIDGetHandler(ctx *gin.Context) {
+func userInfoByIDGetHandler(ctx *gin.Context) {
 	userID := ctx.Param("user_id")
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
@@ -300,7 +308,7 @@ func infoByIDGetHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, &InfoByIDGetResponse{
+	ctx.JSON(http.StatusOK, &UserInfoByIDGetResponse{
 		Login: user.Login,
 		Data:  profile.Data,
 	})
@@ -395,4 +403,33 @@ func linksGetHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, LinksGetResponse{Links: links})
+}
+
+func userInfoGetHandler(ctx *gin.Context) {
+	userID := ctx.GetHeader("X-User-ID")
+	user, err := svc.DB.GetUserByID(userID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		return
+	}
+
+	profile, err := svc.DB.GetProfileByUser(user)
+	if err != nil || profile == nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &UserInfoGetResponse{
+		Login:     user.Login,
+		Data:      profile.Data,
+		ID:        user.ID,
+		IsActive:  user.IsActive,
+		CreatedAt: profile.CreatedAt,
+	})
 }
