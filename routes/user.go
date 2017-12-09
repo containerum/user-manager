@@ -40,6 +40,11 @@ type ResendLinkRequest struct {
 	UserName string `json:"username" binding:"required;email"`
 }
 
+type InfoByIDGetResponse struct {
+	Login string            `json:"login"`
+	Data  map[string]string `json:"data"`
+}
+
 func userCreateHandler(ctx *gin.Context) {
 	var request UserCreateRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -260,4 +265,30 @@ func activateHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, tokens)
+}
+
+func infoByIDGetHandler(ctx *gin.Context) {
+	userID := ctx.Param("user_id")
+	user, err := svc.DB.GetUserByID(userID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		return
+	}
+
+	profile, err := svc.DB.GetProfileByUser(user)
+	if err != nil || profile == nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &InfoByIDGetResponse{
+		Login: user.Login,
+		Data:  profile.Data,
+	})
 }
