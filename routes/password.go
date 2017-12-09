@@ -26,7 +26,7 @@ type PasswordRestoreRequest struct {
 }
 
 func passwordChangeHandler(ctx *gin.Context) {
-	userID := "" // where I can get it?
+	userID := ctx.GetHeader("X-User-ID")
 	var request PasswordChangeRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		ctx.Error(err)
@@ -100,7 +100,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 }
 
 func passwordResetHandler(ctx *gin.Context) {
-	userID := "" // where I can get it?
+	userID := ctx.GetHeader("X-User-ID")
 	var request PasswordChangeRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		ctx.Error(err)
