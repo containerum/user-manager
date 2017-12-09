@@ -433,3 +433,47 @@ func userInfoGetHandler(ctx *gin.Context) {
 		CreatedAt: profile.CreatedAt,
 	})
 }
+
+func userInfoUpdateHandler(ctx *gin.Context) {
+	userID := ctx.Param("user_id")
+	user, err := svc.DB.GetUserByID(userID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		return
+	}
+
+	profile, err := svc.DB.GetProfileByUser(user)
+	if err != nil || profile == nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if err := ctx.ShouldBindWith(&profile.Data, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		return
+	}
+
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+		return tx.UpdateProfile(profile)
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, &UserInfoGetResponse{
+		Login:     user.Login,
+		Data:      profile.Data,
+		ID:        user.ID,
+		IsActive:  user.IsActive,
+		CreatedAt: profile.CreatedAt,
+	})
+}

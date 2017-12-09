@@ -7,7 +7,7 @@ import (
 )
 
 type ProfileData struct {
-	Email          string `json:"email,omitempty"`
+	Email          string `json:"email,omitempty" binding:"email"`
 	Address        string `json:"address,omitempty"`
 	Phone          string `json:"phone,omitempty"`
 	FirstName      string `json:"first_name,omitempty"`
