@@ -41,8 +41,8 @@ type ResendLinkRequest struct {
 }
 
 type UserInfoByIDGetResponse struct {
-	Login string            `json:"login"`
-	Data  map[string]string `json:"data"`
+	Login string             `json:"login"`
+	Data  models.ProfileData `json:"data"`
 }
 
 type BlacklistedUserEntry struct {
@@ -59,11 +59,11 @@ type LinksGetResponse struct {
 }
 
 type UserInfoGetResponse struct {
-	Login     string            `json:"login"`
-	Data      map[string]string `json:"data"`
-	ID        string            `json:"id"`
-	IsActive  bool              `json:"is_active"`
-	CreatedAt time.Time         `json:"created_at"`
+	Login     string             `json:"login"`
+	Data      models.ProfileData `json:"data"`
+	ID        string             `json:"id"`
+	IsActive  bool               `json:"is_active"`
+	CreatedAt time.Time          `json:"created_at"`
 }
 
 func userCreateHandler(ctx *gin.Context) {

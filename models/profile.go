@@ -6,13 +6,24 @@ import (
 	"github.com/json-iterator/go"
 )
 
+type ProfileData struct {
+	Email          string `json:"email,omitempty"`
+	Address        string `json:"address,omitempty"`
+	Phone          string `json:"phone,omitempty"`
+	FirstName      string `json:"first_name,omitempty"`
+	LastName       string `json:"last_name,omitempty"`
+	IsOrganization bool   `json:"is_organization,omitempty"`
+	TaxCode        string `json:"tax_code,omitempty"`
+	Company        string `json:"company,omitempty"`
+}
+
 type Profile struct {
 	ID          string `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"` // use UUID v4 as primary key (good support in psql)
 	User        User
 	Referral    string
 	Access      string
-	Data        map[string]string `gorm:"-"`
-	DataEncoded string            `gorm:"column:data"`
+	Data        ProfileData `gorm:"-"`
+	DataEncoded string      `gorm:"column:data"`
 	CreatedAt   time.Time
 	BlacklistAt time.Time
 	DeletedAt   time.Time
