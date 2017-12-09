@@ -45,3 +45,8 @@ func (mc *MailClient) SendActivationMail(recipient *upstreams.Recipient) error {
 	mc.log.Info("Sending confirmation mail to", recipient.Email)
 	return mc.sendOneTemplate("activate_acc", recipient)
 }
+
+func (mc *MailClient) SendBlockedMail(recipient *upstreams.Recipient) error {
+	mc.log.Info("Sending blocked mail to", recipient.Email)
+	return mc.sendOneTemplate("blocked_acc", recipient)
+}

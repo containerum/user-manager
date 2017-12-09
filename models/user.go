@@ -42,3 +42,8 @@ func (db *DB) CreateUser(user *User) error {
 	db.log.Debug("Create user", user.Login)
 	return db.conn.Create(user).Error
 }
+
+func (db *DB) UpdateUser(user *User) error {
+	db.log.Debug("Update user", user.Login)
+	return db.conn.Save(user).Error
+}

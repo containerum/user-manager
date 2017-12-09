@@ -45,6 +45,10 @@ type InfoByIDGetResponse struct {
 	Data  map[string]string `json:"data"`
 }
 
+type UserToBlacklistRequest struct {
+	UserID string `json:"user_id" binding:"required;uuidv4"`
+}
+
 func userCreateHandler(ctx *gin.Context) {
 	var request UserCreateRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -291,4 +295,47 @@ func infoByIDGetHandler(ctx *gin.Context) {
 		Login: user.Login,
 		Data:  profile.Data,
 	})
+}
+
+func userToBlacklistHandler(ctx *gin.Context) {
+	var request UserToBlacklistRequest
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		return
+	}
+
+	user, err := svc.DB.GetUserByID(request.UserID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + request.UserID + " was not found"})
+		return
+	}
+
+	// TODO: send request to resource manager
+
+	err = svc.MailClient.SendBlockedMail(&upstreams.Recipient{
+		ID:    user.ID,
+		Name:  user.Login,
+		Email: user.Login,
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	user.IsInBlacklist = true
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+		return tx.UpdateUser(user)
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 }
