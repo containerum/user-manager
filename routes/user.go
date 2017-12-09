@@ -325,6 +325,13 @@ func userToBlacklistHandler(ctx *gin.Context) {
 		return
 	}
 
+	profile, err := svc.DB.GetProfileByUser(user)
+	if err != nil || profile == nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	// TODO: send request to resource manager
 
 	err = svc.MailClient.SendBlockedMail(&upstreams.Recipient{
@@ -339,8 +346,13 @@ func userToBlacklistHandler(ctx *gin.Context) {
 	}
 
 	user.IsInBlacklist = true
+	profile.BlacklistAt = time.Now().UTC()
 	err = svc.DB.Transactional(func(tx *models.DB) error {
-		return tx.UpdateUser(user)
+		err := tx.UpdateUser(user)
+		if err != nil {
+			return err
+		}
+		return tx.UpdateProfile(profile)
 	})
 	if err != nil {
 		ctx.Error(err)
