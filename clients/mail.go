@@ -55,3 +55,8 @@ func (mc *MailClient) SendPasswordChangedMail(recipient *upstreams.Recipient) er
 	mc.log.Info("Sending password changed mail to", recipient.Email)
 	return mc.sendOneTemplate("pwd_changed", recipient)
 }
+
+func (mc *MailClient) SendPasswordResetMail(recipient *upstreams.Recipient) error {
+	mc.log.Info("Sending reset password mail to", recipient.Email)
+	return mc.sendOneTemplate("reset_pwd", recipient)
+}

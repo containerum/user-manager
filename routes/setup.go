@@ -46,5 +46,7 @@ func SetupRoutes(app *gin.Engine, services Services) {
 	password := app.Group("/password")
 	{
 		password.PUT("/change", passwordChangeHandler)
+
+		password.POST("/reset", passwordResetHandler)
 	}
 }

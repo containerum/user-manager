@@ -3,9 +3,12 @@ package routes
 import (
 	"net/http"
 
+	"time"
+
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
 	"git.containerum.net/ch/mail-templater/upstreams"
+	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/utils"
 	chutils "git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
@@ -89,4 +92,52 @@ func passwordChangeHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusAccepted, tokens)
+}
+
+func passwordResetHandler(ctx *gin.Context) {
+	userID := "" // where I can get it?
+	var request PasswordChangeRequest
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		return
+	}
+
+	user, err := svc.DB.GetUserByID(userID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "user with id " + userID + " was not found"})
+		return
+	}
+	if user.IsInBlacklist {
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user " + user.Login + " banned"})
+		return
+	}
+
+	var link *models.Link
+	err = svc.DB.Transactional(func(tx *models.DB) (err error) {
+		link, err = svc.DB.CreateLink(models.LinkTypePwdChange, 24*time.Hour, user)
+		return
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = svc.MailClient.SendPasswordResetMail(&upstreams.Recipient{
+		ID:        user.ID,
+		Name:      user.Login,
+		Email:     user.Login,
+		Variables: map[string]string{"TOKEN": link.Link},
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 }
