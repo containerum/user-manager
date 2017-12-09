@@ -29,6 +29,7 @@ func SetupRoutes(app *gin.Engine, services Services) {
 		user.POST("/sign_up", reCaptchaMiddleware, userCreateHandler)
 		user.POST("/sign_up/resend", linkResendHandler)
 		user.POST("/activation", activateHandler)
+		user.POST("/blacklist", userToBlacklistHandler)
 
 		user.GET("/:user_id", infoByIDGetHandler)
 		user.GET("/blacklist", blacklistGetHandler)
