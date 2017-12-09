@@ -72,3 +72,10 @@ func (db *DB) UpdateLink(link *Link) error {
 	resp := db.conn.Save(link)
 	return resp.Error
 }
+
+func (db *DB) GetUserLinks(user *User) ([]*Link, error) {
+	db.log.Debug("Get links for", user.Login)
+	var ret []*Link
+	err := db.conn.Model(Link{}).Find(&ret).Error
+	return ret, err
+}

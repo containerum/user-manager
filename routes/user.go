@@ -45,10 +45,6 @@ type InfoByIDGetResponse struct {
 	Data  map[string]string `json:"data"`
 }
 
-type UserToBlacklistRequest struct {
-	UserID string `json:"user_id" binding:"required;uuidv4"`
-}
-
 type BlacklistedUserEntry struct {
 	Login string `json:"login"`
 	ID    string `json:"id"`
@@ -56,6 +52,10 @@ type BlacklistedUserEntry struct {
 
 type BlacklistGetResponse struct {
 	BlacklistedUsers []BlacklistedUserEntry `json:"blacklist_users"`
+}
+
+type LinksGetResponse struct {
+	Links []*models.Link `json:"links"`
 }
 
 func userCreateHandler(ctx *gin.Context) {
@@ -307,21 +307,15 @@ func infoByIDGetHandler(ctx *gin.Context) {
 }
 
 func userToBlacklistHandler(ctx *gin.Context) {
-	var request UserToBlacklistRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
-		return
-	}
-
-	user, err := svc.DB.GetUserByID(request.UserID)
+	userID := ctx.Param("user_id")
+	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + request.UserID + " was not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
 		return
 	}
 
@@ -379,4 +373,26 @@ func blacklistGetHandler(ctx *gin.Context) {
 		})
 	}
 	ctx.JSON(http.StatusAccepted, resp)
+}
+
+func linksGetHandler(ctx *gin.Context) {
+	userID := ctx.Param("user_id")
+	user, err := svc.DB.GetUserByID(userID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+	}
+
+	links, err := svc.DB.GetUserLinks(user)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, LinksGetResponse{Links: links})
 }
