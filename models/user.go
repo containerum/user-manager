@@ -47,3 +47,10 @@ func (db *DB) UpdateUser(user *User) error {
 	db.log.Debug("Update user", user.Login)
 	return db.conn.Save(user).Error
 }
+
+func (db *DB) GetBlacklistedUsers() ([]*User, error) {
+	db.log.Debug("Get blacklisted users")
+	var resp []*User
+	err := db.conn.Where(User{IsInBlacklist: true}).Find(&resp).Error
+	return resp, err
+}

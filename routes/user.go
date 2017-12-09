@@ -49,6 +49,15 @@ type UserToBlacklistRequest struct {
 	UserID string `json:"user_id" binding:"required;uuidv4"`
 }
 
+type BlacklistedUserEntry struct {
+	Login string `json:"login"`
+	ID    string `json:"id"`
+}
+
+type BlacklistGetResponse struct {
+	BlacklistedUsers []BlacklistedUserEntry `json:"blacklist_users"`
+}
+
 func userCreateHandler(ctx *gin.Context) {
 	var request UserCreateRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -338,4 +347,24 @@ func userToBlacklistHandler(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+
+	ctx.Status(http.StatusAccepted)
+}
+
+func blacklistGetHandler(ctx *gin.Context) {
+	blacklisted, err := svc.DB.GetBlacklistedUsers()
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	var resp BlacklistGetResponse
+	for _, v := range blacklisted {
+		resp.BlacklistedUsers = append(resp.BlacklistedUsers, BlacklistedUserEntry{
+			Login: v.Login,
+			ID:    v.ID,
+		})
+	}
+	ctx.JSON(http.StatusAccepted, resp)
 }
