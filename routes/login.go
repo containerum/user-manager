@@ -122,20 +122,56 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := svc.DB.GetUserByToken(request.Token)
+	token, err := svc.DB.GetTokenObject(request.Token)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	if user == nil {
+	if token == nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "one-time " + request.Token + " not exists or invalid"})
 		return
 	}
-	if user.IsInBlacklist {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user " + user.Login + " banned"})
+	if token.User.IsInBlacklist {
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user " + token.User.Login + " banned"})
 		return
 	}
+
+	// TODO: get access data from resource manager
+	access := &auth.ResourcesAccess{}
+
+	var tokens *auth.CreateTokenResponse
+
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+		var err error
+		tokens, err = svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
+			UserAgent:   ctx.Request.UserAgent(),
+			UserId:      &common.UUID{Value: token.User.ID},
+			UserIp:      ctx.ClientIP(),
+			UserRole:    auth.Role(token.User.Role),
+			RwAccess:    true,
+			Access:      access,
+			PartTokenId: nil,
+		})
+		if err != nil {
+			return err
+		}
+
+		token.IsActive = false
+		token.SessionID = "sid" // TODO: session ID here
+		if err := tx.UpdateToken(token); err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, tokens)
 }
 
 func oauthLoginHandler(ctx *gin.Context) {
