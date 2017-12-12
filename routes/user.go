@@ -538,18 +538,19 @@ func partialDeleteHandler(ctx *gin.Context) {
 		return
 	}
 
+	// TODO: send request to user manager
+
+	// TODO: send request to billing manager
+
+	if _, err := svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
+		UserId: &common.UUID{Value: user.ID},
+	}); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	err = svc.DB.Transactional(func(tx *models.DB) error {
-
-		// TODO: send request to user manager
-
-		// TODO: send request to billing manager
-
-		if _, err := svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-			UserId: &common.UUID{Value: user.ID},
-		}); err != nil {
-			return err
-		}
-
 		user.IsDeleted = true
 		return tx.UpdateUser(user)
 	})
