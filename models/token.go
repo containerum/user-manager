@@ -5,6 +5,7 @@ import "time"
 type Token struct {
 	Token     string `gorm:"primary_key"`
 	User      User
+	UserID    string `gorm:"type:uuid;ForeignKey:UserID"`
 	CreatedAt time.Time
 	IsActive  bool
 	SessionID string `gorm:"type:uuid"`

@@ -20,6 +20,7 @@ const (
 type Link struct {
 	Link      string `gorm:"primary_key"`
 	User      User
+	UserID    string `gorm:"type:uuid;ForeignKey:UserID"`
 	Type      LinkType
 	CreatedAt time.Time
 	ExpiredAt time.Time
