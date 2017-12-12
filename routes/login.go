@@ -3,6 +3,13 @@ package routes
 import (
 	"net/http"
 
+	"fmt"
+	"time"
+
+	"git.containerum.net/ch/grpc-proto-files/auth"
+	"git.containerum.net/ch/grpc-proto-files/common"
+	"git.containerum.net/ch/mail-templater/upstreams"
+	"git.containerum.net/ch/user-manager/models"
 	chutils "git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -45,6 +52,66 @@ func basicLoginHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user " + user.Login + " banned"})
 		return
 	}
+
+	if !user.IsActive {
+		link, err := svc.DB.GetLinkForUser(models.LinkTypeConfirm, user)
+		if err != nil {
+			ctx.Error(err)
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		if link == nil {
+			link, err = svc.DB.CreateLink(models.LinkTypeConfirm, 24*time.Hour, user)
+			if err != nil {
+				ctx.Error(err)
+				ctx.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
+		}
+
+		if tdiff := time.Now().UTC().Sub(link.SentAt); tdiff < 5*time.Minute {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{
+				Text: fmt.Sprintf("can`t resend link, wait %f seconds", tdiff.Seconds()),
+			})
+			return
+		}
+
+		err = svc.MailClient.SendConfirmationMail(&upstreams.Recipient{
+			ID:        user.ID,
+			Name:      user.Login,
+			Email:     user.Login,
+			Variables: map[string]string{"CONFIRM": link.Link},
+		})
+		if err != nil {
+			ctx.Error(err)
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		ctx.Status(http.StatusOK)
+		return
+	}
+
+	// TODO: get access data from resource manager
+	access := &auth.ResourcesAccess{}
+
+	tokens, err := svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
+		UserAgent:   ctx.Request.UserAgent(),
+		UserId:      &common.UUID{Value: user.ID},
+		UserIp:      ctx.ClientIP(),
+		UserRole:    auth.Role(user.Role),
+		RwAccess:    true,
+		Access:      access,
+		PartTokenId: nil,
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, tokens)
 }
 
 func oneTimeTokenLoginHandler(ctx *gin.Context) {
