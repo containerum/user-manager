@@ -50,8 +50,8 @@ func (db *DB) GetLinkForUser(linkType LinkType, user *User) (*Link, error) {
 	var link Link
 	resp := db.conn.
 		Where("type = ? AND is_active = true AND expires_at > ?", linkType, time.Now().UTC()).
-		Model(&link).
-		Related(user)
+		Model(user).
+		Related(&link)
 	if resp.RecordNotFound() {
 		return nil, nil
 	}

@@ -62,7 +62,7 @@ func (db *DB) GetProfileByID(id string) (*Profile, error) {
 func (db *DB) GetProfileByUser(user *User) (*Profile, error) {
 	db.log.Debugf("Get profile by user %#v", user)
 	var profile Profile
-	resp := db.conn.Where(&Profile{User: *user}).First(&profile)
+	resp := db.conn.Model(user).Related(&profile)
 	if resp.RecordNotFound() {
 		return nil, nil
 	}
@@ -77,7 +77,7 @@ func (db *DB) UpdateProfile(profile *Profile) error {
 func (db *DB) GetAllProfiles() ([]*Profile, error) {
 	db.log.Debug("Get all profiles")
 	var ret []*Profile
-	resp := db.conn.Model(&Profile{}).Find(&ret)
+	resp := db.conn.Find(&ret)
 	if resp.RecordNotFound() {
 		return nil, nil
 	}
