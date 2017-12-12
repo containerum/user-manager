@@ -9,6 +9,9 @@ import (
 
 	"fmt"
 
+	"math/rand"
+	"strconv"
+
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
 	"git.containerum.net/ch/mail-templater/upstreams"
@@ -553,6 +556,38 @@ func partialDeleteHandler(ctx *gin.Context) {
 	err = svc.DB.Transactional(func(tx *models.DB) error {
 		user.IsDeleted = true
 		return tx.UpdateUser(user)
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.Status(http.StatusAccepted)
+}
+
+func completeDeleteHandler(ctx *gin.Context) {
+	userID := ctx.GetHeader("X-User-ID")
+	user, err := svc.DB.GetUserByID(userID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		return
+	}
+
+	if !user.IsDeleted {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: "User " + user.Login + " is not partially deleted"})
+		return
+	}
+
+	// TODO: send request to billing manager
+
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+		user.Login = user.Login + strconv.Itoa(rand.Int())
+		return svc.DB.UpdateUser(user)
 	})
 	if err != nil {
 		ctx.Error(err)
