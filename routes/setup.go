@@ -32,6 +32,7 @@ func SetupRoutes(app *gin.Engine, services Services) {
 		user.POST("/sign_up/resend", linkResendHandler)
 		user.POST("/activation", activateHandler)
 		user.POST("/:user_id/blacklist", userToBlacklistHandler)
+		user.POST("/delete/partial", partialDeleteHandler)
 
 		user.GET("/:user_id", userInfoByIDGetHandler)
 		user.GET("/:user_id/links", linksGetHandler)

@@ -524,3 +524,39 @@ func userListGetHandler(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, resp)
 }
+
+func partialDeleteHandler(ctx *gin.Context) {
+	userID := ctx.GetHeader("X-User-ID")
+	user, err := svc.DB.GetUserByID(userID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		return
+	}
+
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+
+		// TODO: send request to user manager
+
+		// TODO: send request to billing manager
+
+		if _, err := svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
+			UserId: &common.UUID{Value: user.ID},
+		}); err != nil {
+			return err
+		}
+
+		user.IsDeleted = true
+		return tx.UpdateUser(user)
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.Status(http.StatusAccepted)
+}
