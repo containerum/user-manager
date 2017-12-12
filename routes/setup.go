@@ -37,6 +37,7 @@ func SetupRoutes(app *gin.Engine, services Services) {
 		user.GET("/:user_id/links", linksGetHandler)
 		user.GET("/blacklist", blacklistGetHandler)
 		user.GET("/info", userInfoGetHandler)
+		user.GET("/users", userListGetHandler)
 	}
 
 	login := app.Group("/login")

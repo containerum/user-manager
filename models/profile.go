@@ -72,3 +72,13 @@ func (db *DB) UpdateProfile(profile *Profile) error {
 	db.log.Debugf("Update profile %#v", profile)
 	return db.conn.Save(profile).Error
 }
+
+func (db *DB) GetAllProfiles() ([]*Profile, error) {
+	db.log.Debug("Get all profiles")
+	var ret []*Profile
+	resp := db.conn.Model(&Profile{}).Find(&ret)
+	if resp.RecordNotFound() {
+		return nil, nil
+	}
+	return ret, resp.Error
+}

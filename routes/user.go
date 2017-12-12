@@ -66,6 +66,23 @@ type UserInfoGetResponse struct {
 	CreatedAt time.Time          `json:"created_at"`
 }
 
+type UserListEntry struct {
+	ID            string             `json:"id"`
+	Login         string             `json:"login"`
+	Referral      string             `json:"referral"`
+	Role          models.UserRole    `json:"role"`
+	Access        string             `json:"access"`
+	CreatedAt     time.Time          `json:"created_at"`
+	Data          models.ProfileData `json:"data"`
+	IsActive      bool               `json:"is_active"`
+	IsInBlacklist bool               `json:"is_in_blacklist"`
+	IsDeleted     bool               `json:"is_deleted"`
+}
+
+type UserListGetResponse struct {
+	Users []*UserListEntry `json:"users"`
+}
+
 func userCreateHandler(ctx *gin.Context) {
 	var request UserCreateRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -476,4 +493,34 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 		IsActive:  user.IsActive,
 		CreatedAt: profile.CreatedAt,
 	})
+}
+
+func userListGetHandler(ctx *gin.Context) {
+	profiles, err := svc.DB.GetAllProfiles()
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if profiles == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "Profiles not found"})
+		return
+	}
+
+	var resp UserListGetResponse
+	for _, v := range profiles {
+		resp.Users = append(resp.Users, &UserListEntry{
+			ID:            v.User.ID,
+			Login:         v.User.Login,
+			Referral:      v.Referral,
+			Role:          v.User.Role,
+			Access:        v.Access,
+			CreatedAt:     v.CreatedAt,
+			Data:          v.Data,
+			IsActive:      v.User.IsActive,
+			IsInBlacklist: v.User.IsInBlacklist,
+			IsDeleted:     v.User.IsDeleted,
+		})
+	}
+	ctx.JSON(http.StatusOK, resp)
 }
