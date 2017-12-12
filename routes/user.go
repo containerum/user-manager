@@ -210,10 +210,12 @@ func linkResendHandler(ctx *gin.Context) {
 		return
 	}
 	if link == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{
-			Text: "link type " + models.LinkTypeConfirm + " not found for user " + request.UserName,
-		})
-		return
+		link, err = svc.DB.CreateLink(models.LinkTypeConfirm, 24*time.Hour, user)
+		if err != nil {
+			ctx.Error(err)
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 	}
 
 	if tdiff := time.Now().UTC().Sub(link.SentAt); tdiff < 5*time.Minute {
@@ -221,15 +223,6 @@ func linkResendHandler(ctx *gin.Context) {
 			Text: fmt.Sprintf("can`t resend link, wait %f seconds", tdiff.Seconds()),
 		})
 		return
-	}
-
-	if link == nil {
-		link, err = svc.DB.CreateLink(models.LinkTypeConfirm, 24*time.Hour, user)
-		if err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
 	}
 
 	err = svc.MailClient.SendConfirmationMail(&upstreams.Recipient{
