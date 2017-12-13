@@ -505,8 +505,42 @@ func userListGetHandler(ctx *gin.Context) {
 		return
 	}
 
+	filters := strings.Split(ctx.Query("filters"), ",")
+	var filterFuncs []func(p *models.Profile) bool
+	for _, filter := range filters {
+		switch filter {
+		case "active":
+			filterFuncs = append(filterFuncs, func(p *models.Profile) bool {
+				return p.User.IsActive
+			})
+		case "inactive":
+			filterFuncs = append(filterFuncs, func(p *models.Profile) bool {
+				return !p.User.IsActive
+			})
+		case "in_blacklist":
+			filterFuncs = append(filterFuncs, func(p *models.Profile) bool {
+				return p.User.IsInBlacklist
+			})
+		case "deleted":
+			filterFuncs = append(filterFuncs, func(p *models.Profile) bool {
+				return p.User.IsDeleted
+			})
+		}
+	}
+
+	satisfiesFilter := func(p *models.Profile) bool {
+		ret := true
+		for _, v := range filterFuncs {
+			ret = ret && v(p)
+		}
+		return ret
+	}
+
 	var resp UserListGetResponse
 	for _, v := range profiles {
+		if !satisfiesFilter(v) {
+			continue
+		}
 		resp.Users = append(resp.Users, &UserListEntry{
 			ID:            v.User.ID,
 			Login:         v.User.Login,
