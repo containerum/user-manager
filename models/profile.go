@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/json-iterator/go"
 )
 
@@ -39,7 +40,10 @@ func (p *Profile) BeforeUpdate() (err error) {
 	return p.BeforeSave()
 }
 
-func (p *Profile) AfterFind() (err error) {
+func (p *Profile) AfterFind(scope *gorm.Scope) (err error) {
+	if err = scope.DB().Where(User{ID: p.UserID}).First(&p.UserID).Error; err != nil {
+		return
+	}
 	err = jsoniter.UnmarshalFromString(p.DataEncoded, p.Data)
 	return
 }

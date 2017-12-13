@@ -4,16 +4,21 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
 
 type Accounts struct {
 	ID       string `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
-	User     User
-	UserID   string `gorm:"type:uuid;ForeignKey:UserID"`
+	User     User   `gorm:"-"`
+	UserID   string `gorm:"type:uuid"`
 	Github   string `account:"github"`
 	Facebook string `account:"facebook"`
 	Google   string `account:"google"`
+}
+
+func (a *Accounts) AfterFind(scope *gorm.Scope) (err error) {
+	return scope.DB().Where(User{ID: a.UserID}).First(&a.User).Error
 }
 
 func (a *Accounts) setAccountField(service, accountID string) error {

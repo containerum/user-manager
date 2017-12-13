@@ -1,14 +1,22 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/jinzhu/gorm"
+)
 
 type Token struct {
 	Token     string `gorm:"primary_key"`
-	User      User
-	UserID    string `gorm:"type:uuid;ForeignKey:UserID"`
+	User      User   `gorm:"-"`
+	UserID    string `gorm:"type:uuid"`
 	CreatedAt time.Time
 	IsActive  bool
 	SessionID string `gorm:"type:uuid"`
+}
+
+func (t *Token) AfterFind(scope *gorm.Scope) (err error) {
+	return scope.DB().Where(User{ID: t.UserID}).First(&t.UserID).Error
 }
 
 func (db *DB) GetTokenObject(token string) (*Token, error) {

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,6 +27,10 @@ type Link struct {
 	ExpiredAt time.Time
 	IsActive  bool
 	SentAt    time.Time
+}
+
+func (l *Link) AfterFind(scope *gorm.Scope) (err error) {
+	return scope.DB().Where(User{ID: l.UserID}).First(&l.User).Error
 }
 
 func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) (*Link, error) {
