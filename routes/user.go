@@ -76,6 +76,8 @@ type UserListEntry struct {
 	Role          models.UserRole    `json:"role"`
 	Access        string             `json:"access"`
 	CreatedAt     time.Time          `json:"created_at"`
+	DeletedAt     time.Time          `json:"deleted_at"`
+	BlacklistedAt time.Time          `json:"blacklisted_at"`
 	Data          models.ProfileData `json:"data"`
 	IsActive      bool               `json:"is_active"`
 	IsInBlacklist bool               `json:"is_in_blacklist"`
@@ -512,6 +514,8 @@ func userListGetHandler(ctx *gin.Context) {
 			Role:          v.User.Role,
 			Access:        v.Access,
 			CreatedAt:     v.CreatedAt,
+			DeletedAt:     v.DeletedAt,
+			BlacklistedAt: v.BlacklistAt,
 			Data:          v.Data,
 			IsActive:      v.User.IsActive,
 			IsInBlacklist: v.User.IsInBlacklist,
