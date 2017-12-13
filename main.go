@@ -30,11 +30,12 @@ func main() {
 	exitOnErr(setupLogger())
 
 	app := gin.New()
-	app.Use(gin.Recovery())
+	app.Use(gin.RecoveryWithWriter(logrus.StandardLogger().WithField("component", "gin_recovery").Writer()))
 	app.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
 
 	db, err := models.DBConnect(viper.GetString("pg_url"))
 	exitOnErr(err)
+
 	mailClient := clients.NewMailClient(viper.GetString("mail_url"))
 
 	reCaptchaClient := clients.NewReCaptchaClient(viper.GetString("recaptcha_key"))
