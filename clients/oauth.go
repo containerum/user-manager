@@ -9,6 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
+	githubOAuth "golang.org/x/oauth2/github"
+	googleOAuth "golang.org/x/oauth2/google"
 	google "google.golang.org/api/oauth2/v2"
 )
 
@@ -19,6 +21,7 @@ type OAuthUserInfo struct {
 
 type OAuthClient interface {
 	GetUserInfo(accessToken string) (info *OAuthUserInfo, err error)
+	GetResource() OAuthResource
 }
 
 type OAuthResource string
@@ -36,22 +39,35 @@ func OAuthClientByResource(resource OAuthResource) (client OAuthClient, exists b
 	return
 }
 
-func init() {
-	oAuthClients[GitHubOAuth] = &githubOAuthClient{log: logrus.WithField("component", "github_oauth").Logger}
-	oAuthClients[GoogleOAuth] = &googleOAuthClient{log: logrus.WithField("component", "google_oauth").Logger}
-	oAuthClients[FacebookOAuth] = &facebookOAuthClient{log: logrus.WithField("component", "facebook_oauth").Logger}
+func RegisterOAuthClient(client OAuthClient) {
+	oAuthClients[client.GetResource()] = client
 }
 
-type githubOAuthClient struct {
-	log *logrus.Logger
+type GithubOAuthClient struct {
+	log         *logrus.Logger
+	oAuthConfig *oauth2.Config
 }
 
-func (gh *githubOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInfo, err error) {
+func NewGithubOAuthClient(appID, appSecret string) *GithubOAuthClient {
+	return &GithubOAuthClient{
+		log: logrus.WithField("component", "github_oauth").Logger,
+		oAuthConfig: &oauth2.Config{
+			ClientID:     appID,
+			ClientSecret: appSecret,
+			Endpoint:     githubOAuth.Endpoint,
+			Scopes:       []string{string(github.ScopeUser), string(github.ScopeUserEmail)},
+		},
+	}
+}
+
+func (gh *GithubOAuthClient) GetResource() OAuthResource {
+	return GitHubOAuth
+}
+
+func (gh *GithubOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInfo, err error) {
 	gh.log.WithField("token", accessToken).Info("Get GitHub user info")
 	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: accessToken},
-	)
+	ts := gh.oAuthConfig.TokenSource(ctx, &oauth2.Token{AccessToken: accessToken})
 	tc := oauth2.NewClient(ctx, ts)
 
 	client := github.NewClient(tc)
@@ -72,16 +88,31 @@ func (gh *githubOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInf
 	}, nil
 }
 
-type googleOAuthClient struct {
-	log *logrus.Logger
+type GoogleOAuthClient struct {
+	log         *logrus.Logger
+	oAuthConfig *oauth2.Config
 }
 
-func (gc *googleOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInfo, err error) {
+func NewGoogleOAuthClient(appID, appSecret string) *GoogleOAuthClient {
+	return &GoogleOAuthClient{
+		log: logrus.WithField("component", "google_oauth").Logger,
+		oAuthConfig: &oauth2.Config{
+			ClientID:     appID,
+			ClientSecret: appSecret,
+			Endpoint:     googleOAuth.Endpoint,
+			Scopes:       []string{google.UserinfoProfileScope, google.UserinfoEmailScope},
+		},
+	}
+}
+
+func (gc *GoogleOAuthClient) GetResource() OAuthResource {
+	return GoogleOAuth
+}
+
+func (gc *GoogleOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInfo, err error) {
 	gc.log.WithField("token", accessToken).Info("Get Google user info")
 	ctx := context.Background()
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: accessToken},
-	)
+	ts := gc.oAuthConfig.TokenSource(ctx, &oauth2.Token{AccessToken: accessToken})
 	tc := oauth2.NewClient(ctx, ts)
 
 	client, err := google.New(tc)
@@ -102,14 +133,28 @@ func (gc *googleOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInf
 	}, nil
 }
 
-type facebookOAuthClient struct {
+type FacebookOAuthClient struct {
 	log *logrus.Logger
+	app *facebook.App
 }
 
-func (fb *facebookOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInfo, err error) {
+func NewFacebookOAuthClient(appID, appSecret string) *FacebookOAuthClient {
+	return &FacebookOAuthClient{
+		log: logrus.WithField("component", "facebook_oauth").Logger,
+		app: facebook.New(appID, appSecret),
+	}
+}
+
+func (fb *FacebookOAuthClient) GetResource() OAuthResource {
+	return FacebookOAuth
+}
+
+func (fb *FacebookOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInfo, err error) {
 	fb.log.WithField("token", accessToken).Info("Get Facebook user info")
 
-	resp, err := facebook.Get("/me", facebook.Params{
+	session := fb.app.Session(accessToken)
+
+	resp, err := session.Get("/me", facebook.Params{
 		"access_token": accessToken,
 		"fields":       "id,email",
 	})
