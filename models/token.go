@@ -9,7 +9,7 @@ import (
 
 type Token struct {
 	Token     string `gorm:"primary_key"`
-	User      User   `gorm:"-"`
+	User      *User  `gorm:"-"`
 	UserID    string `gorm:"type:uuid"`
 	CreatedAt time.Time
 	IsActive  bool

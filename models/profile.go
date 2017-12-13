@@ -20,7 +20,7 @@ type ProfileData struct {
 
 type Profile struct {
 	ID          string `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"` // use UUID v4 as primary key (good support in psql)
-	User        User
+	User        *User
 	UserID      string `gorm:"type:uuid;ForeignKey:UserID"`
 	Referral    string
 	Access      string
