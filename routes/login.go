@@ -185,7 +185,7 @@ func oauthLoginHandler(ctx *gin.Context) {
 
 	resource, exist := clients.OAuthClientByResource(request.Resource)
 	if !exist {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: "Resource " + request.Resource + " not supported"})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: "Resource " + string(request.Resource) + " not supported"})
 		return
 	}
 
