@@ -9,6 +9,7 @@ import (
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
 	"git.containerum.net/ch/mail-templater/upstreams"
+	"git.containerum.net/ch/user-manager/clients"
 	"git.containerum.net/ch/user-manager/models"
 	chutils "git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
@@ -26,8 +27,8 @@ type OneTimeTokenLoginRequest struct {
 }
 
 type OAuthLoginRequest struct {
-	Resource    string `json:"resource" binding:"required"`
-	AccessToken string `json:"access_token" binding:"required"`
+	Resource    clients.OAuthResource `json:"resource" binding:"required"`
+	AccessToken string                `json:"access_token" binding:"required"`
 }
 
 func basicLoginHandler(ctx *gin.Context) {
@@ -181,4 +182,68 @@ func oauthLoginHandler(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
 		return
 	}
+
+	resource, exist := clients.OAuthClientByResource(request.Resource)
+	if !exist {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: "Resource " + request.Resource + " not supported"})
+		return
+	}
+
+	info, err := resource.GetUserInfo(request.AccessToken)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	user, err := svc.DB.GetUserByLogin(info.Email)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "user " + info.Email + " not exists"})
+		return
+	}
+	if user.IsInBlacklist {
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user " + user.Login + " banned"})
+		return
+	}
+
+	accounts, err := svc.DB.GetUserBoundAccounts(user)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if accounts == nil {
+		if err := svc.DB.Transactional(func(tx *models.DB) error {
+			return tx.BindAccount(user, string(request.Resource), info.UserID)
+		}); err != nil {
+			ctx.Error(err)
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// TODO: get access data from resource manager
+	access := &auth.ResourcesAccess{}
+
+	tokens, err := svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
+		UserAgent:   ctx.Request.UserAgent(),
+		UserId:      &common.UUID{Value: user.ID},
+		UserIp:      ctx.ClientIP(),
+		UserRole:    auth.Role(user.Role),
+		RwAccess:    true,
+		Access:      access,
+		PartTokenId: nil,
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, tokens)
 }
