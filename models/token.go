@@ -9,7 +9,7 @@ import (
 
 type Token struct {
 	Token     string `gorm:"primary_key"`
-	User      User   `gorm:"-"`
+	User      *User  `gorm:"-"`
 	UserID    string `gorm:"type:uuid"`
 	CreatedAt time.Time
 	IsActive  bool
@@ -34,7 +34,7 @@ func (db *DB) CreateToken(user *User, sessionID string) (*Token, error) {
 	db.log.Debug("Generate one-time token for", user.Login)
 	ret := &Token{
 		Token:     utils.GenSalt(user.ID, user.Login),
-		User:      *user,
+		User:      user,
 		CreatedAt: time.Now().UTC(),
 		IsActive:  true,
 		SessionID: sessionID,

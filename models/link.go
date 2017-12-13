@@ -20,7 +20,7 @@ const (
 
 type Link struct {
 	Link      string `gorm:"primary_key"`
-	User      User
+	User      *User
 	UserID    string `gorm:"type:uuid;ForeignKey:UserID"`
 	Type      LinkType
 	CreatedAt time.Time
@@ -37,7 +37,7 @@ func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) 
 	now := time.Now().UTC()
 	ret := &Link{
 		Link:      strings.ToUpper(hex.EncodeToString(sha512.New().Sum([]byte(user.ID)))),
-		User:      *user,
+		User:      user,
 		Type:      linkType,
 		CreatedAt: now,
 		ExpiredAt: now.Add(lifeTime),

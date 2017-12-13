@@ -10,7 +10,7 @@ import (
 
 type Accounts struct {
 	ID       string `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
-	User     User   `gorm:"-"`
+	User     *User  `gorm:"-"`
 	UserID   string `gorm:"type:uuid"`
 	Github   string `account:"github"`
 	Facebook string `account:"facebook"`
@@ -59,7 +59,7 @@ func (db *DB) GetUserByBoundAccount(service, accountID string) (*User, error) {
 	if resp.RecordNotFound() {
 		return nil, nil
 	}
-	return &accounts.User, resp.Error
+	return accounts.User, resp.Error
 }
 
 func (db *DB) GetUserBoundAccounts(user *User) (*Accounts, error) {
