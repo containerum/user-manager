@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/json-iterator/go"
 )
 
@@ -20,6 +21,7 @@ type ProfileData struct {
 type Profile struct {
 	ID          string `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"` // use UUID v4 as primary key (good support in psql)
 	User        User
+	UserID      string `gorm:"type:uuid;ForeignKey:UserID"`
 	Referral    string
 	Access      string
 	Data        ProfileData `gorm:"-"`
@@ -38,7 +40,10 @@ func (p *Profile) BeforeUpdate() (err error) {
 	return p.BeforeSave()
 }
 
-func (p *Profile) AfterFind() (err error) {
+func (p *Profile) AfterFind(scope *gorm.Scope) (err error) {
+	if err = scope.DB().Where(User{ID: p.UserID}).First(&p.UserID).Error; err != nil {
+		return
+	}
 	err = jsoniter.UnmarshalFromString(p.DataEncoded, p.Data)
 	return
 }
@@ -61,7 +66,7 @@ func (db *DB) GetProfileByID(id string) (*Profile, error) {
 func (db *DB) GetProfileByUser(user *User) (*Profile, error) {
 	db.log.Debugf("Get profile by user %#v", user)
 	var profile Profile
-	resp := db.conn.Where(&Profile{User: *user}).First(&profile)
+	resp := db.conn.Model(user).Related(&profile)
 	if resp.RecordNotFound() {
 		return nil, nil
 	}
@@ -71,4 +76,14 @@ func (db *DB) GetProfileByUser(user *User) (*Profile, error) {
 func (db *DB) UpdateProfile(profile *Profile) error {
 	db.log.Debugf("Update profile %#v", profile)
 	return db.conn.Save(profile).Error
+}
+
+func (db *DB) GetAllProfiles() ([]*Profile, error) {
+	db.log.Debug("Get all profiles")
+	var ret []*Profile
+	resp := db.conn.Find(&ret)
+	if resp.RecordNotFound() {
+		return nil, nil
+	}
+	return ret, resp.Error
 }

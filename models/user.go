@@ -16,6 +16,12 @@ type User struct {
 	IsActive      bool
 	IsDeleted     bool
 	IsInBlacklist bool
+
+	// Fields for associations
+	Accounts Accounts `gorm:"ForeignKey:UserID"`
+	Links    []Link   `gorm:"ForeignKey:UserID"`
+	Profile  Profile  `gorm:"ForeignKey:UserID"`
+	Token    Token    `gorm:"ForeignKey:UserID"`
 }
 
 func (db *DB) GetUserByLogin(login string) (*User, error) {

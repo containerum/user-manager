@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,11 +21,16 @@ const (
 type Link struct {
 	Link      string `gorm:"primary_key"`
 	User      User
+	UserID    string `gorm:"type:uuid;ForeignKey:UserID"`
 	Type      LinkType
 	CreatedAt time.Time
 	ExpiredAt time.Time
 	IsActive  bool
 	SentAt    time.Time
+}
+
+func (l *Link) AfterFind(scope *gorm.Scope) (err error) {
+	return scope.DB().Where(User{ID: l.UserID}).First(&l.User).Error
 }
 
 func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) (*Link, error) {
@@ -49,8 +55,8 @@ func (db *DB) GetLinkForUser(linkType LinkType, user *User) (*Link, error) {
 	var link Link
 	resp := db.conn.
 		Where("type = ? AND is_active = true AND expires_at > ?", linkType, time.Now().UTC()).
-		Model(&link).
-		Related(user)
+		Model(user).
+		Related(&link)
 	if resp.RecordNotFound() {
 		return nil, nil
 	}

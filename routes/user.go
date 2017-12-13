@@ -9,6 +9,9 @@ import (
 
 	"fmt"
 
+	"math/rand"
+	"strconv"
+
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
 	"git.containerum.net/ch/mail-templater/upstreams"
@@ -64,6 +67,25 @@ type UserInfoGetResponse struct {
 	ID        string             `json:"id"`
 	IsActive  bool               `json:"is_active"`
 	CreatedAt time.Time          `json:"created_at"`
+}
+
+type UserListEntry struct {
+	ID            string             `json:"id"`
+	Login         string             `json:"login"`
+	Referral      string             `json:"referral"`
+	Role          models.UserRole    `json:"role"`
+	Access        string             `json:"access"`
+	CreatedAt     time.Time          `json:"created_at"`
+	DeletedAt     time.Time          `json:"deleted_at"`
+	BlacklistedAt time.Time          `json:"blacklisted_at"`
+	Data          models.ProfileData `json:"data"`
+	IsActive      bool               `json:"is_active"`
+	IsInBlacklist bool               `json:"is_in_blacklist"`
+	IsDeleted     bool               `json:"is_deleted"`
+}
+
+type UserListGetResponse struct {
+	Users []*UserListEntry `json:"users"`
 }
 
 func userCreateHandler(ctx *gin.Context) {
@@ -190,10 +212,12 @@ func linkResendHandler(ctx *gin.Context) {
 		return
 	}
 	if link == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{
-			Text: "link type " + models.LinkTypeConfirm + " not found for user " + request.UserName,
-		})
-		return
+		link, err = svc.DB.CreateLink(models.LinkTypeConfirm, 24*time.Hour, user)
+		if err != nil {
+			ctx.Error(err)
+			ctx.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
 	}
 
 	if tdiff := time.Now().UTC().Sub(link.SentAt); tdiff < 5*time.Minute {
@@ -201,15 +225,6 @@ func linkResendHandler(ctx *gin.Context) {
 			Text: fmt.Sprintf("can`t resend link, wait %f seconds", tdiff.Seconds()),
 		})
 		return
-	}
-
-	if link == nil {
-		link, err = svc.DB.CreateLink(models.LinkTypeConfirm, 24*time.Hour, user)
-		if err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatus(http.StatusInternalServerError)
-			return
-		}
 	}
 
 	err = svc.MailClient.SendConfirmationMail(&upstreams.Recipient{
@@ -476,4 +491,139 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 		IsActive:  user.IsActive,
 		CreatedAt: profile.CreatedAt,
 	})
+}
+
+func userListGetHandler(ctx *gin.Context) {
+	profiles, err := svc.DB.GetAllProfiles()
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if profiles == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "Profiles not found"})
+		return
+	}
+
+	filters := strings.Split(ctx.Query("filters"), ",")
+	var filterFuncs []func(p *models.Profile) bool
+	for _, filter := range filters {
+		switch filter {
+		case "active":
+			filterFuncs = append(filterFuncs, func(p *models.Profile) bool {
+				return p.User.IsActive
+			})
+		case "inactive":
+			filterFuncs = append(filterFuncs, func(p *models.Profile) bool {
+				return !p.User.IsActive
+			})
+		case "in_blacklist":
+			filterFuncs = append(filterFuncs, func(p *models.Profile) bool {
+				return p.User.IsInBlacklist
+			})
+		case "deleted":
+			filterFuncs = append(filterFuncs, func(p *models.Profile) bool {
+				return p.User.IsDeleted
+			})
+		}
+	}
+
+	satisfiesFilter := func(p *models.Profile) bool {
+		ret := true
+		for _, v := range filterFuncs {
+			ret = ret && v(p)
+		}
+		return ret
+	}
+
+	var resp UserListGetResponse
+	for _, v := range profiles {
+		if !satisfiesFilter(v) {
+			continue
+		}
+		resp.Users = append(resp.Users, &UserListEntry{
+			ID:            v.User.ID,
+			Login:         v.User.Login,
+			Referral:      v.Referral,
+			Role:          v.User.Role,
+			Access:        v.Access,
+			CreatedAt:     v.CreatedAt,
+			DeletedAt:     v.DeletedAt,
+			BlacklistedAt: v.BlacklistAt,
+			Data:          v.Data,
+			IsActive:      v.User.IsActive,
+			IsInBlacklist: v.User.IsInBlacklist,
+			IsDeleted:     v.User.IsDeleted,
+		})
+	}
+	ctx.JSON(http.StatusOK, resp)
+}
+
+func partialDeleteHandler(ctx *gin.Context) {
+	userID := ctx.GetHeader("X-User-ID")
+	user, err := svc.DB.GetUserByID(userID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		return
+	}
+
+	// TODO: send request to user manager
+
+	// TODO: send request to billing manager
+
+	if _, err := svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
+		UserId: &common.UUID{Value: user.ID},
+	}); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+		user.IsDeleted = true
+		return tx.UpdateUser(user)
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.Status(http.StatusAccepted)
+}
+
+func completeDeleteHandler(ctx *gin.Context) {
+	userID := ctx.GetHeader("X-User-ID")
+	user, err := svc.DB.GetUserByID(userID)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	if user == nil {
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		return
+	}
+
+	if !user.IsDeleted {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: "User " + user.Login + " is not partially deleted"})
+		return
+	}
+
+	// TODO: send request to billing manager
+
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+		user.Login = user.Login + strconv.Itoa(rand.Int())
+		return svc.DB.UpdateUser(user)
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	ctx.Status(http.StatusAccepted)
 }

@@ -1,0 +1,76 @@
+
+[[constraint]]
+  branch = "master"
+  name = "git.containerum.net/ch/auth"
+
+[[constraint]]
+  branch = "master"
+  name = "git.containerum.net/ch/grpc-proto-files"
+
+[[constraint]]
+  branch = "master"
+  name = "git.containerum.net/ch/mail-templater"
+
+[[constraint]]
+  branch = "master"
+  name = "git.containerum.net/ch/utils"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/gin-gonic/contrib"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/gin-gonic/gin"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/google/go-github"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/huandu/facebook"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/jinzhu/gorm"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/json-iterator/go"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/lib/pq"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/sirupsen/logrus"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/spf13/viper"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/crypto"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/net"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/oauth2"
+
+[[constraint]]
+  branch = "master"
+  name = "google.golang.org/api"
+
+[[constraint]]
+  branch = "master"
+  name = "google.golang.org/grpc"
+
+[[constraint]]
+  branch = "master"
+  name = "gopkg.in/resty.v1"
