@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"git.containerum.net/ch/user-manager/utils"
 	"github.com/jinzhu/gorm"
 )
 
@@ -32,7 +33,7 @@ func (db *DB) GetTokenObject(token string) (*Token, error) {
 func (db *DB) CreateToken(user *User, sessionID string) (*Token, error) {
 	db.log.Debug("Generate one-time token for", user.Login)
 	ret := &Token{
-		Token:     "token", // TODO: token generation here
+		Token:     utils.GenSalt(user.ID, user.Login),
 		User:      *user,
 		CreatedAt: time.Now().UTC(),
 		IsActive:  true,
