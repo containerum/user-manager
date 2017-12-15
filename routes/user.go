@@ -139,7 +139,7 @@ func userCreateHandler(ctx *gin.Context) {
 		}
 
 		if err := svc.DB.CreateProfile(&models.Profile{
-			User:      *newUser,
+			User:      newUser,
 			Referral:  request.Referral,
 			Access:    "rw",
 			CreatedAt: time.Now().UTC(),

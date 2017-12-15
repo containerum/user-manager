@@ -180,7 +180,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 	}
 
 	link.User.PasswordHash = utils.GetKey(request.NewPassword, link.User.Salt)
-	err = svc.DB.UpdateUser(&link.User)
+	err = svc.DB.UpdateUser(link.User)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
