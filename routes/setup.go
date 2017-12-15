@@ -35,7 +35,7 @@ func SetupRoutes(app *gin.Engine, services Services) {
 		user.POST("/delete/partial", partialDeleteHandler)
 		user.POST("/delete/complete", completeDeleteHandler)
 
-		user.GET("/:user_id", userInfoByIDGetHandler)
+		user.GET("/:user_id/info", userInfoByIDGetHandler)
 		user.GET("/:user_id/links", linksGetHandler)
 		user.GET("/blacklist", blacklistGetHandler)
 		user.GET("/info", userInfoGetHandler)
