@@ -39,6 +39,10 @@ func DBConnect(pgConnStr string) (*DB, error) {
 		return nil, err
 	}
 	log.Info("Run migrations")
+	if err := conn.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"").Error; err != nil {
+		log.WithError(err).Error("UUID extension create failed")
+		return nil, err
+	}
 	if err := conn.AutoMigrate(migrateModels...).Error; err != nil {
 		log.WithError(err).Error("Run migrations failed")
 		return nil, err
