@@ -34,8 +34,8 @@ func main() {
 	app.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
 
 	db, err := models.DBConnect(viper.GetString("pg_url"))
-	defer db.Close()
 	exitOnErr(err)
+	defer db.Close()
 
 	mailClient := clients.NewMailClient(viper.GetString("mail_url"))
 
@@ -46,8 +46,8 @@ func main() {
 	clients.RegisterOAuthClient(clients.NewFacebookOAuthClient(viper.GetString("facebook_app_id"), viper.GetString("facebook_secret")))
 
 	authConn, err := grpc.Dial(viper.GetString("auth_grpc_addr"), grpc.WithInsecure())
-	defer authConn.Close()
 	exitOnErr(err)
+	defer authConn.Close()
 	authClient := auth.NewAuthClient(authConn)
 
 	routes.SetupRoutes(app, routes.Services{
