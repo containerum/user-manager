@@ -30,7 +30,7 @@ func main() {
 	exitOnErr(setupLogger())
 
 	app := gin.New()
-	app.Use(gin.RecoveryWithWriter(logrus.StandardLogger().WithField("component", "gin_recovery").WriterLevel(logrus.DebugLevel)))
+	app.Use(gin.RecoveryWithWriter(logrus.StandardLogger().WithField("component", "gin_recovery").WriterLevel(logrus.PanicLevel)))
 	app.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
 
 	db, err := models.DBConnect(viper.GetString("pg_url"))
