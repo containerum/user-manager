@@ -20,8 +20,8 @@ const (
 
 type Link struct {
 	Link      string `gorm:"primary_key"`
-	User      *User
-	UserID    string `gorm:"type:uuid;ForeignKey:UserID"`
+	User      *User  `gorm:"-"`
+	UserID    string `gorm:"type:uuid REFERENCES users(id)"`
 	Type      LinkType
 	CreatedAt time.Time
 	ExpiredAt time.Time

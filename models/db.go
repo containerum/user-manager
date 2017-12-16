@@ -13,16 +13,25 @@ import (
 
 type DB struct {
 	conn *gorm.DB
-	log  *logrus.Logger
+	log  *logrus.Entry
 }
 
 // models to automatically migrate at connection
 var migrateModels = []interface{}{
-	&Accounts{},
-	&Link{},
-	&Profile{},
-	&Token{},
-	&User{},
+	User{},
+	Accounts{},
+	Link{},
+	Profile{},
+	Token{},
+}
+
+// wrapper to make correct printing
+type dbLogger struct {
+	e *logrus.Entry
+}
+
+func (l *dbLogger) Print(v ...interface{}) {
+	l.e.Debugln(v...) // print orm stuff only at debug mode
 }
 
 var (
@@ -31,9 +40,11 @@ var (
 )
 
 func DBConnect(pgConnStr string) (*DB, error) {
-	log := logrus.WithField("component", "db").Logger
-	log.Info("Connecting to", pgConnStr)
+	log := logrus.WithField("component", "db")
+	log.Info("Connecting to ", pgConnStr)
 	conn, err := gorm.Open("postgres", pgConnStr)
+	conn.SetLogger(&dbLogger{e: log})
+	conn.LogMode(true)
 	if err != nil {
 		log.WithError(err).Error("Postgres connection failed")
 		return nil, err
@@ -60,7 +71,7 @@ func (db *DB) Transactional(f func(tx *DB) error) error {
 	tx := db.conn.Begin()
 	if err := f(&DB{
 		conn: tx,
-		log:  e.Logger,
+		log:  e,
 	}); err != nil {
 		e.WithError(err).Debug("Rollback transaction")
 		if rerr := tx.Rollback().Error; rerr != nil {

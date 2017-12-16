@@ -24,6 +24,10 @@ type User struct {
 	Token    Token    `gorm:"ForeignKey:UserID"`
 }
 
+func (User) TableName() string {
+	return "users" // for correct mapping
+}
+
 func (db *DB) GetUserByLogin(login string) (*User, error) {
 	db.log.Debug("Get user by login", login)
 	var user User
