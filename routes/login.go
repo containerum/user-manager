@@ -247,3 +247,37 @@ func oauthLoginHandler(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, tokens)
 }
+
+func webAPILoginHandler(ctx *gin.Context) {
+	var request clients.WebAPILoginRequest
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		return
+	}
+
+	resp, code, err := svc.WebAPIClient.Login(&request)
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(code, chutils.Error{Text: err.Error()})
+		return
+	}
+
+	// TODO: get access data from resource manager
+	access := &auth.ResourcesAccess{}
+
+	tokens, err := svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
+		UserAgent:   ctx.Request.UserAgent(),
+		UserId:      &common.UUID{Value: resp["user"].(map[string]interface{})["id"].(string)},
+		UserIp:      ctx.ClientIP(),
+		UserRole:    auth.Role_USER,
+		RwAccess:    true,
+		Access:      access,
+		PartTokenId: nil,
+	})
+
+	resp["access_token"] = tokens.AccessToken
+	resp["refresh_token"] = tokens.RefreshToken
+
+	ctx.JSON(http.StatusOK, resp)
+}

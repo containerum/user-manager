@@ -12,6 +12,7 @@ type Services struct {
 	DB              *models.DB
 	AuthClient      auth.AuthClient
 	ReCaptchaClient *clients.ReCaptchaClient
+	WebAPIClient    *clients.WebAPIClient
 }
 
 var svc Services
@@ -46,6 +47,7 @@ func SetupRoutes(app *gin.Engine, services Services) {
 		login.POST("/basic", reCaptchaMiddleware, basicLoginHandler)
 		login.POST("/token", oneTimeTokenLoginHandler)
 		login.POST("/oauth", oauthLoginHandler)
+		login.POST("", webAPILoginHandler) // login through old web-api
 	}
 
 	password := app.Group("/password")
