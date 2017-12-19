@@ -50,11 +50,14 @@ func main() {
 	defer authConn.Close()
 	authClient := auth.NewAuthClient(authConn)
 
+	webAPIClient := clients.NewWebAPIClient(viper.GetString("web_api_url"))
+
 	routes.SetupRoutes(app, routes.Services{
 		MailClient:      mailClient,
 		DB:              db,
 		AuthClient:      authClient,
 		ReCaptchaClient: reCaptchaClient,
+		WebAPIClient:    webAPIClient,
 	})
 
 	exitOnErr(app.Run(getListenAddr()))

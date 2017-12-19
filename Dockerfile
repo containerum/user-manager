@@ -30,5 +30,6 @@ ENV GIN_MODE=release \
     CH_USER_FACEBOOK_APP_ID="facebook_app" \
     CH_USER_FACEBOOK_SECRET="facebook_secret" \
     CH_USER_AUTH_GRPC_ADDR="ch-auth:8000" \
+    CH_USER_WEB_API_URL="http://web-api:8080"
     CH_USER_LISTEN_ADDR=":8111"
 ENTRYPOINT ["/user-manager"]
