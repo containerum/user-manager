@@ -118,7 +118,7 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 
-	salt := utils.GenSalt(request.UserName, request.Referral)
+	salt := utils.GenSalt(request.UserName, request.UserName, request.UserName) // compatibility with old client db
 	passwordHash := utils.GetKey(request.Password, salt)
 	newUser := &models.User{
 		Login:        request.UserName,
