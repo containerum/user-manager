@@ -44,13 +44,13 @@ func RegisterOAuthClient(client OAuthClient) {
 }
 
 type GithubOAuthClient struct {
-	log         *logrus.Logger
+	log         *logrus.Entry
 	oAuthConfig *oauth2.Config
 }
 
 func NewGithubOAuthClient(appID, appSecret string) *GithubOAuthClient {
 	return &GithubOAuthClient{
-		log: logrus.WithField("component", "github_oauth").Logger,
+		log: logrus.WithField("component", "github_oauth"),
 		oAuthConfig: &oauth2.Config{
 			ClientID:     appID,
 			ClientSecret: appSecret,
@@ -89,13 +89,13 @@ func (gh *GithubOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInf
 }
 
 type GoogleOAuthClient struct {
-	log         *logrus.Logger
+	log         *logrus.Entry
 	oAuthConfig *oauth2.Config
 }
 
 func NewGoogleOAuthClient(appID, appSecret string) *GoogleOAuthClient {
 	return &GoogleOAuthClient{
-		log: logrus.WithField("component", "google_oauth").Logger,
+		log: logrus.WithField("component", "google_oauth"),
 		oAuthConfig: &oauth2.Config{
 			ClientID:     appID,
 			ClientSecret: appSecret,
@@ -134,13 +134,13 @@ func (gc *GoogleOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInf
 }
 
 type FacebookOAuthClient struct {
-	log *logrus.Logger
+	log *logrus.Entry
 	app *facebook.App
 }
 
 func NewFacebookOAuthClient(appID, appSecret string) *FacebookOAuthClient {
 	return &FacebookOAuthClient{
-		log: logrus.WithField("component", "facebook_oauth").Logger,
+		log: logrus.WithField("component", "facebook_oauth"),
 		app: facebook.New(appID, appSecret),
 	}
 }

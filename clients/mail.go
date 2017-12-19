@@ -9,12 +9,12 @@ import (
 
 type MailClient struct {
 	rest *resty.Client
-	log  *logrus.Logger
+	log  *logrus.Entry
 }
 
 func NewMailClient(serverUrl string) *MailClient {
-	log := logrus.WithField("component", "mail_client").Logger
-	client := resty.New().SetHostURL(serverUrl).SetLogger(log.Writer())
+	log := logrus.WithField("component", "mail_client")
+	client := resty.New().SetHostURL(serverUrl).SetLogger(log.WriterLevel(logrus.DebugLevel))
 	return &MailClient{
 		rest: client,
 		log:  log,

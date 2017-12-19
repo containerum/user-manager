@@ -11,7 +11,7 @@ import (
 type Accounts struct {
 	ID       string `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
 	User     *User  `gorm:"-"`
-	UserID   string `gorm:"type:uuid"`
+	UserID   string `gorm:"type:uuid REFERENCES users(id)"` // to create postgres foreign keys
 	Github   string `account:"github"`
 	Facebook string `account:"facebook"`
 	Google   string `account:"google"`

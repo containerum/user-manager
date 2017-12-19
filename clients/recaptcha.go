@@ -13,7 +13,7 @@ const reCaptchaAPI = "https://www.google.com/recaptcha/api"
 
 type ReCaptchaClient struct {
 	client     *resty.Client
-	log        *logrus.Logger
+	log        *logrus.Entry
 	privateKey string
 }
 
@@ -25,8 +25,8 @@ type ReCaptchaResponse struct {
 }
 
 func NewReCaptchaClient(privateKey string) *ReCaptchaClient {
-	log := logrus.WithField("component", "recaptcha").Logger
-	client := resty.New().SetLogger(log.Writer()).SetHostURL(reCaptchaAPI)
+	log := logrus.WithField("component", "recaptcha")
+	client := resty.New().SetLogger(log.WriterLevel(logrus.DebugLevel)).SetHostURL(reCaptchaAPI)
 	return &ReCaptchaClient{
 		log:        log,
 		client:     client,
