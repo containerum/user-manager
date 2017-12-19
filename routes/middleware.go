@@ -1,11 +1,7 @@
 package routes
 
 import (
-	"net/http"
-
-	"git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 )
 
 type ReCaptchaRequest struct {
@@ -13,7 +9,7 @@ type ReCaptchaRequest struct {
 }
 
 func reCaptchaMiddleware(ctx *gin.Context) {
-	var request ReCaptchaRequest
+	/*var request ReCaptchaRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -29,5 +25,5 @@ func reCaptchaMiddleware(ctx *gin.Context) {
 
 	if !checkResp.Success {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, utils.Error{Text: "ReCaptcha failed"})
-	}
+	}*/
 }
