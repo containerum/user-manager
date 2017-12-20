@@ -19,11 +19,12 @@ CREATE TABLE accounts
     google TEXT,
     CONSTRAINT accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES users (id)
 );
+CREATE TYPE link_type AS ENUM ('confirm', 'pwd_change', 'delete');
 CREATE TABLE links
 (
     link TEXT PRIMARY KEY NOT NULL,
     user_id UUID,
-    type TEXT,
+    type link_type,
     created_at TIMESTAMP WITHOUT TIME ZONE,
     expired_at TIMESTAMP WITHOUT TIME ZONE,
     is_active BOOLEAN,
