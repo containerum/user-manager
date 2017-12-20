@@ -67,8 +67,8 @@ func (db *DB) CreateUser(user *User) error {
 func (db *DB) UpdateUser(user *User) error {
 	db.log.Debug("Update user", user.Login)
 	_, err := db.eLog.Exec("UPDATE users SET "+
-		"login = '$2', password_hash = '$3', salt = '$4', role = $5, is_active = $5 WHERE id = '$1'",
-		user.ID, user.Login, user.PasswordHash, user.Salt, user.Role, user.IsActive)
+		"login = '$2', password_hash = '$3', salt = '$4', role = $5, is_active = $5, is_deleted = '$6' WHERE id = '$1'",
+		user.ID, user.Login, user.PasswordHash, user.Salt, user.Role, user.IsActive, user.IsDeleted)
 	return err
 }
 
@@ -85,4 +85,20 @@ func (db *DB) GetBlacklistedUsers() ([]User, error) {
 		resp = append(resp, user)
 	}
 	return resp, rows.Err()
+}
+
+func (db *DB) BlacklistUser(user *User) error {
+	db.log.Debug("Blacklisting user", user.Login)
+	return db.Transactional(func(tx *DB) error {
+		_, err := tx.eLog.Exec("UPDATE users SET is_in_blacklist = TRUE WHERE id = '$1'", user.ID)
+		if err != nil {
+			return err
+		}
+		_, err = tx.eLog.Exec("UPDATE profiles SET blacklist_at = NOW() WHERE user_id = '$1'", user.ID)
+		if err != nil {
+			return err
+		}
+		user.IsInBlacklist = true
+		return nil
+	})
 }

@@ -336,15 +336,7 @@ func userToBlacklistHandler(ctx *gin.Context) {
 		return
 	}
 
-	user.IsInBlacklist = true
-	profile.BlacklistAt = time.Now().UTC()
-	err = svc.DB.Transactional(func(tx *models.DB) error {
-		err := tx.UpdateUser(user)
-		if err != nil {
-			return err
-		}
-		return tx.UpdateProfile(profile)
-	})
+	err = svc.DB.BlacklistUser(user)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
