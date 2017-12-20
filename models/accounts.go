@@ -1,47 +1,16 @@
 package models
 
 import (
-	"fmt"
-	"reflect"
-
-	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
 
 type Accounts struct {
-	ID       string `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
-	User     *User  `gorm:"-"`
-	UserID   string `gorm:"type:uuid REFERENCES users(id)"` // to create postgres foreign keys
-	Github   string `account:"github"`
-	Facebook string `account:"facebook"`
-	Google   string `account:"google"`
-}
+	ID       string
+	Github   string
+	Facebook string
+	Google   string
 
-func (a *Accounts) AfterFind(scope *gorm.Scope) (err error) {
-	return scope.DB().Where(User{ID: a.UserID}).First(&a.User).Error
-}
-
-func (a *Accounts) setAccountField(service, accountID string) error {
-	var accountFieldIndex = -1
-
-	accountsType := reflect.TypeOf(a)
-	for i := 0; i < accountsType.NumField(); i++ {
-		curField := accountsType.Field(i)
-		accountTag, ok := curField.Tag.Lookup("account")
-		if !ok {
-			continue
-		}
-		if accountTag == service {
-			accountFieldIndex = i
-		}
-	}
-	if accountFieldIndex == -1 {
-		return fmt.Errorf("invalid service specified")
-	}
-
-	reflect.ValueOf(a).Field(accountFieldIndex).SetString(accountID) // to make query
-
-	return nil
+	User *User
 }
 
 func (db *DB) GetUserByBoundAccount(service, accountID string) (*User, error) {
@@ -50,47 +19,43 @@ func (db *DB) GetUserByBoundAccount(service, accountID string) (*User, error) {
 		"account_id": accountID,
 	}).Debug("Get bound account")
 
-	var accounts Accounts
-	if err := accounts.setAccountField(service, accountID); err != nil {
+	rows, err := db.qLog.Queryx("SELECT (accounts.$1, users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist)"+
+		"FROM accounts JOINS users ON accounts.user_id = users.id WHERE accounts.$1 = '$2'", service, accountID)
+	if err != nil {
 		return nil, err
 	}
-
-	resp := db.conn.Where(accounts).First(&accounts)
-	if resp.RecordNotFound() {
+	if !rows.Next() {
 		return nil, nil
 	}
-	return accounts.User, resp.Error
+
+	rows.Scan(&accountID) // actually should not change, but we have to switch to user fields
+
+	var ret User
+	rows.StructScan(&ret)
+
+	return &ret, rows.Err()
 }
 
 func (db *DB) GetUserBoundAccounts(user *User) (*Accounts, error) {
 	db.log.Debug("Get bound accounts for user", user.Login)
-	var accounts Accounts
-	resp := db.conn.Model(user).Related(&accounts)
-	if resp.RecordNotFound() {
+	rows, err := db.qLog.Queryx("SELECT (id, github, facebook, google) FROM accounts WHERE user_id = '$1'", user.ID)
+	if err != nil {
+		return nil, err
+	}
+	if !rows.Next() {
 		return nil, nil
 	}
-	return &accounts, resp.Error
+
+	var ret Accounts
+	rows.StructScan(&ret)
+	ret.User = user
+
+	return &ret, rows.Err()
 }
 
 func (db *DB) BindAccount(user *User, service, accountID string) error {
 	db.log.Debugf("Bind account %s (%s) for user %s", service, accountID, user.Login)
-
-	var accounts Accounts
-
-	resp := db.conn.Model(user).Related(&accounts)
-	if resp.RecordNotFound() {
-		if err := db.Transactional(func(tx *DB) error {
-			return tx.conn.Create(&accounts).Error
-		}); err != nil {
-			return err
-		}
-	}
-
-	if err := accounts.setAccountField(service, accountID); err != nil {
-		return err
-	}
-
-	return db.Transactional(func(tx *DB) error {
-		return tx.conn.Save(&accounts).Error
-	})
+	_, err := db.eLog.Exec("INSERT INTO accounts (user_id, $2) VALUES ('$1', '$3') ON CONFLICT (user_id) DO UPDATE SET $2 = '$3'",
+		user.ID, service, accountID)
+	return err
 }

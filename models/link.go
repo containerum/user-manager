@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,19 +18,18 @@ const (
 )
 
 type Link struct {
-	Link      string `gorm:"primary_key"`
-	User      *User  `gorm:"-"`
-	UserID    string `gorm:"type:uuid REFERENCES users(id)"`
+	Link      string
 	Type      LinkType
 	CreatedAt time.Time
 	ExpiredAt time.Time
 	IsActive  bool
 	SentAt    time.Time
+
+	User *User
 }
 
-func (l *Link) AfterFind(scope *gorm.Scope) (err error) {
-	return scope.DB().Where(User{ID: l.UserID}).First(&l.User).Error
-}
+const linkQueryColumns = "links.link, links.type, links.created_at, links.expired_at, links.is_active, links.sent_at, " +
+	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist)"
 
 func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) (*Link, error) {
 	now := time.Now().UTC()
@@ -47,41 +45,70 @@ func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) 
 		"user":          user.Login,
 		"creation_time": now.Format(time.ANSIC),
 	}).Debug("Create activation link")
-	return ret, db.conn.Create(ret).Error
+	_, err := db.eLog.Exec("INSERT INTO links (link, type, created_at, expired_at, is_active, user_id) VALUES "+
+		"('$1', '$2', '$3', '$4', '$5', '$6')", ret.Link, ret.Type, ret.CreatedAt, ret.ExpiredAt, ret.IsActive, ret.User.ID)
+	return ret, err
 }
 
 func (db *DB) GetLinkForUser(linkType LinkType, user *User) (*Link, error) {
 	db.log.Debug("Get link", linkType, "for", user.Login)
 	var link Link
-	resp := db.conn.
-		Where("type = ? AND is_active = true AND expires_at > ?", linkType, time.Now().UTC()).
-		Model(user).
-		Related(&link)
-	if resp.RecordNotFound() {
+	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumns+" FROM links "+
+		"JOIN users ON links.user_id = users.id "+
+		"WHERE links.user_id = '$1' AND links.type = '$2' AND links.is_active AND links.expires_at > NOW()", user.ID, linkType)
+	if err != nil {
+		return nil, err
+	}
+	if !rows.Next() {
 		return nil, nil
 	}
-	return &link, resp.Error
+	rows.Scan(&link.Link, &link.Type, &link.CreatedAt, &link.ExpiredAt, &link.IsActive, &link.SentAt)
+	rows.StructScan(link.User)
+
+	return &link, rows.Err()
 }
 
 func (db *DB) GetLinkFromString(strLink string) (*Link, error) {
 	db.log.Debug("Get link", strLink)
 	var link Link
-	resp := db.conn.Where(Link{Link: strLink}).First(&link)
-	if resp.RecordNotFound() {
+	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumns+" FROM links "+
+		"JOIN users ON links.user_id = users.id "+
+		"WHERE link = '$1' AND links.is_active AND links.expires_at > NOW()", strLink)
+	if err != nil {
+		return nil, err
+	}
+	if !rows.Next() {
 		return nil, nil
 	}
-	return &link, resp.Error
+	rows.Scan(&link.Link, &link.Type, &link.CreatedAt, &link.ExpiredAt, &link.IsActive, &link.SentAt)
+	rows.StructScan(link.User)
+
+	return &link, rows.Err()
 }
 
 func (db *DB) UpdateLink(link *Link) error {
 	db.log.Debugf("Update link %#v", link)
-	resp := db.conn.Save(link)
-	return resp.Error
+	_, err := db.eLog.Exec("UPDATE links set type = '$2', expired_at = '$3', is_active = '$4', sent_at = '$5' "+
+		"WHERE link = '$1'", link.Link, link.Type, link.ExpiredAt, link.IsActive, link.SentAt)
+	return err
 }
 
-func (db *DB) GetUserLinks(user *User) ([]*Link, error) {
+func (db *DB) GetUserLinks(user *User) ([]Link, error) {
 	db.log.Debug("Get links for", user.Login)
-	var ret []*Link
-	err := db.conn.Model(Link{}).Find(&ret).Error
-	return ret, err
+	var ret []Link
+	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumns+" FROM links "+
+		"JOIN users ON links.user_id = users.id "+
+		"WHERE links.user_id = '$1' AND links.is_active AND links.expires_at > NOW()", user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var link Link
+		rows.Scan(&link.Link, &link.Type, &link.CreatedAt, &link.ExpiredAt, &link.IsActive, &link.SentAt)
+		rows.StructScan(link.User)
+		ret = append(ret, link)
+	}
+
+	return ret, rows.Err()
 }

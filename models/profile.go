@@ -3,7 +3,6 @@ package models
 import (
 	"time"
 
-	"github.com/jinzhu/gorm"
 	"github.com/json-iterator/go"
 )
 
@@ -19,71 +18,114 @@ type ProfileData struct {
 }
 
 type Profile struct {
-	ID          string `gorm:"type:uuid;primary_key;default:uuid_generate_v4()"` // use UUID v4 as primary key (good support in psql)
-	User        *User  `gorm:"-"`
-	UserID      string `gorm:"type:uuid REFERENCES users(id)"`
+	ID          string
 	Referral    string
 	Access      string
-	Data        ProfileData `gorm:"-"`
-	DataEncoded string      `gorm:"column:data"`
 	CreatedAt   time.Time
 	BlacklistAt time.Time
 	DeletedAt   time.Time
+
+	User *User
+
+	Data ProfileData
 }
 
-func (p *Profile) BeforeSave() (err error) {
-	p.DataEncoded, err = jsoniter.MarshalToString(p.Data)
-	return
-}
-
-func (p *Profile) BeforeUpdate() (err error) {
-	return p.BeforeSave()
-}
-
-func (p *Profile) AfterFind(scope *gorm.Scope) (err error) {
-	if err = scope.DB().Where(User{ID: p.UserID}).First(&p.UserID).Error; err != nil {
-		return
-	}
-	err = jsoniter.UnmarshalFromString(p.DataEncoded, p.Data)
-	return
-}
+const profileQueryColumns = "(profiles.id, profiles.referral, profiles.access, profiles.created_at, profiles.blacklisted_at, profiles.deleted_at, " +
+	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist, profiles.data)"
 
 func (db *DB) CreateProfile(profile *Profile) error {
 	db.log.Debug("Create profile for", profile.User.Login)
-	return db.conn.Create(profile).Error
+	profileData, err := jsoniter.MarshalToString(profile.Data)
+	if err != nil {
+		return err
+	}
+	rows, err := db.qLog.Queryx("INSERT INTO profiles (referral, access, created_at, user_id, data) VALUES "+
+		"('$1', '$2', NOW(), '$3', '$4') RETURNING id, created_at", profile.Referral, profile.Access, profile.User.ID, profileData)
+	if err != nil {
+		return err
+	}
+	if rows.Next() {
+		rows.Scan(&profile.ID)
+	}
+	if rows.Next() {
+		rows.Scan(&profile.CreatedAt)
+	}
+
+	return rows.Err()
 }
 
 func (db *DB) GetProfileByID(id string) (*Profile, error) {
 	db.log.Debug("Get profile by id", id)
 	var profile Profile
-	resp := db.conn.Where(&Profile{ID: id}).First(&profile)
-	if resp.RecordNotFound() {
+	rows, err := db.qLog.Queryx("SELECT "+profileQueryColumns+" FROM profiles "+
+		"JOIN users ON profiles.user_id = user.id WHERE profiles.id = '$1'", id)
+	if err != nil {
+		return nil, err
+	}
+	if !rows.Next() {
 		return nil, nil
 	}
-	return &profile, resp.Error
+	rows.Scan(&profile.ID, &profile.Referral, &profile.Access, &profile.CreatedAt, &profile.BlacklistAt, &profile.DeletedAt)
+	rows.StructScan(profile.User)
+
+	var profileData string
+	rows.Scan(&profileData)
+	if err := jsoniter.UnmarshalFromString(profileData, &profile.Data); err != nil {
+		return nil, err
+	}
+
+	return &profile, rows.Err()
 }
 
 func (db *DB) GetProfileByUser(user *User) (*Profile, error) {
 	db.log.Debugf("Get profile by user %#v", user)
 	var profile Profile
-	resp := db.conn.Model(user).Related(&profile)
-	if resp.RecordNotFound() {
+	rows, err := db.qLog.Queryx("SELECT "+profileQueryColumns+" FROM profiles "+
+		"JOIN users ON profiles.user_id = user.id WHERE profiles.user_id = '$1'", user.ID)
+	if err != nil {
+		return nil, err
+	}
+	if !rows.Next() {
 		return nil, nil
 	}
-	return &profile, resp.Error
+	rows.Scan(&profile.ID, &profile.Referral, &profile.Access, &profile.CreatedAt, &profile.BlacklistAt, &profile.DeletedAt)
+	rows.StructScan(profile.User)
+
+	var profileData string
+	rows.Scan(&profileData)
+	if err := jsoniter.UnmarshalFromString(profileData, &profile.Data); err != nil {
+		return nil, err
+	}
+
+	return &profile, rows.Err()
 }
 
 func (db *DB) UpdateProfile(profile *Profile) error {
 	db.log.Debugf("Update profile %#v", profile)
-	return db.conn.Save(profile).Error
+	_, err := db.eLog.Exec("UPDATE profiles SET referal = '$2', access = '$3', data = '$4 WHERE id = '$1'",
+		profile.ID, profile.Referral, profile.Access, profile.Data)
+	return err
 }
 
-func (db *DB) GetAllProfiles() ([]*Profile, error) {
+func (db *DB) GetAllProfiles() ([]Profile, error) {
 	db.log.Debug("Get all profiles")
-	var ret []*Profile
-	resp := db.conn.Find(&ret)
-	if resp.RecordNotFound() {
-		return nil, nil
+	var profiles []Profile
+	rows, err := db.qLog.Queryx("SELECT " + profileQueryColumns + " FROM profiles JOIN users ON profiles.user_id = user.id")
+	if err != nil {
+		return nil, err
 	}
-	return ret, resp.Error
+	for rows.Next() {
+		var profile Profile
+		rows.Scan(&profile.ID, &profile.Referral, &profile.Access, &profile.CreatedAt, &profile.BlacklistAt, &profile.DeletedAt)
+		rows.StructScan(profile.User)
+
+		var profileData string
+		rows.Scan(&profileData)
+		if err := jsoniter.UnmarshalFromString(profileData, &profile.Data); err != nil {
+			return profiles, err
+		}
+		profiles = append(profiles, profile)
+	}
+
+	return profiles, rows.Err()
 }

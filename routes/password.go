@@ -162,7 +162,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 		return
 	}
 	if link == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "Link " + request.Link + " was not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "Link " + request.Link + " was not found, already used or expired"})
 		return
 	}
 	if link.Type != models.LinkTypePwdChange {

@@ -3,61 +3,79 @@ package models
 import (
 	"time"
 
-	"git.containerum.net/ch/user-manager/utils"
-	"github.com/jinzhu/gorm"
+	chutils "git.containerum.net/ch/user-manager/utils"
 )
 
 type Token struct {
-	Token     string `gorm:"primary_key"`
-	User      *User  `gorm:"-"`
-	UserID    string `gorm:"type:uuid REFERENCES users(id)"`
+	// will be scanned first
+	Token     string
 	CreatedAt time.Time
 	IsActive  bool
-	SessionID string `gorm:"type:uuid"`
+	SessionID string
+
+	// will be scanned second
+	User *User
 }
 
-func (t *Token) AfterFind(scope *gorm.Scope) (err error) {
-	return scope.DB().Where(User{ID: t.UserID}).First(&t.UserID).Error
-}
+const tokenQueryColumns = "(tokens.token, tokens.created_at, tokens.is_active, tokens.session_id, " +
+	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist)"
 
 func (db *DB) GetTokenObject(token string) (*Token, error) {
 	db.log.Debug("Get token object", token)
 	var ret Token
-	resp := db.conn.Where(&Token{Token: token, IsActive: true}).First(&ret)
-	if resp.RecordNotFound() {
+	rows, err := db.qLog.Queryx("SELECT "+tokenQueryColumns+" FROM tokens "+
+		"JOIN users ON tokens.user_id = users.id WHERE token = '$1'", token)
+	if err != nil {
+		return nil, err
+	}
+	if !rows.Next() {
 		return nil, nil
 	}
-	return &ret, resp.Error
+	rows.Scan(&ret.Token, &ret.CreatedAt, &ret.IsActive, &ret.SessionID)
+	rows.StructScan(ret.User)
+	return &ret, rows.Err()
 }
 
 func (db *DB) CreateToken(user *User, sessionID string) (*Token, error) {
 	db.log.Debug("Generate one-time token for", user.Login)
 	ret := &Token{
-		Token:     utils.GenSalt(user.ID, user.Login),
+		Token:     chutils.GenSalt(user.ID, user.Login),
 		User:      user,
-		CreatedAt: time.Now().UTC(),
 		IsActive:  true,
 		SessionID: sessionID,
+		CreatedAt: time.Now().UTC(),
 	}
-	return ret, db.conn.Create(ret).Error
+	_, err := db.eLog.Exec("INSERT INTO tokens (token, user_id, is_active, session_id, created_at) "+
+		"VALUES ('$1', '$2', $3, '$4', $5)", ret.Token, ret.User, ret.IsActive, ret.SessionID, ret.CreatedAt)
+	return ret, err
 }
 
 func (db *DB) GetTokenBySessionID(sessionID string) (*Token, error) {
 	db.log.Debug("Get token by session id ", sessionID)
-	var token Token
-	resp := db.conn.Where(Token{SessionID: sessionID}).First(&token)
-	if resp.RecordNotFound() {
+	var ret Token
+	rows, err := db.qLog.Queryx("SELECT "+tokenQueryColumns+" FROM tokens "+
+		"JOIN users ON tokens.user_id = users.id WHERE session_id = '$1'", sessionID)
+	if err != nil {
+		return nil, err
+	}
+	if !rows.Next() {
 		return nil, nil
 	}
-	return &token, resp.Error
+	rows.Scan(&ret.Token, &ret.CreatedAt, &ret.IsActive, &ret.SessionID)
+	rows.StructScan(ret.User)
+
+	return &ret, rows.Err()
 }
 
 func (db *DB) DeleteToken(token string) error {
 	db.log.Debug("Remove token", token)
-	return db.conn.Where(Token{Token: token}).Delete(&Token{}).Error
+	_, err := db.eLog.Exec("DELETE FROM tokens WHERE token = '$1'", token)
+	return err
 }
 
 func (db *DB) UpdateToken(token *Token) error {
 	db.log.Debug("Update token", token.Token)
-	return db.conn.Save(token).Error
+	_, err := db.eLog.Exec("UPDATE tokens SET is_active = $2, session_id = '$3' WHERE token = '$1'",
+		token.Token, token.IsActive, token.SessionID)
+	return err
 }
