@@ -13,6 +13,8 @@ RUN zip -r -0 /zoneinfo.zip .
 FROM scratch
 # app
 COPY --from=builder /bin/user-manager /
+# migrations
+COPY migrations /migrations
 # timezone data
 ENV ZONEINFO /zoneinfo.zip
 COPY --from=alpine /zoneinfo.zip /

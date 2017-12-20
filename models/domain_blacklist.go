@@ -3,27 +3,29 @@ package models
 import "time"
 
 type DomainBlacklistEntry struct {
-	Domain    string `gorm:"primary_key"`
+	Domain    string
 	CreatedAt time.Time
 }
 
 func (db *DB) BlacklistDomain(domain string) error {
 	db.log.Debug("Blacklisting domain", domain)
-	return db.conn.Create(&DomainBlacklistEntry{Domain: domain, CreatedAt: time.Now().UTC()}).Error
+	_, err := db.eLog.Exec("INSERT INTO domains (domain, created_at) VALUES ('$1', NOW()) ON CONFLICT DO NOTHING",
+		domain)
+	return err
 }
 
 func (db *DB) UnBlacklistDomain(domain string) error {
 	db.log.Debug("UnBlacklisting domain", domain)
-	return db.conn.Delete(&DomainBlacklistEntry{Domain: domain}).Error
+	_, err := db.eLog.Exec("DELETE FROM domains WHERE domain = '$1'", domain)
+	return err
 }
 
 func (db *DB) IsInBlacklist(domain string) (bool, error) {
 	db.log.Debugf("Checking if domain %s in blacklist", domain)
-	resp := db.conn.Where(&DomainBlacklistEntry{Domain: domain}).First(&Profile{})
-	if resp.RecordNotFound() {
-		return false, nil
-	} else if resp.Error != nil {
-		return false, resp.Error
+	rows, err := db.qLog.Queryx("SELECT * FROM domains WHERE domain = '$1'", domain)
+	if err != nil {
+		return false, err
 	}
-	return true, nil
+	// returns true if we have rows in result => domain blacklisted
+	return rows.Next(), err
 }

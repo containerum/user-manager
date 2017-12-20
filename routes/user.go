@@ -58,7 +58,7 @@ type BlacklistGetResponse struct {
 }
 
 type LinksGetResponse struct {
-	Links []*models.Link `json:"links"`
+	Links []models.Link `json:"links"`
 }
 
 type UserInfoGetResponse struct {
@@ -260,7 +260,7 @@ func activateHandler(ctx *gin.Context) {
 	}
 	if link == nil {
 		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{
-			Text: "link " + request.Link + " not found",
+			Text: "link " + request.Link + " not found, already used or expired",
 		})
 		return
 	}
@@ -336,15 +336,7 @@ func userToBlacklistHandler(ctx *gin.Context) {
 		return
 	}
 
-	user.IsInBlacklist = true
-	profile.BlacklistAt = time.Now().UTC()
-	err = svc.DB.Transactional(func(tx *models.DB) error {
-		err := tx.UpdateUser(user)
-		if err != nil {
-			return err
-		}
-		return tx.UpdateProfile(profile)
-	})
+	err = svc.DB.BlacklistUser(user)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -480,29 +472,29 @@ func userListGetHandler(ctx *gin.Context) {
 	}
 
 	filters := strings.Split(ctx.Query("filters"), ",")
-	var filterFuncs []func(p *models.Profile) bool
+	var filterFuncs []func(p models.Profile) bool
 	for _, filter := range filters {
 		switch filter {
 		case "active":
-			filterFuncs = append(filterFuncs, func(p *models.Profile) bool {
+			filterFuncs = append(filterFuncs, func(p models.Profile) bool {
 				return p.User.IsActive
 			})
 		case "inactive":
-			filterFuncs = append(filterFuncs, func(p *models.Profile) bool {
+			filterFuncs = append(filterFuncs, func(p models.Profile) bool {
 				return !p.User.IsActive
 			})
 		case "in_blacklist":
-			filterFuncs = append(filterFuncs, func(p *models.Profile) bool {
+			filterFuncs = append(filterFuncs, func(p models.Profile) bool {
 				return p.User.IsInBlacklist
 			})
 		case "deleted":
-			filterFuncs = append(filterFuncs, func(p *models.Profile) bool {
+			filterFuncs = append(filterFuncs, func(p models.Profile) bool {
 				return p.User.IsDeleted
 			})
 		}
 	}
 
-	satisfiesFilter := func(p *models.Profile) bool {
+	satisfiesFilter := func(p models.Profile) bool {
 		ret := true
 		for _, v := range filterFuncs {
 			ret = ret && v(p)
