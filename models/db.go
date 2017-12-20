@@ -4,6 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"fmt"
+
 	chutils "git.containerum.net/ch/utils"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -68,13 +70,13 @@ func (db *DB) migrateUp(path string) (*migrate.Migrate, error) {
 	return m, nil
 }
 
-func (db *DB) Transactional(f func(tx *DB) error) error {
+func (db *DB) Transactional(f func(tx *DB) error) (err error) {
 	start := time.Now().Format(time.ANSIC)
 	e := db.log.WithField("transaction_at", start)
 	e.Debug("Begin transaction")
-	tx, err := db.conn.Beginx()
-	if err != nil {
-		e.WithError(err).Error("Begin transaction error")
+	tx, txErr := db.conn.Beginx()
+	if txErr != nil {
+		e.WithError(txErr).Error("Begin transaction error")
 		return ErrTransactionBegin
 	}
 
@@ -84,21 +86,32 @@ func (db *DB) Transactional(f func(tx *DB) error) error {
 		eLog: chutils.NewSQLXExecLogger(tx, e),
 		qLog: chutils.NewSQLXQueryLogger(tx, e),
 	}
-	if err := f(arg); err != nil {
-		e.WithError(err).Debug("Rollback transaction")
-		if rerr := tx.Rollback(); rerr != nil {
-			e.WithError(rerr).Error("Rollback error")
-			return ErrTransactionRollback
-		}
-		return err
-	}
 
-	e.Debug("Commit transaction")
-	if cerr := tx.Commit(); cerr != nil {
-		e.WithError(cerr).Error("Commit error")
-		return ErrTransactionCommit
-	}
-	return nil
+	// needed for recovering panics in transactions.
+	defer func(dberr error) {
+		// if panic recovered, try to rollback transaction
+		if panicErr := recover(); panicErr != nil {
+			dberr = fmt.Errorf("panic in transaction: %v", panicErr)
+		}
+
+		if dberr != nil {
+			e.WithError(dberr).Debug("Rollback transaction")
+			if rerr := tx.Rollback(); rerr != nil {
+				e.WithError(rerr).Error("Rollback error")
+				err = ErrTransactionRollback
+			}
+			err = dberr // forward error with panic description
+			return
+		}
+
+		e.Debug("Commit transaction")
+		if cerr := tx.Commit(); cerr != nil {
+			e.WithError(cerr).Error("Commit error")
+			err = ErrTransactionCommit
+		}
+	}(f(arg))
+
+	return
 }
 
 func (db *DB) Close() error {
