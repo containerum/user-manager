@@ -1,5 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE TABLE users
+CREATE TABLE IF NOT EXISTS users
 (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
     login TEXT,
@@ -10,7 +10,7 @@ CREATE TABLE users
     is_deleted BOOLEAN DEFAULT FALSE,
     is_in_blacklist BOOLEAN DEFAULT FALSE
 );
-CREATE TABLE accounts
+CREATE TABLE IF NOT EXISTS accounts
 (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
     user_id UUID,
@@ -20,7 +20,7 @@ CREATE TABLE accounts
     CONSTRAINT accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES users (id)
 );
 CREATE TYPE link_type AS ENUM ('confirm', 'pwd_change', 'delete');
-CREATE TABLE links
+CREATE TABLE IF NOT EXISTS links
 (
     link TEXT PRIMARY KEY NOT NULL,
     user_id UUID,
@@ -31,7 +31,7 @@ CREATE TABLE links
     sent_at TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT links_user_id_fkey FOREIGN KEY (user_id) REFERENCES users (id)
 );
-CREATE TABLE profiles
+CREATE TABLE IF NOT EXISTS profiles
 (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY NOT NULL,
     user_id UUID,
@@ -43,7 +43,7 @@ CREATE TABLE profiles
     deleted_at TIMESTAMP WITHOUT TIME ZONE,
     CONSTRAINT profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES users (id)
 );
-CREATE TABLE tokens
+CREATE TABLE IF NOT EXISTS tokens
 (
     token TEXT PRIMARY KEY NOT NULL,
     user_id UUID,
