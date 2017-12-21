@@ -54,6 +54,8 @@ spec:
           value: '${CH_USER_AUTH_GRPC_ADDR}'
         - name: CH_USER_LISTEN_ADDR
           value: '${CH_USER_LISTEN_ADDR}'
+        - name: CH_USER_WEB_API_URL
+          value: '${CH_USER_WEB_API_URL}'
       nodeSelector:
         role: master
       imagePullSecrets:
