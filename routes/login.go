@@ -71,7 +71,7 @@ func basicLoginHandler(ctx *gin.Context) {
 			}
 		}
 
-		if tdiff := time.Now().UTC().Sub(link.SentAt); tdiff < 5*time.Minute {
+		if tdiff := time.Now().UTC().Sub(link.SentAt.Time); link.SentAt.Valid && tdiff < 5*time.Minute {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{
 				Text: fmt.Sprintf("can`t resend link, wait %f seconds", tdiff.Seconds()),
 			})

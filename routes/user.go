@@ -169,7 +169,8 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 	err = svc.DB.Transactional(func(tx *models.DB) error {
-		link.SentAt = time.Now().UTC()
+		link.SentAt.Time = time.Now().UTC()
+		link.SentAt.Valid = true
 		return tx.UpdateLink(link)
 	})
 
@@ -220,7 +221,7 @@ func linkResendHandler(ctx *gin.Context) {
 		}
 	}
 
-	if tdiff := time.Now().UTC().Sub(link.SentAt); tdiff < 5*time.Minute {
+	if tdiff := time.Now().UTC().Sub(link.SentAt.Time); link.SentAt.Valid && tdiff < 5*time.Minute {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{
 			Text: fmt.Sprintf("can`t resend link, wait %f seconds", tdiff.Seconds()),
 		})
@@ -239,7 +240,8 @@ func linkResendHandler(ctx *gin.Context) {
 		return
 	}
 	err = svc.DB.Transactional(func(tx *models.DB) error {
-		link.SentAt = time.Now().UTC()
+		link.SentAt.Time = time.Now().UTC()
+		link.SentAt.Valid = true
 		return tx.UpdateLink(link)
 	})
 }
@@ -514,8 +516,8 @@ func userListGetHandler(ctx *gin.Context) {
 			Role:          v.User.Role,
 			Access:        v.Access,
 			CreatedAt:     v.CreatedAt,
-			DeletedAt:     v.DeletedAt,
-			BlacklistedAt: v.BlacklistAt,
+			DeletedAt:     v.DeletedAt.Time,
+			BlacklistedAt: v.BlacklistAt.Time,
 			Data:          v.Data,
 			IsActive:      v.User.IsActive,
 			IsInBlacklist: v.User.IsInBlacklist,

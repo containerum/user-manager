@@ -28,10 +28,8 @@ func (db *DB) GetUserByBoundAccount(service, accountID string) (*User, error) {
 		return nil, nil
 	}
 
-	rows.Scan(&accountID) // actually should not change, but we have to switch to user fields
-
 	var ret User
-	rows.StructScan(&ret)
+	rows.Scan(&accountID, &ret.ID, &ret.Login, &ret.PasswordHash, &ret.Salt, &ret.Role, &ret.IsActive, &ret.IsDeleted, &ret.IsInBlacklist)
 
 	return &ret, rows.Err()
 }
@@ -46,9 +44,8 @@ func (db *DB) GetUserBoundAccounts(user *User) (*Accounts, error) {
 		return nil, nil
 	}
 
-	var ret Accounts
-	rows.StructScan(&ret)
-	ret.User = user
+	ret := Accounts{User: user}
+	rows.Scan(&ret.ID, &ret.Github, &ret.Facebook, &ret.Google)
 
 	return &ret, rows.Err()
 }
