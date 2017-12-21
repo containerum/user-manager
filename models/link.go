@@ -30,7 +30,7 @@ type Link struct {
 }
 
 const linkQueryColumnsWithUser = "links.link, links.type, links.created_at, links.expired_at, links.is_active, links.sent_at, " +
-	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist)"
+	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist"
 const linkQueryColumns = "link, type, created_at, expired_at, is_active, sent_at"
 
 func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) (*Link, error) {
