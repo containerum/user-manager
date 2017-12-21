@@ -23,7 +23,7 @@ import (
 type UserCreateRequest struct {
 	UserName  string `json:"username" binding:"required,email"`
 	Password  string `json:"password" binding:"required"`
-	Referral  string `json:"referral" binding:"required"`
+	Referral  string `json:"referral" binding:"url"`
 	ReCaptcha string `json:"recaptcha" binding:"required"`
 }
 
@@ -83,7 +83,7 @@ type UserListEntry struct {
 }
 
 type UserListGetResponse struct {
-	Users []*UserListEntry `json:"users"`
+	Users []UserListEntry `json:"users"`
 }
 
 const (
@@ -509,7 +509,7 @@ func userListGetHandler(ctx *gin.Context) {
 		if !satisfiesFilter(v) {
 			continue
 		}
-		resp.Users = append(resp.Users, &UserListEntry{
+		resp.Users = append(resp.Users, UserListEntry{
 			ID:            v.User.ID,
 			Login:         v.User.Login,
 			Referral:      v.Referral,
