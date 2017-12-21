@@ -55,7 +55,7 @@ func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) 
 func (db *DB) GetLinkForUser(linkType LinkType, user *User) (*Link, error) {
 	db.log.Debugln("Get link", linkType, "for", user.Login)
 	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumns+" FROM links "+
-		"WHERE user_id = $1 AND type = $2 AND is_active AND expires_at > NOW()", user.ID, linkType)
+		"WHERE user_id = $1 AND type = $2 AND is_active AND expired_at > NOW()", user.ID, linkType)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (db *DB) GetLinkFromString(strLink string) (*Link, error) {
 	var link Link
 	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumnsWithUser+" FROM links "+
 		"JOIN users ON links.user_id = users.id "+
-		"WHERE link = $1 AND links.is_active AND links.expires_at > NOW()", strLink)
+		"WHERE link = $1 AND links.is_active AND links.expired_at > NOW()", strLink)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (db *DB) GetUserLinks(user *User) ([]Link, error) {
 	db.log.Debugln("Get links for", user.Login)
 	var ret []Link
 	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumns+" FROM links "+
-		"WHERE user_id = $1 AND is_active AND expires_at > NOW()", user.ID)
+		"WHERE user_id = $1 AND is_active AND expired_at > NOW()", user.ID)
 	if err != nil {
 		return nil, err
 	}

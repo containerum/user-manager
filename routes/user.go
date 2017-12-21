@@ -106,7 +106,7 @@ func userCreateHandler(ctx *gin.Context) {
 	}
 
 	domain := strings.Split(request.UserName, "@")[1]
-	blacklisted, err := svc.DB.IsInBlacklist(domain)
+	blacklisted, err := svc.DB.IsDomainBlacklisted(domain)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
