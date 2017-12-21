@@ -15,7 +15,7 @@ import (
 )
 
 type BasicLoginRequest struct {
-	Login     string `json:"login" binding:"required;email"`
+	Login     string `json:"login" binding:"required,email"`
 	Password  string `json:"password" binding:"required"`
 	ReCaptcha string `json:"recaptcha" binding:"required"`
 }

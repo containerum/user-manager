@@ -21,7 +21,7 @@ import (
 )
 
 type UserCreateRequest struct {
-	UserName  string `json:"username" binding:"required;email"`
+	UserName  string `json:"username" binding:"required,email"`
 	Password  string `json:"password" binding:"required"`
 	Referral  string `json:"referral" binding:"required"`
 	ReCaptcha string `json:"recaptcha" binding:"required"`
@@ -38,7 +38,7 @@ type ActivateRequest struct {
 }
 
 type ResendLinkRequest struct {
-	UserName string `json:"username" binding:"required;email"`
+	UserName string `json:"username" binding:"required,email"`
 }
 
 type UserInfoByIDGetResponse struct {
