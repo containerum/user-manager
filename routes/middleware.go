@@ -8,6 +8,10 @@ type ReCaptchaRequest struct {
 	ReCaptcha string `json:"recaptcha" binding:"required"`
 }
 
+const (
+	reCaptchaFailed = "reCaptcha failed"
+)
+
 func reCaptchaMiddleware(ctx *gin.Context) {
 	/*var request ReCaptchaRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -24,6 +28,6 @@ func reCaptchaMiddleware(ctx *gin.Context) {
 	}
 
 	if !checkResp.Success {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, utils.Error{Text: "ReCaptcha failed"})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewError(reCaptchaFailed))
 	}*/
 }

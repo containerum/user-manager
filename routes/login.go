@@ -3,7 +3,6 @@ package routes
 import (
 	"net/http"
 
-	"fmt"
 	"time"
 
 	"git.containerum.net/ch/grpc-proto-files/auth"
@@ -31,11 +30,16 @@ type OAuthLoginRequest struct {
 	AccessToken string                `json:"access_token" binding:"required"`
 }
 
+const (
+	oneTimeTokenNotFound = "one-time token %s not exists or already used"
+	resourceNotSupported = "resource %s not supported now"
+)
+
 func basicLoginHandler(ctx *gin.Context) {
 	var request BasicLoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
 	}
 
@@ -46,11 +50,11 @@ func basicLoginHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "user " + request.Login + " not exists"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userNotFound, request.Login))
 		return
 	}
 	if user.IsInBlacklist {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user " + user.Login + " banned"})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(userBanned, request.Login))
 		return
 	}
 
@@ -72,9 +76,7 @@ func basicLoginHandler(ctx *gin.Context) {
 		}
 
 		if tdiff := time.Now().UTC().Sub(link.SentAt.Time); link.SentAt.Valid && tdiff < 5*time.Minute {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{
-				Text: fmt.Sprintf("can`t resend link, wait %f seconds", tdiff.Seconds()),
-			})
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewErrorF(waitForResend, int(tdiff.Seconds())))
 			return
 		}
 
@@ -119,7 +121,7 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 	var request OneTimeTokenLoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
 	}
 
@@ -130,11 +132,11 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 		return
 	}
 	if token == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "one-time " + request.Token + " not exists or invalid"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(oneTimeTokenNotFound, request.Token))
 		return
 	}
 	if token.User.IsInBlacklist {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user " + token.User.Login + " banned"})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(userBanned, token.User.Login))
 		return
 	}
 
@@ -179,13 +181,13 @@ func oauthLoginHandler(ctx *gin.Context) {
 	var request OAuthLoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
 	}
 
 	resource, exist := clients.OAuthClientByResource(request.Resource)
 	if !exist {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: "Resource " + string(request.Resource) + " not supported"})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewErrorF(resourceNotSupported, request.Resource))
 		return
 	}
 
@@ -203,11 +205,11 @@ func oauthLoginHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "user " + info.Email + " not exists"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userNotFound, info.Email))
 		return
 	}
 	if user.IsInBlacklist {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user " + user.Login + " banned"})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(userBanned, user.Login))
 		return
 	}
 
@@ -252,14 +254,14 @@ func webAPILoginHandler(ctx *gin.Context) {
 	var request clients.WebAPILoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
 	}
 
 	resp, code, err := svc.WebAPIClient.Login(&request)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(code, chutils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(code, chutils.NewError(err.Error()))
 		return
 	}
 
