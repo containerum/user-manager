@@ -6,25 +6,31 @@ import (
 	"git.containerum.net/ch/auth/storages"
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
-	"git.containerum.net/ch/utils"
+	chutils "git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	tokenNotOwnedByUser = "token %s not owned by user %s"
 )
 
 func logoutHandler(ctx *gin.Context) {
 	tokenID := ctx.Param("token_id")
+	userID := ctx.GetHeader("X-User-ID")
 	_, err := svc.AuthClient.DeleteToken(ctx, &auth.DeleteTokenRequest{
 		TokenId: &common.UUID{Value: tokenID},
-		UserId:  &common.UUID{Value: ctx.GetHeader("X-User-ID")},
+		UserId:  &common.UUID{Value: userID},
 	})
+
 	switch err {
 	case nil:
 	case storages.ErrTokenNotOwnedBySender:
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusForbidden, utils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewError(err.Error()))
 		return
 	case storages.ErrInvalidToken:
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, utils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
 	default:
 		ctx.Error(err)
@@ -39,8 +45,8 @@ func logoutHandler(ctx *gin.Context) {
 		return
 	}
 	if oneTimeToken != nil {
-		if oneTimeToken.User.ID != ctx.GetHeader("X-User-ID") {
-			ctx.AbortWithStatusJSON(http.StatusForbidden, utils.Error{Text: "token not belongs to user"})
+		if oneTimeToken.User.ID != userID {
+			ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(tokenNotOwnedByUser, oneTimeToken.Token, userID))
 			return
 		}
 		if err := svc.DB.DeleteToken(oneTimeToken.Token); err != nil {

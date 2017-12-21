@@ -12,7 +12,6 @@ import (
 	"git.containerum.net/ch/user-manager/utils"
 	chutils "git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 )
 
 type PasswordChangeRequest struct {
@@ -25,12 +24,18 @@ type PasswordRestoreRequest struct {
 	NewPassword string `json:"new_password" binding:"required"`
 }
 
+const (
+	invalidPassword    = "invalid password provided"
+	linkNotForPassword = "link %s is not for password changing"
+	userBanned         = "user %s banned"
+)
+
 func passwordChangeHandler(ctx *gin.Context) {
 	userID := ctx.GetHeader("X-User-ID")
 	var request PasswordChangeRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
 	}
 
@@ -41,12 +46,12 @@ func passwordChangeHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
 		return
 	}
 
 	if !utils.CheckPassword(request.CurrentPassword, user.Salt, user.PasswordHash) {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "invalid password provided"})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewError(invalidPassword))
 		return
 	}
 
@@ -102,9 +107,9 @@ func passwordChangeHandler(ctx *gin.Context) {
 func passwordResetHandler(ctx *gin.Context) {
 	userID := ctx.GetHeader("X-User-ID")
 	var request PasswordChangeRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
 	}
 
@@ -115,11 +120,11 @@ func passwordResetHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "user with id " + userID + " was not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
 		return
 	}
 	if user.IsInBlacklist {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user " + user.Login + " banned"})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(userBanned, user.Login))
 		return
 	}
 
@@ -149,9 +154,9 @@ func passwordResetHandler(ctx *gin.Context) {
 
 func passwordRestoreHandler(ctx *gin.Context) {
 	var request PasswordRestoreRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
 	}
 
@@ -162,11 +167,11 @@ func passwordRestoreHandler(ctx *gin.Context) {
 		return
 	}
 	if link == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "Link " + request.Link + " was not found, already used or expired"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(linkNotFound, request.Link))
 		return
 	}
 	if link.Type != models.LinkTypePwdChange {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "Link " + request.Link + " is not for password changing"})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(linkNotForPassword, request.Link))
 		return
 	}
 

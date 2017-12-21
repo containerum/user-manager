@@ -33,8 +33,6 @@ import (
 var (
 	// m is a map from name to balancer builder.
 	m = make(map[string]Builder)
-	// defaultBuilder is the default balancer to use.
-	defaultBuilder Builder // TODO(bar) install pickfirst as default.
 )
 
 // Register registers the balancer builder to the balancer map.
@@ -44,13 +42,12 @@ func Register(b Builder) {
 }
 
 // Get returns the resolver builder registered with the given name.
-// If no builder is register with the name, the default pickfirst will
-// be used.
+// If no builder is register with the name, nil will be returned.
 func Get(name string) Builder {
 	if b, ok := m[name]; ok {
 		return b
 	}
-	return defaultBuilder
+	return nil
 }
 
 // SubConn represents a gRPC sub connection.
@@ -161,7 +158,7 @@ type Picker interface {
 	// If a SubConn is returned:
 	// - If it is READY, gRPC will send the RPC on it;
 	// - If it is not ready, or becomes not ready after it's returned, gRPC will block
-	//   this call until a new picker is updated and will call pick on the new picker.
+	//   until UpdateBalancerState() is called and will call pick on the new picker.
 	//
 	// If the returned error is not nil:
 	// - If the error is ErrNoSubConnAvailable, gRPC will block until UpdateBalancerState()
@@ -182,6 +179,10 @@ type Picker interface {
 // the connectivity states.
 //
 // It also generates and updates the Picker used by gRPC to pick SubConns for RPCs.
+//
+// HandleSubConnectionStateChange, HandleResolvedAddrs and Close are guaranteed
+// to be called synchronously from the same goroutine.
+// There's no guarantee on picker.Pick, it may be called anytime.
 type Balancer interface {
 	// HandleSubConnStateChange is called by gRPC when the connectivity state
 	// of sc has changed.
@@ -196,6 +197,7 @@ type Balancer interface {
 	// An empty address slice and a non-nil error will be passed if the resolver returns
 	// non-nil error to gRPC.
 	HandleResolvedAddrs([]resolver.Address, error)
-	// Close closes the balancer.
+	// Close closes the balancer. The balancer is not required to call
+	// ClientConn.RemoveSubConn for its existing SubConns.
 	Close()
 }

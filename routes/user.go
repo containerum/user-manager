@@ -7,8 +7,6 @@ import (
 
 	"strings"
 
-	"fmt"
-
 	"math/rand"
 	"strconv"
 
@@ -23,7 +21,7 @@ import (
 )
 
 type UserCreateRequest struct {
-	UserName  string `json:"username" binding:"required;email"`
+	UserName  string `json:"username" binding:"required,email"`
 	Password  string `json:"password" binding:"required"`
 	Referral  string `json:"referral" binding:"required"`
 	ReCaptcha string `json:"recaptcha" binding:"required"`
@@ -40,7 +38,7 @@ type ActivateRequest struct {
 }
 
 type ResendLinkRequest struct {
-	UserName string `json:"username" binding:"required;email"`
+	UserName string `json:"username" binding:"required,email"`
 }
 
 type UserInfoByIDGetResponse struct {
@@ -88,22 +86,34 @@ type UserListGetResponse struct {
 	Users []*UserListEntry `json:"users"`
 }
 
+const (
+	userNotFound            = "user %s was not found"
+	userWithIDNotFound      = "user with id %s was not found"
+	userAlreadyExists       = "user %s is already registered"
+	userNotPartiallyDeleted = "user %s is not partially deleted"
+	domainInBlacklist       = "email domain %s is in blacklist"
+	linkNotFound            = "link %s was not found or already used or expired"
+	profilesNotFound        = "profiles not found"
+	waitForResend           = "can`t resend link now, please wait %d seconds"
+)
+
 func userCreateHandler(ctx *gin.Context) {
 	var request UserCreateRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
 	}
 
-	blacklisted, err := svc.DB.IsInBlacklist(strings.Split(request.UserName, "@")[1])
+	domain := strings.Split(request.UserName, "@")[1]
+	blacklisted, err := svc.DB.IsInBlacklist(domain)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	if blacklisted {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.Error{Text: "user in blacklist"})
+		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(domainInBlacklist, request.UserName))
 		return
 	}
 
@@ -114,7 +124,7 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 	if user != nil {
-		ctx.AbortWithStatusJSON(http.StatusConflict, chutils.Error{Text: "user already exists"})
+		ctx.AbortWithStatusJSON(http.StatusConflict, chutils.NewErrorF(userAlreadyExists, request.UserName))
 		return
 	}
 
@@ -169,7 +179,8 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 	err = svc.DB.Transactional(func(tx *models.DB) error {
-		link.SentAt = time.Now().UTC()
+		link.SentAt.Time = time.Now().UTC()
+		link.SentAt.Valid = true
 		return tx.UpdateLink(link)
 	})
 
@@ -188,9 +199,9 @@ func userCreateHandler(ctx *gin.Context) {
 
 func linkResendHandler(ctx *gin.Context) {
 	var request ResendLinkRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
 	}
 
@@ -201,7 +212,7 @@ func linkResendHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "user " + request.UserName + " not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userNotFound, user.Login))
 		return
 	}
 
@@ -220,10 +231,8 @@ func linkResendHandler(ctx *gin.Context) {
 		}
 	}
 
-	if tdiff := time.Now().UTC().Sub(link.SentAt); tdiff < 5*time.Minute {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{
-			Text: fmt.Sprintf("can`t resend link, wait %f seconds", tdiff.Seconds()),
-		})
+	if tdiff := time.Now().UTC().Sub(link.SentAt.Time); link.SentAt.Valid && tdiff < 5*time.Minute {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewErrorF(waitForResend, int(tdiff.Seconds())))
 		return
 	}
 
@@ -239,16 +248,17 @@ func linkResendHandler(ctx *gin.Context) {
 		return
 	}
 	err = svc.DB.Transactional(func(tx *models.DB) error {
-		link.SentAt = time.Now().UTC()
+		link.SentAt.Time = time.Now().UTC()
+		link.SentAt.Valid = true
 		return tx.UpdateLink(link)
 	})
 }
 
 func activateHandler(ctx *gin.Context) {
 	var request ActivateRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
 	}
 
@@ -259,15 +269,7 @@ func activateHandler(ctx *gin.Context) {
 		return
 	}
 	if link == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{
-			Text: "link " + request.Link + " not found, already used or expired",
-		})
-		return
-	}
-	if !link.IsActive || time.Now().UTC().After(link.ExpiredAt) {
-		ctx.AbortWithStatusJSON(http.StatusGone, chutils.Error{
-			Text: "link " + request.Link + " expired",
-		})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(linkNotFound, request.Link))
 		return
 	}
 
@@ -312,7 +314,7 @@ func userToBlacklistHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
 		return
 	}
 
@@ -373,7 +375,7 @@ func linksGetHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
 	}
 
 	links, err := svc.DB.GetUserLinks(user)
@@ -395,7 +397,7 @@ func userInfoGetHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
 		return
 	}
 
@@ -424,7 +426,7 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
 		return
 	}
 
@@ -437,7 +439,7 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindWith(&profile.Data, binding.JSON); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: err.Error()})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
 	}
 
@@ -467,7 +469,7 @@ func userListGetHandler(ctx *gin.Context) {
 		return
 	}
 	if profiles == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "Profiles not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewError(profilesNotFound))
 		return
 	}
 
@@ -514,8 +516,8 @@ func userListGetHandler(ctx *gin.Context) {
 			Role:          v.User.Role,
 			Access:        v.Access,
 			CreatedAt:     v.CreatedAt,
-			DeletedAt:     v.DeletedAt,
-			BlacklistedAt: v.BlacklistAt,
+			DeletedAt:     v.DeletedAt.Time,
+			BlacklistedAt: v.BlacklistAt.Time,
 			Data:          v.Data,
 			IsActive:      v.User.IsActive,
 			IsInBlacklist: v.User.IsInBlacklist,
@@ -534,7 +536,7 @@ func partialDeleteHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
 		return
 	}
 
@@ -571,12 +573,12 @@ func completeDeleteHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.Error{Text: "User with id " + userID + " was not found"})
+		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
 		return
 	}
 
 	if !user.IsDeleted {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.Error{Text: "User " + user.Login + " is not partially deleted"})
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewErrorF(userNotPartiallyDeleted, user.Login))
 		return
 	}
 

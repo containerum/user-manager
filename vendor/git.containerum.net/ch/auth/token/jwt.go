@@ -29,14 +29,14 @@ type JWTIssuerValidatorConfig struct {
 
 type JWTIssuerValidator struct {
 	config JWTIssuerValidatorConfig
-	logger *logrus.Logger
+	logger *logrus.Entry
 }
 
 func NewJWTIssuerValidator(config JWTIssuerValidatorConfig) *JWTIssuerValidator {
 	logrus.WithField("config", config).Info("Initialized JWTIssuerValidator")
 	return &JWTIssuerValidator{
 		config: config,
-		logger: logrus.WithField("component", "JWTIssuerValidator").Logger,
+		logger: logrus.WithField("component", "JWTIssuerValidator"),
 	}
 }
 
