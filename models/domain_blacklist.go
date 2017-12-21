@@ -8,14 +8,14 @@ type DomainBlacklistEntry struct {
 }
 
 func (db *DB) BlacklistDomain(domain string) error {
-	db.log.Debug("Blacklisting domain", domain)
+	db.log.Debugln("Blacklisting domain", domain)
 	_, err := db.eLog.Exec("INSERT INTO domains (domain) VALUES ($1) ON CONFLICT DO NOTHING",
 		domain)
 	return err
 }
 
 func (db *DB) UnBlacklistDomain(domain string) error {
-	db.log.Debug("UnBlacklisting domain", domain)
+	db.log.Debugln("UnBlacklisting domain", domain)
 	_, err := db.eLog.Exec("DELETE FROM domains WHERE domain = $1", domain)
 	return err
 }

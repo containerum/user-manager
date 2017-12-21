@@ -65,7 +65,7 @@ func (gh *GithubOAuthClient) GetResource() OAuthResource {
 }
 
 func (gh *GithubOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInfo, err error) {
-	gh.log.WithField("token", accessToken).Info("Get GitHub user info")
+	gh.log.WithField("token", accessToken).Infoln("Get GitHub user info")
 	ctx := context.Background()
 	ts := gh.oAuthConfig.TokenSource(ctx, &oauth2.Token{AccessToken: accessToken})
 	tc := oauth2.NewClient(ctx, ts)
@@ -74,7 +74,7 @@ func (gh *GithubOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInf
 
 	user, resp, err := client.Users.Get(ctx, "")
 	if err != nil {
-		gh.log.WithError(err).Error("Request error")
+		gh.log.WithError(err).Errorln("Request error")
 		return nil, err
 	}
 	if resp.StatusCode >= 400 {
@@ -110,20 +110,20 @@ func (gc *GoogleOAuthClient) GetResource() OAuthResource {
 }
 
 func (gc *GoogleOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInfo, err error) {
-	gc.log.WithField("token", accessToken).Info("Get Google user info")
+	gc.log.WithField("token", accessToken).Infoln("Get Google user info")
 	ctx := context.Background()
 	ts := gc.oAuthConfig.TokenSource(ctx, &oauth2.Token{AccessToken: accessToken})
 	tc := oauth2.NewClient(ctx, ts)
 
 	client, err := google.New(tc)
 	if err != nil {
-		gc.log.WithError(err).Error("Client create failed")
+		gc.log.WithError(err).Errorln("Client create failed")
 		return nil, err
 	}
 
 	googleInfo, err := google.NewUserinfoV2MeService(client).Get().Do()
 	if err != nil {
-		gc.log.WithError(err).Error("Fetch user info failed")
+		gc.log.WithError(err).Errorln("Fetch user info failed")
 		return nil, err
 	}
 
@@ -150,7 +150,7 @@ func (fb *FacebookOAuthClient) GetResource() OAuthResource {
 }
 
 func (fb *FacebookOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInfo, err error) {
-	fb.log.WithField("token", accessToken).Info("Get Facebook user info")
+	fb.log.WithField("token", accessToken).Infoln("Get Facebook user info")
 
 	session := fb.app.Session(accessToken)
 
@@ -159,7 +159,7 @@ func (fb *FacebookOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserI
 		"fields":       "id,email",
 	})
 	if err != nil {
-		fb.log.WithError(err).Error("Fetch user info failed")
+		fb.log.WithError(err).Errorln("Fetch user info failed")
 		return nil, err
 	}
 

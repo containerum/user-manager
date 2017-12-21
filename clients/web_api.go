@@ -36,17 +36,17 @@ func NewWebAPIClient(serverUrl string) *WebAPIClient {
 
 // returns raw answer from web-api
 func (c *WebAPIClient) Login(request *WebAPILoginRequest) (ret map[string]interface{}, statusCode int, err error) {
-	c.log.WithField("login", request.Login).Info("Signing in through web-api")
+	c.log.WithField("login", request.Login).Infoln("Signing in through web-api")
 	ret = make(map[string]interface{})
 
 	resp, err := c.client.R().SetBody(request).SetError(WebAPIError{}).SetResult(ret).Post("/api/login")
 	if err != nil {
-		c.log.WithError(err).Error("Sign in through web-api request failed")
+		c.log.WithError(err).Errorln("Sign in through web-api request failed")
 		return nil, http.StatusInternalServerError, err
 	}
 	if resp.StatusCode() > 399 {
 		msg := resp.Error().(*WebAPIError)
-		c.log.WithField("message", msg.Message).Info("Sign in through web-api failed")
+		c.log.WithField("message", msg.Message).Infoln("Sign in through web-api failed")
 		return nil, resp.StatusCode(), msg
 	}
 
