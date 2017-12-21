@@ -23,7 +23,7 @@ import (
 type UserCreateRequest struct {
 	UserName  string `json:"username" binding:"required,email"`
 	Password  string `json:"password" binding:"required"`
-	Referral  string `json:"referral" binding:"required"`
+	Referral  string `json:"referral" binding:"url"`
 	ReCaptcha string `json:"recaptcha" binding:"required"`
 }
 
@@ -83,7 +83,7 @@ type UserListEntry struct {
 }
 
 type UserListGetResponse struct {
-	Users []*UserListEntry `json:"users"`
+	Users []UserListEntry `json:"users"`
 }
 
 const (
@@ -306,7 +306,7 @@ func activateHandler(ctx *gin.Context) {
 }
 
 func userToBlacklistHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader("X-User-ID")
+	userID := ctx.GetHeader(UserIDHeader)
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
@@ -367,7 +367,7 @@ func blacklistGetHandler(ctx *gin.Context) {
 }
 
 func linksGetHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader("X-User-ID")
+	userID := ctx.GetHeader(UserIDHeader)
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
@@ -389,7 +389,7 @@ func linksGetHandler(ctx *gin.Context) {
 }
 
 func userInfoGetHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader("X-User-ID")
+	userID := ctx.GetHeader(UserIDHeader)
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
@@ -418,7 +418,7 @@ func userInfoGetHandler(ctx *gin.Context) {
 }
 
 func userInfoUpdateHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader("X-User-ID")
+	userID := ctx.GetHeader(UserIDHeader)
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
@@ -509,7 +509,7 @@ func userListGetHandler(ctx *gin.Context) {
 		if !satisfiesFilter(v) {
 			continue
 		}
-		resp.Users = append(resp.Users, &UserListEntry{
+		resp.Users = append(resp.Users, UserListEntry{
 			ID:            v.User.ID,
 			Login:         v.User.Login,
 			Referral:      v.Referral,
@@ -528,7 +528,7 @@ func userListGetHandler(ctx *gin.Context) {
 }
 
 func partialDeleteHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader("X-User-ID")
+	userID := ctx.GetHeader(UserIDHeader)
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
@@ -565,7 +565,7 @@ func partialDeleteHandler(ctx *gin.Context) {
 }
 
 func completeDeleteHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader("X-User-ID")
+	userID := ctx.GetHeader(UserIDHeader)
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
