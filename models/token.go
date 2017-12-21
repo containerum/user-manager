@@ -27,13 +27,14 @@ func (db *DB) GetTokenObject(token string) (*Token, error) {
 		return nil, err
 	}
 	if !rows.Next() {
-		return nil, nil
+		return nil, rows.Err()
 	}
+	defer rows.Close()
 	ret := Token{User: &User{}}
-	rows.Scan(&ret.Token, &ret.CreatedAt, &ret.IsActive, &ret.SessionID,
+	err = rows.Scan(&ret.Token, &ret.CreatedAt, &ret.IsActive, &ret.SessionID,
 		&ret.User.ID, &ret.User.Login, &ret.User.PasswordHash, &ret.User.Salt, &ret.User.Role,
 		&ret.User.IsActive, &ret.User.IsDeleted, &ret.User.IsInBlacklist)
-	return &ret, rows.Err()
+	return &ret, err
 }
 
 func (db *DB) CreateToken(user *User, sessionID string) (*Token, error) {
@@ -58,14 +59,15 @@ func (db *DB) GetTokenBySessionID(sessionID string) (*Token, error) {
 		return nil, err
 	}
 	if !rows.Next() {
-		return nil, nil
+		return nil, rows.Err()
 	}
+	defer rows.Close()
 	ret := Token{User: &User{}}
-	rows.Scan(&ret.Token, &ret.CreatedAt, &ret.IsActive, &ret.SessionID,
+	err = rows.Scan(&ret.Token, &ret.CreatedAt, &ret.IsActive, &ret.SessionID,
 		&ret.User.ID, &ret.User.Login, &ret.User.PasswordHash, &ret.User.Salt, &ret.User.Role,
 		&ret.User.IsActive, &ret.User.IsDeleted, &ret.User.IsInBlacklist)
 
-	return &ret, rows.Err()
+	return &ret, err
 }
 
 func (db *DB) DeleteToken(token string) error {

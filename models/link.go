@@ -59,18 +59,18 @@ func (db *DB) GetLinkForUser(linkType LinkType, user *User) (*Link, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	if !rows.Next() {
-		return nil, nil
+		return nil, rows.Err()
 	}
 	link := Link{User: user}
-	rows.Scan(&link.Link, &link.Type, &link.CreatedAt, &link.ExpiredAt, &link.IsActive, &link.SentAt)
+	err = rows.Scan(&link.Link, &link.Type, &link.CreatedAt, &link.ExpiredAt, &link.IsActive, &link.SentAt)
 
-	return &link, rows.Err()
+	return &link, err
 }
 
 func (db *DB) GetLinkFromString(strLink string) (*Link, error) {
 	db.log.Debugln("Get link", strLink)
-	var link Link
 	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumnsWithUser+" FROM links "+
 		"JOIN users ON links.user_id = users.id "+
 		"WHERE link = $1 AND links.is_active AND links.expired_at > NOW()", strLink)
@@ -78,13 +78,15 @@ func (db *DB) GetLinkFromString(strLink string) (*Link, error) {
 		return nil, err
 	}
 	if !rows.Next() {
-		return nil, nil
+		return nil, rows.Err()
 	}
-	rows.Scan(&link.Link, &link.Type, &link.CreatedAt, &link.ExpiredAt, &link.IsActive, &link.SentAt,
+	defer rows.Close()
+	link := Link{User: &User{}}
+	err = rows.Scan(&link.Link, &link.Type, &link.CreatedAt, &link.ExpiredAt, &link.IsActive, &link.SentAt,
 		&link.User.ID, &link.User.Login, &link.User.PasswordHash, &link.User.Salt, &link.User.Role,
 		&link.User.IsActive, &link.User.IsDeleted, &link.User.IsInBlacklist)
 
-	return &link, rows.Err()
+	return &link, err
 }
 
 func (db *DB) UpdateLink(link *Link) error {
@@ -102,10 +104,13 @@ func (db *DB) GetUserLinks(user *User) ([]Link, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	defer rows.Close()
 	for rows.Next() {
 		link := Link{User: user}
-		rows.Scan(&link.Link, &link.Type, &link.CreatedAt, &link.ExpiredAt, &link.IsActive, &link.SentAt)
+		err := rows.Scan(&link.Link, &link.Type, &link.CreatedAt, &link.ExpiredAt, &link.IsActive, &link.SentAt)
+		if err != nil {
+			return nil, err
+		}
 		ret = append(ret, link)
 	}
 

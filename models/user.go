@@ -1,7 +1,5 @@
 package models
 
-import "github.com/jmoiron/sqlx"
-
 type UserRole int
 
 const (
@@ -29,8 +27,9 @@ func (db *DB) GetUserByLogin(login string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	if !rows.Next() {
-		return nil, nil
+		return nil, rows.Err()
 	}
 	err = rows.StructScan(&user)
 	return &user, err
@@ -43,8 +42,9 @@ func (db *DB) GetUserByID(id string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	if !rows.Next() {
-		return nil, nil
+		return nil, rows.Err()
 	}
 	err = rows.StructScan(&user)
 	return &user, err
@@ -58,10 +58,12 @@ func (db *DB) CreateUser(user *User) error {
 	if err != nil {
 		return err
 	}
-	if rows.Next() {
-		rows.Scan(&user.ID)
+	defer rows.Close()
+	if !rows.Next() {
+		return rows.Err()
 	}
-	return rows.Err()
+	err = rows.Scan(&user.ID)
+	return err
 }
 
 func (db *DB) UpdateUser(user *User) error {
@@ -79,9 +81,14 @@ func (db *DB) GetBlacklistedUsers() ([]User, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
+
 	for rows.Next() {
 		var user User
-		sqlx.StructScan(rows, &user)
+		err := rows.StructScan(&user)
+		if err != nil {
+			return nil, err
+		}
 		resp = append(resp, user)
 	}
 	return resp, rows.Err()

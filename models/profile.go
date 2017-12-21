@@ -47,11 +47,12 @@ func (db *DB) CreateProfile(profile *Profile) error {
 		return err
 	}
 	defer rows.Close()
-	if rows.Next() {
-		rows.Scan(&profile.ID, &profile.CreatedAt)
+	if !rows.Next() {
+		return rows.Err()
 	}
 
-	return rows.Err()
+	err = rows.Scan(&profile.ID, &profile.CreatedAt)
+	return err
 }
 
 func (db *DB) GetProfileByID(id string) (*Profile, error) {
@@ -63,7 +64,7 @@ func (db *DB) GetProfileByID(id string) (*Profile, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, nil
+		return nil, rows.Err()
 	}
 	profile := Profile{User: &User{}}
 	var profileData string
@@ -76,13 +77,11 @@ func (db *DB) GetProfileByID(id string) (*Profile, error) {
 	if err != nil {
 		return nil, err
 	}
-	if profileData != "" {
-		if err := jsoniter.UnmarshalFromString(profileData, &profile.Data); err != nil {
-			return nil, err
-		}
+	if err := jsoniter.UnmarshalFromString(profileData, &profile.Data); err != nil {
+		return nil, err
 	}
 
-	return &profile, rows.Err()
+	return &profile, nil
 }
 
 func (db *DB) GetProfileByUser(user *User) (*Profile, error) {
@@ -94,17 +93,20 @@ func (db *DB) GetProfileByUser(user *User) (*Profile, error) {
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return nil, nil
+		return nil, rows.Err()
 	}
 	profile := Profile{User: user}
 	var profileData string
 
-	rows.Scan(&profile.ID, &profile.Referral, &profile.Access, &profile.CreatedAt, &profile.BlacklistAt, &profile.DeletedAt, &profileData)
+	err = rows.Scan(&profile.ID, &profile.Referral, &profile.Access, &profile.CreatedAt, &profile.BlacklistAt, &profile.DeletedAt, &profileData)
+	if err != nil {
+		return nil, err
+	}
 	if err := jsoniter.UnmarshalFromString(profileData, &profile.Data); err != nil {
 		return nil, err
 	}
 
-	return &profile, rows.Err()
+	return &profile, nil
 }
 
 func (db *DB) UpdateProfile(profile *Profile) error {
@@ -135,10 +137,8 @@ func (db *DB) GetAllProfiles() ([]Profile, error) {
 		if err != nil {
 			return nil, err
 		}
-		if profileData != "" {
-			if err := jsoniter.UnmarshalFromString(profileData, &profile.Data); err != nil {
-				return nil, err
-			}
+		if err := jsoniter.UnmarshalFromString(profileData, &profile.Data); err != nil {
+			return nil, err
 		}
 		profiles = append(profiles, profile)
 	}
