@@ -22,7 +22,7 @@ const tokenQueryColumns = "token, created_at, is_active, session_id"
 func (db *DB) GetTokenObject(token string) (*Token, error) {
 	db.log.Debug("Get token object", token)
 	rows, err := db.qLog.Queryx("SELECT "+tokenQueryColumnsWithUser+" FROM tokens "+
-		"JOIN users ON tokens.user_id = users.id WHERE token = '$1'", token)
+		"JOIN users ON tokens.user_id = users.id WHERE tokens.token = '$1' AND tokens.is_active", token)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func (db *DB) CreateToken(user *User, sessionID string) (*Token, error) {
 func (db *DB) GetTokenBySessionID(sessionID string) (*Token, error) {
 	db.log.Debug("Get token by session id ", sessionID)
 	rows, err := db.qLog.Queryx("SELECT "+tokenQueryColumnsWithUser+" FROM tokens "+
-		"JOIN users ON tokens.user_id = users.id WHERE session_id = '$1'", sessionID)
+		"JOIN users ON tokens.user_id = users.id WHERE tokens.session_id = '$1' and tokens.is_active", sessionID)
 	if err != nil {
 		return nil, err
 	}
