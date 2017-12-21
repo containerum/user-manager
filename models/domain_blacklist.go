@@ -20,7 +20,7 @@ func (db *DB) UnBlacklistDomain(domain string) error {
 	return err
 }
 
-func (db *DB) IsInBlacklist(domain string) (bool, error) {
+func (db *DB) IsDomainBlacklisted(domain string) (bool, error) {
 	db.log.Debugf("Checking if domain %s in blacklist", domain)
 	rows, err := db.qLog.Queryx("SELECT COUNT(*) FROM domains WHERE domain = $1", domain)
 	if err != nil {
