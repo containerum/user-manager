@@ -7,17 +7,18 @@ import (
 	"os"
 	"sync"
 
+	"runtime/debug"
+
 	"git.containerum.net/ch/auth/routes"
 	"git.containerum.net/ch/grpc-proto-files/auth"
+	"github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/husobee/vestigo"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	"github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
-	"runtime/debug"
 )
 
 type HTTPServer struct {

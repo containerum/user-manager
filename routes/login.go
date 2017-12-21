@@ -12,7 +12,6 @@ import (
 	"git.containerum.net/ch/user-manager/models"
 	chutils "git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 )
 
 type BasicLoginRequest struct {
@@ -37,7 +36,7 @@ const (
 
 func basicLoginHandler(ctx *gin.Context) {
 	var request BasicLoginRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
@@ -119,7 +118,7 @@ func basicLoginHandler(ctx *gin.Context) {
 
 func oneTimeTokenLoginHandler(ctx *gin.Context) {
 	var request OneTimeTokenLoginRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
@@ -179,7 +178,7 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 
 func oauthLoginHandler(ctx *gin.Context) {
 	var request OAuthLoginRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
@@ -252,7 +251,7 @@ func oauthLoginHandler(ctx *gin.Context) {
 
 func webAPILoginHandler(ctx *gin.Context) {
 	var request clients.WebAPILoginRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return

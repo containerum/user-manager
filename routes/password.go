@@ -12,7 +12,6 @@ import (
 	"git.containerum.net/ch/user-manager/utils"
 	chutils "git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 )
 
 type PasswordChangeRequest struct {
@@ -34,7 +33,7 @@ const (
 func passwordChangeHandler(ctx *gin.Context) {
 	userID := ctx.GetHeader("X-User-ID")
 	var request PasswordChangeRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
@@ -108,7 +107,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 func passwordResetHandler(ctx *gin.Context) {
 	userID := ctx.GetHeader("X-User-ID")
 	var request PasswordChangeRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
@@ -155,7 +154,7 @@ func passwordResetHandler(ctx *gin.Context) {
 
 func passwordRestoreHandler(ctx *gin.Context) {
 	var request PasswordRestoreRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return

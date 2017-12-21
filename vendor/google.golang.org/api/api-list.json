@@ -990,21 +990,6 @@
   },
   {
    "kind": "discovery#directoryItem",
-   "id": "consumersurveys:v2",
-   "name": "consumersurveys",
-   "version": "v2",
-   "title": "Consumer Surveys API",
-   "description": "Creates and conducts surveys, lists the surveys that an authenticated user owns, and retrieves survey results and information about specified surveys.",
-   "discoveryRestUrl": "https://www.googleapis.com/discovery/v1/apis/consumersurveys/v2/rest",
-   "discoveryLink": "./apis/consumersurveys/v2/rest",
-   "icons": {
-    "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
-    "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
-   },
-   "preferred": true
-  },
-  {
-   "kind": "discovery#directoryItem",
    "id": "container:v1",
    "name": "container",
    "version": "v1",
@@ -1268,6 +1253,21 @@
   },
   {
    "kind": "discovery#directoryItem",
+   "id": "digitalassetlinks:v1",
+   "name": "digitalassetlinks",
+   "version": "v1",
+   "title": "Digital Asset Links API",
+   "description": "API for discovering relationships between online assets such as web sites or mobile apps.",
+   "discoveryRestUrl": "https://digitalassetlinks.googleapis.com/$discovery/rest?version=v1",
+   "icons": {
+    "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+    "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
+   },
+   "documentationLink": "https://developers.google.com/digital-asset-links/",
+   "preferred": true
+  },
+  {
+   "kind": "discovery#directoryItem",
    "id": "discovery:v1",
    "name": "discovery",
    "version": "v1",
@@ -1290,6 +1290,21 @@
    "title": "DLP API",
    "description": "The Google Data Loss Prevention API provides methods for detection of privacy-sensitive fragments in text, images, and Google Cloud Platform storage repositories.",
    "discoveryRestUrl": "https://dlp.googleapis.com/$discovery/rest?version=v2beta1",
+   "icons": {
+    "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+    "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
+   },
+   "documentationLink": "https://cloud.google.com/dlp/docs/",
+   "preferred": false
+  },
+  {
+   "kind": "discovery#directoryItem",
+   "id": "dlp:v2beta2",
+   "name": "dlp",
+   "version": "v2beta2",
+   "title": "DLP API",
+   "description": "The Google Data Loss Prevention API provides methods for detection of privacy-sensitive fragments in text, images, and Google Cloud Platform storage repositories.",
+   "discoveryRestUrl": "https://dlp.googleapis.com/$discovery/rest?version=v2beta2",
    "icons": {
     "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
     "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"

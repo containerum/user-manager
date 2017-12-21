@@ -99,7 +99,7 @@ const (
 
 func userCreateHandler(ctx *gin.Context) {
 	var request UserCreateRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
@@ -199,7 +199,7 @@ func userCreateHandler(ctx *gin.Context) {
 
 func linkResendHandler(ctx *gin.Context) {
 	var request ResendLinkRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return
@@ -256,7 +256,7 @@ func linkResendHandler(ctx *gin.Context) {
 
 func activateHandler(ctx *gin.Context) {
 	var request ActivateRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
 		return

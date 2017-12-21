@@ -14,7 +14,7 @@ const (
 
 func reCaptchaMiddleware(ctx *gin.Context) {
 	/*var request ReCaptchaRequest
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return

@@ -30,12 +30,12 @@ type BuntDBStorageConfig struct {
 // TokenStorage using BuntDB library
 type BuntDBStorage struct {
 	db     *buntdb.DB
-	logger *logrus.Logger
+	logger *logrus.Entry
 	BuntDBStorageConfig
 }
 
 func NewBuntDBStorage(config BuntDBStorageConfig) (storage *BuntDBStorage, err error) {
-	logger := logrus.WithField("component", "BuntDBStorage").Logger
+	logger := logrus.WithField("component", "BuntDBStorage")
 	logger.WithField("config", config).Info("Initializing BuntDBStorage")
 
 	logger.Debugf("Opening file %s", config.File)
