@@ -19,7 +19,7 @@ func (db *DB) GetUserByBoundAccount(service, accountID string) (*User, error) {
 		"account_id": accountID,
 	}).Debugln("Get bound account")
 
-	rows, err := db.qLog.Queryx("SELECT (accounts.$1, users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist)"+
+	rows, err := db.qLog.Queryx("SELECT accounts.$1, users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist "+
 		"FROM accounts JOINS users ON accounts.user_id = users.id WHERE accounts.$1 = $2", service, accountID)
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func (db *DB) GetUserByBoundAccount(service, accountID string) (*User, error) {
 
 func (db *DB) GetUserBoundAccounts(user *User) (*Accounts, error) {
 	db.log.Debugln("Get bound accounts for user", user.Login)
-	rows, err := db.qLog.Queryx("SELECT (id, github, facebook, google) FROM accounts WHERE user_id = $1", user.ID)
+	rows, err := db.qLog.Queryx("SELECT id, github, facebook, google FROM accounts WHERE user_id = $1", user.ID)
 	if err != nil {
 		return nil, err
 	}
