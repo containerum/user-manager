@@ -16,7 +16,7 @@ const (
 
 func logoutHandler(ctx *gin.Context) {
 	tokenID := ctx.Param("token_id")
-	userID := ctx.GetHeader("X-User-ID")
+	userID := ctx.GetHeader(UserIDHeader)
 	_, err := svc.AuthClient.DeleteToken(ctx, &auth.DeleteTokenRequest{
 		TokenId: &common.UUID{Value: tokenID},
 		UserId:  &common.UUID{Value: userID},
@@ -38,7 +38,7 @@ func logoutHandler(ctx *gin.Context) {
 		return
 	}
 
-	oneTimeToken, err := svc.DB.GetTokenBySessionID(ctx.GetHeader("X-Session-ID")) // TODO: may be other header name
+	oneTimeToken, err := svc.DB.GetTokenBySessionID(ctx.GetHeader(SessionIDHeader))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)

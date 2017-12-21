@@ -15,6 +15,11 @@ type Services struct {
 	WebAPIClient    *clients.WebAPIClient
 }
 
+const (
+	UserIDHeader    = "X-User-ID"
+	SessionIDHeader = "X-Session-ID"
+)
+
 var svc Services
 
 func SetupRoutes(app *gin.Engine, services Services) {

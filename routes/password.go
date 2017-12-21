@@ -31,7 +31,7 @@ const (
 )
 
 func passwordChangeHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader("X-User-ID")
+	userID := ctx.GetHeader(UserIDHeader)
 	var request PasswordChangeRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
@@ -105,7 +105,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 }
 
 func passwordResetHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader("X-User-ID")
+	userID := ctx.GetHeader(UserIDHeader)
 	var request PasswordChangeRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
