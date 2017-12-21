@@ -22,7 +22,7 @@ const tokenQueryColumns = "token, created_at, is_active, session_id"
 func (db *DB) GetTokenObject(token string) (*Token, error) {
 	db.log.Debug("Get token object", token)
 	rows, err := db.qLog.Queryx("SELECT "+tokenQueryColumnsWithUser+" FROM tokens "+
-		"JOIN users ON tokens.user_id = users.id WHERE tokens.token = '$1' AND tokens.is_active", token)
+		"JOIN users ON tokens.user_id = users.id WHERE tokens.token = $1 AND tokens.is_active", token)
 	if err != nil {
 		return nil, err
 	}
@@ -46,14 +46,14 @@ func (db *DB) CreateToken(user *User, sessionID string) (*Token, error) {
 		CreatedAt: time.Now().UTC(),
 	}
 	_, err := db.eLog.Exec("INSERT INTO tokens (token, user_id, is_active, session_id, created_at) "+
-		"VALUES ('$1', '$2', $3, '$4', $5)", ret.Token, ret.User.ID, ret.IsActive, ret.SessionID, ret.CreatedAt)
+		"VALUES ($1, $2, $3, $4, $5)", ret.Token, ret.User.ID, ret.IsActive, ret.SessionID, ret.CreatedAt)
 	return ret, err
 }
 
 func (db *DB) GetTokenBySessionID(sessionID string) (*Token, error) {
 	db.log.Debug("Get token by session id ", sessionID)
 	rows, err := db.qLog.Queryx("SELECT "+tokenQueryColumnsWithUser+" FROM tokens "+
-		"JOIN users ON tokens.user_id = users.id WHERE tokens.session_id = '$1' and tokens.is_active", sessionID)
+		"JOIN users ON tokens.user_id = users.id WHERE tokens.session_id = $1 and tokens.is_active", sessionID)
 	if err != nil {
 		return nil, err
 	}
@@ -70,13 +70,13 @@ func (db *DB) GetTokenBySessionID(sessionID string) (*Token, error) {
 
 func (db *DB) DeleteToken(token string) error {
 	db.log.Debug("Remove token", token)
-	_, err := db.eLog.Exec("DELETE FROM tokens WHERE token = '$1'", token)
+	_, err := db.eLog.Exec("DELETE FROM tokens WHERE token = $1", token)
 	return err
 }
 
 func (db *DB) UpdateToken(token *Token) error {
 	db.log.Debug("Update token", token.Token)
-	_, err := db.eLog.Exec("UPDATE tokens SET is_active = $2, session_id = '$3' WHERE token = '$1'",
+	_, err := db.eLog.Exec("UPDATE tokens SET is_active = $2, session_id = $3 WHERE token = $1",
 		token.Token, token.IsActive, token.SessionID)
 	return err
 }

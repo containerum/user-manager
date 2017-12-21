@@ -42,7 +42,7 @@ func (db *DB) CreateProfile(profile *Profile) error {
 		return err
 	}
 	rows, err := db.qLog.Queryx("INSERT INTO profiles (referral, access, user_id, data) VALUES "+
-		"('$1', '$2', '$3', '$4') RETURNING id, created_at", profile.Referral, profile.Access, profile.User.ID, profileData)
+		"($1, $2, $3, $4) RETURNING id, created_at", profile.Referral, profile.Access, profile.User.ID, profileData)
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func (db *DB) CreateProfile(profile *Profile) error {
 func (db *DB) GetProfileByID(id string) (*Profile, error) {
 	db.log.Debug("Get profile by id", id)
 	rows, err := db.qLog.Queryx("SELECT "+profileQueryColumnsWithUser+" FROM profiles "+
-		"JOIN users ON profiles.user_id = user.id WHERE profiles.id = '$1'", id)
+		"JOIN users ON profiles.user_id = user.id WHERE profiles.id = $1", id)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (db *DB) GetProfileByID(id string) (*Profile, error) {
 func (db *DB) GetProfileByUser(user *User) (*Profile, error) {
 	db.log.Debugf("Get profile by user %#v", user)
 	rows, err := db.qLog.Queryx("SELECT "+profileQueryColumns+" FROM profiles "+
-		"WHERE profiles.user_id = '$1'", user.ID)
+		"WHERE profiles.user_id = $1", user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (db *DB) GetProfileByUser(user *User) (*Profile, error) {
 
 func (db *DB) UpdateProfile(profile *Profile) error {
 	db.log.Debugf("Update profile %#v", profile)
-	_, err := db.eLog.Exec("UPDATE profiles SET referal = '$2', access = '$3', data = '$4 WHERE id = '$1'",
+	_, err := db.eLog.Exec("UPDATE profiles SET referal = $2, access = $3, data = '$4 WHERE id = $1",
 		profile.ID, profile.Referral, profile.Access, profile.Data)
 	return err
 }
