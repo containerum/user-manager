@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,19 +20,14 @@ func (db *DB) GetUserByBoundAccount(service, accountID string) (*User, error) {
 		"account_id": accountID,
 	}).Debugln("Get bound account")
 
-	rows, err := db.qLog.Queryx("SELECT accounts.$1, users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist "+
-		"FROM accounts JOINS users ON accounts.user_id = users.id WHERE accounts.$1 = $2", service, accountID)
+	var ret User
+	err := sqlx.Get(db.qLog, &ret, "SELECT users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist "+
+		"FROM accounts JOIN users ON accounts.user_id = users.id WHERE accounts.$1 = $2", service, accountID)
 	if err != nil {
 		return nil, err
 	}
-	if !rows.Next() {
-		return nil, nil
-	}
 
-	var ret User
-	rows.Scan(&accountID, &ret.ID, &ret.Login, &ret.PasswordHash, &ret.Salt, &ret.Role, &ret.IsActive, &ret.IsDeleted, &ret.IsInBlacklist)
-
-	return &ret, rows.Err()
+	return &ret, nil
 }
 
 func (db *DB) GetUserBoundAccounts(user *User) (*Accounts, error) {
@@ -41,13 +37,13 @@ func (db *DB) GetUserBoundAccounts(user *User) (*Accounts, error) {
 		return nil, err
 	}
 	if !rows.Next() {
-		return nil, nil
+		return nil, rows.Err()
 	}
 
 	ret := Accounts{User: user}
-	rows.Scan(&ret.ID, &ret.Github, &ret.Facebook, &ret.Google)
+	err = rows.Scan(&ret.ID, &ret.Github, &ret.Facebook, &ret.Google)
 
-	return &ret, rows.Err()
+	return &ret, err
 }
 
 func (db *DB) BindAccount(user *User, service, accountID string) error {

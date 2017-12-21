@@ -28,8 +28,9 @@ func (db *DB) IsDomainBlacklisted(domain string) (bool, error) {
 	}
 	defer rows.Close()
 	count := 0
-	if rows.Next() {
-		rows.Scan(&count)
+	if !rows.Next() {
+		return false, rows.Err()
 	}
+	err = rows.Scan(&count)
 	return count > 0, err
 }
