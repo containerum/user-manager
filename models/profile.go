@@ -36,7 +36,7 @@ const profileQueryColumnsWithUser = "profiles.id, profiles.referral, profiles.ac
 const profileQueryColumns = "id, referral, access, created_at, blacklist_at, deleted_at, data"
 
 func (db *DB) CreateProfile(profile *Profile) error {
-	db.log.Debug("Create profile for", profile.User.Login)
+	db.log.Debugln("Create profile for", profile.User.Login)
 	profileData, err := jsoniter.MarshalToString(profile.Data)
 	if err != nil {
 		return err
@@ -55,7 +55,7 @@ func (db *DB) CreateProfile(profile *Profile) error {
 }
 
 func (db *DB) GetProfileByID(id string) (*Profile, error) {
-	db.log.Debug("Get profile by id", id)
+	db.log.Debugln("Get profile by id", id)
 	rows, err := db.qLog.Queryx("SELECT "+profileQueryColumnsWithUser+" FROM profiles "+
 		"JOIN users ON profiles.user_id = user.id WHERE profiles.id = $1", id)
 	if err != nil {
@@ -115,7 +115,7 @@ func (db *DB) UpdateProfile(profile *Profile) error {
 }
 
 func (db *DB) GetAllProfiles() ([]Profile, error) {
-	db.log.Debug("Get all profiles")
+	db.log.Debugln("Get all profiles")
 	var profiles []Profile
 
 	rows, err := db.qLog.Queryx("SELECT " + profileQueryColumnsWithUser + " FROM profiles JOIN users ON profiles.user_id = users.id")

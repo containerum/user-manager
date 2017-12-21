@@ -37,26 +37,26 @@ func (mc *MailClient) sendOneTemplate(tmplName string, recipient *upstreams.Reci
 }
 
 func (mc *MailClient) SendConfirmationMail(recipient *upstreams.Recipient) error {
-	mc.log.Info("Sending confirmation mail to", recipient.Email)
+	mc.log.Infoln("Sending confirmation mail to", recipient.Email)
 	return mc.sendOneTemplate("confirm_reg", recipient)
 }
 
 func (mc *MailClient) SendActivationMail(recipient *upstreams.Recipient) error {
-	mc.log.Info("Sending confirmation mail to", recipient.Email)
+	mc.log.Infoln("Sending confirmation mail to", recipient.Email)
 	return mc.sendOneTemplate("activate_acc", recipient)
 }
 
 func (mc *MailClient) SendBlockedMail(recipient *upstreams.Recipient) error {
-	mc.log.Info("Sending blocked mail to", recipient.Email)
+	mc.log.Infoln("Sending blocked mail to", recipient.Email)
 	return mc.sendOneTemplate("blocked_acc", recipient)
 }
 
 func (mc *MailClient) SendPasswordChangedMail(recipient *upstreams.Recipient) error {
-	mc.log.Info("Sending password changed mail to", recipient.Email)
+	mc.log.Infoln("Sending password changed mail to", recipient.Email)
 	return mc.sendOneTemplate("pwd_changed", recipient)
 }
 
 func (mc *MailClient) SendPasswordResetMail(recipient *upstreams.Recipient) error {
-	mc.log.Info("Sending reset password mail to", recipient.Email)
+	mc.log.Infoln("Sending reset password mail to", recipient.Email)
 	return mc.sendOneTemplate("reset_pwd", recipient)
 }

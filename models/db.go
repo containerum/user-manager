@@ -30,10 +30,10 @@ var (
 
 func DBConnect(pgConnStr string) (*DB, error) {
 	log := logrus.WithField("component", "db")
-	log.Info("Connecting to ", pgConnStr)
+	log.Infoln("Connecting to ", pgConnStr)
 	conn, err := sqlx.Open("postgres", pgConnStr)
 	if err != nil {
-		log.WithError(err).Error("Postgres connection failed")
+		log.WithError(err).Errorln("Postgres connection failed")
 		return nil, err
 	}
 
@@ -49,7 +49,7 @@ func DBConnect(pgConnStr string) (*DB, error) {
 		return nil, err
 	}
 	version, _, _ := m.Version()
-	log.WithField("version", version).Info("Migrate up")
+	log.WithField("version", version).Infoln("Migrate up")
 
 	return ret, nil
 }
@@ -73,10 +73,10 @@ func (db *DB) migrateUp(path string) (*migrate.Migrate, error) {
 func (db *DB) Transactional(f func(tx *DB) error) (err error) {
 	start := time.Now().Format(time.ANSIC)
 	e := db.log.WithField("transaction_at", start)
-	e.Debug("Begin transaction")
+	e.Debugln("Begin transaction")
 	tx, txErr := db.conn.Beginx()
 	if txErr != nil {
-		e.WithError(txErr).Error("Begin transaction error")
+		e.WithError(txErr).Errorln("Begin transaction error")
 		return ErrTransactionBegin
 	}
 
@@ -95,18 +95,18 @@ func (db *DB) Transactional(f func(tx *DB) error) (err error) {
 		}
 
 		if dberr != nil {
-			e.WithError(dberr).Debug("Rollback transaction")
+			e.WithError(dberr).Debugln("Rollback transaction")
 			if rerr := tx.Rollback(); rerr != nil {
-				e.WithError(rerr).Error("Rollback error")
+				e.WithError(rerr).Errorln("Rollback error")
 				err = ErrTransactionRollback
 			}
 			err = dberr // forward error with panic description
 			return
 		}
 
-		e.Debug("Commit transaction")
+		e.Debugln("Commit transaction")
 		if cerr := tx.Commit(); cerr != nil {
-			e.WithError(cerr).Error("Commit error")
+			e.WithError(cerr).Errorln("Commit error")
 			err = ErrTransactionCommit
 		}
 	}(f(arg))

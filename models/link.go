@@ -46,14 +46,14 @@ func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) 
 	db.log.WithFields(logrus.Fields{
 		"user":          user.Login,
 		"creation_time": now.Format(time.ANSIC),
-	}).Debug("Create activation link")
+	}).Debugln("Create activation link")
 	_, err := db.eLog.Exec("INSERT INTO links (link, type, created_at, expired_at, is_active, user_id) VALUES "+
 		"($1, $2, $3, $4, $5, $6)", ret.Link, ret.Type, ret.CreatedAt, ret.ExpiredAt, ret.IsActive, ret.User.ID)
 	return ret, err
 }
 
 func (db *DB) GetLinkForUser(linkType LinkType, user *User) (*Link, error) {
-	db.log.Debug("Get link", linkType, "for", user.Login)
+	db.log.Debugln("Get link", linkType, "for", user.Login)
 	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumns+" FROM links "+
 		"WHERE user_id = $1 AND type = $2 AND is_active AND expires_at > NOW()", user.ID, linkType)
 	if err != nil {
@@ -69,7 +69,7 @@ func (db *DB) GetLinkForUser(linkType LinkType, user *User) (*Link, error) {
 }
 
 func (db *DB) GetLinkFromString(strLink string) (*Link, error) {
-	db.log.Debug("Get link", strLink)
+	db.log.Debugln("Get link", strLink)
 	var link Link
 	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumnsWithUser+" FROM links "+
 		"JOIN users ON links.user_id = users.id "+
@@ -95,7 +95,7 @@ func (db *DB) UpdateLink(link *Link) error {
 }
 
 func (db *DB) GetUserLinks(user *User) ([]Link, error) {
-	db.log.Debug("Get links for", user.Login)
+	db.log.Debugln("Get links for", user.Login)
 	var ret []Link
 	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumns+" FROM links "+
 		"WHERE user_id = $1 AND is_active AND expires_at > NOW()", user.ID)

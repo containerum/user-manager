@@ -35,7 +35,7 @@ func NewReCaptchaClient(privateKey string) *ReCaptchaClient {
 }
 
 func (c *ReCaptchaClient) Check(remoteIP, clientResponse string) (r *ReCaptchaResponse, err error) {
-	c.log.Info("Checking ReCaptcha from", remoteIP)
+	c.log.Infoln("Checking ReCaptcha from", remoteIP)
 	r = new(ReCaptchaResponse)
 	_, err = c.client.R().SetResult(r).SetMultiValueFormData(url.Values{
 		"secret":   {c.privateKey},
