@@ -7,27 +7,13 @@ import (
 
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
-	"git.containerum.net/ch/mail-templater/upstreams"
+	"git.containerum.net/ch/json-types/errors"
+	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/clients"
 	"git.containerum.net/ch/user-manager/models"
-	chutils "git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
 )
-
-type BasicLoginRequest struct {
-	Login     string `json:"login" binding:"required,email"`
-	Password  string `json:"password" binding:"required"`
-	ReCaptcha string `json:"recaptcha" binding:"required"`
-}
-
-type OneTimeTokenLoginRequest struct {
-	Token string `json:"token" binding:"required"`
-}
-
-type OAuthLoginRequest struct {
-	Resource    clients.OAuthResource `json:"resource" binding:"required"`
-	AccessToken string                `json:"access_token" binding:"required"`
-}
 
 const (
 	oneTimeTokenNotFound = "one-time token %s not exists or already used"
@@ -35,10 +21,10 @@ const (
 )
 
 func basicLoginHandler(ctx *gin.Context) {
-	var request BasicLoginRequest
+	var request umtypes.BasicLoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	}
 
@@ -49,16 +35,16 @@ func basicLoginHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userNotFound, request.Login))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userNotFound, request.Login))
 		return
 	}
 	if user.IsInBlacklist {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(userBanned, request.Login))
+		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.Format(userBanned, request.Login))
 		return
 	}
 
 	if !user.IsActive {
-		link, err := svc.DB.GetLinkForUser(models.LinkTypeConfirm, user)
+		link, err := svc.DB.GetLinkForUser(umtypes.LinkTypeConfirm, user)
 		if err != nil {
 			ctx.Error(err)
 			ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -66,7 +52,7 @@ func basicLoginHandler(ctx *gin.Context) {
 		}
 
 		if link == nil {
-			link, err = svc.DB.CreateLink(models.LinkTypeConfirm, 24*time.Hour, user)
+			link, err = svc.DB.CreateLink(umtypes.LinkTypeConfirm, 24*time.Hour, user)
 			if err != nil {
 				ctx.Error(err)
 				ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -75,11 +61,11 @@ func basicLoginHandler(ctx *gin.Context) {
 		}
 
 		if tdiff := time.Now().UTC().Sub(link.SentAt.Time); link.SentAt.Valid && tdiff < 5*time.Minute {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewErrorF(waitForResend, int(tdiff.Seconds())))
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.Format(waitForResend, int(tdiff.Seconds())))
 			return
 		}
 
-		err = svc.MailClient.SendConfirmationMail(&upstreams.Recipient{
+		err = svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
 			ID:        user.ID,
 			Name:      user.Login,
 			Email:     user.Login,
@@ -117,10 +103,10 @@ func basicLoginHandler(ctx *gin.Context) {
 }
 
 func oneTimeTokenLoginHandler(ctx *gin.Context) {
-	var request OneTimeTokenLoginRequest
+	var request umtypes.OneTimeTokenLoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	}
 
@@ -131,11 +117,11 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 		return
 	}
 	if token == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(oneTimeTokenNotFound, request.Token))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(oneTimeTokenNotFound, request.Token))
 		return
 	}
 	if token.User.IsInBlacklist {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(userBanned, token.User.Login))
+		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.Format(userBanned, token.User.Login))
 		return
 	}
 
@@ -160,7 +146,7 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 		}
 
 		token.IsActive = false
-		token.SessionID = "sid" // TODO: session ID here
+		token.SessionID = ctx.GetHeader(umtypes.SessionIDHeader)
 		if err := tx.UpdateToken(token); err != nil {
 			return err
 		}
@@ -177,16 +163,16 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 }
 
 func oauthLoginHandler(ctx *gin.Context) {
-	var request OAuthLoginRequest
+	var request umtypes.OAuthLoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	}
 
 	resource, exist := clients.OAuthClientByResource(request.Resource)
 	if !exist {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewErrorF(resourceNotSupported, request.Resource))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.Format(resourceNotSupported, request.Resource))
 		return
 	}
 
@@ -204,11 +190,11 @@ func oauthLoginHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userNotFound, info.Email))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userNotFound, info.Email))
 		return
 	}
 	if user.IsInBlacklist {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(userBanned, user.Login))
+		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.Format(userBanned, user.Login))
 		return
 	}
 
@@ -250,17 +236,17 @@ func oauthLoginHandler(ctx *gin.Context) {
 }
 
 func webAPILoginHandler(ctx *gin.Context) {
-	var request clients.WebAPILoginRequest
+	var request umtypes.WebAPILoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	}
 
 	resp, code, err := svc.WebAPIClient.Login(&request)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(code, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(code, errors.New(err.Error()))
 		return
 	}
 

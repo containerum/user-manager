@@ -20,28 +20,16 @@
   revision = "a37cf53c18640c19d94263e11ddd4735fa79c9fe"
 
 [[projects]]
-  branch = "1-configure-auto-deploy-to-sandbox-on-develop-branch"
-  name = "git.containerum.net/ch/mail-templater"
-  packages = ["storages","upstreams"]
-  revision = "cef04fe22ac2b9bf40d84a9a6d1536ce6e0e62d0"
+  branch = "master"
+  name = "git.containerum.net/ch/json-types"
+  packages = ["errors","mail-templater","user-manager"]
+  revision = "176391be21bd0c25e521e2408544650722d293d1"
 
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/utils"
   packages = ["."]
   revision = "d4bc7c3c97ec43796b2923d94ff179ea10d1d75d"
-
-[[projects]]
-  name = "github.com/blang/semver"
-  packages = ["."]
-  revision = "2ee87856327ba09384cabd113bc6b5d174e9ec0f"
-  version = "v3.5.1"
-
-[[projects]]
-  name = "github.com/boltdb/bolt"
-  packages = ["."]
-  revision = "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8"
-  version = "v1.3.1"
 
 [[projects]]
   name = "github.com/dgrijalva/jwt-go"
@@ -156,12 +144,6 @@
   packages = ["."]
   revision = "16398bac157da96aa88f98a2df640c7f32af1da2"
   version = "v1.0.1"
-
-[[projects]]
-  name = "github.com/pkg/errors"
-  packages = ["."]
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -302,12 +284,6 @@
   version = "v8.18.2"
 
 [[projects]]
-  name = "gopkg.in/mailgun/mailgun-go.v1"
-  packages = ["."]
-  revision = "a4002e2df2e8ca2da6a6fbb4a72871b504e49f50"
-  version = "v1.1.0"
-
-[[projects]]
   name = "gopkg.in/resty.v1"
   packages = ["."]
   revision = "9ac9c42358f7c3c69ac9f8610e8790d7c338e85d"
@@ -322,6 +298,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1af2105d3300732d6ebafaa5ac138bdc4c12360b68f20783dd730a935f121ce7"
+  inputs-digest = "80f18a73d1d69d00857f2ac701bfdb664cc936567ebaae99a3341a4ec65d5884"
   solver-name = "gps-cdcl"
   solver-version = 1

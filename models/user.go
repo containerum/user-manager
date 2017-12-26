@@ -1,5 +1,7 @@
 package models
 
+import umtypes "git.containerum.net/ch/json-types/user-manager"
+
 type UserRole int
 
 const (
@@ -8,14 +10,14 @@ const (
 )
 
 type User struct {
-	ID            string   `db:"id"`
-	Login         string   `db:"login"`
-	PasswordHash  string   `db:"password_hash"` // base64
-	Salt          string   `db:"salt"`          // base64
-	Role          UserRole `db:"role"`
-	IsActive      bool     `db:"is_active"`
-	IsDeleted     bool     `db:"is_deleted"`
-	IsInBlacklist bool     `db:"is_in_blacklist"`
+	ID            string           `db:"id"`
+	Login         string           `db:"login"`
+	PasswordHash  string           `db:"password_hash"` // base64
+	Salt          string           `db:"salt"`          // base64
+	Role          umtypes.UserRole `db:"role"`
+	IsActive      bool             `db:"is_active"`
+	IsDeleted     bool             `db:"is_deleted"`
+	IsInBlacklist bool             `db:"is_in_blacklist"`
 }
 
 const userQueryColumns = "id, login, password_hash, salt, role, is_active, is_deleted, is_in_blacklist"

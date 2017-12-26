@@ -6,7 +6,8 @@ import (
 	"git.containerum.net/ch/auth/storages"
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
-	chutils "git.containerum.net/ch/utils"
+	"git.containerum.net/ch/json-types/errors"
+	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,7 +17,7 @@ const (
 
 func logoutHandler(ctx *gin.Context) {
 	tokenID := ctx.Param("token_id")
-	userID := ctx.GetHeader(UserIDHeader)
+	userID := ctx.GetHeader(umtypes.UserIDHeader)
 	_, err := svc.AuthClient.DeleteToken(ctx, &auth.DeleteTokenRequest{
 		TokenId: &common.UUID{Value: tokenID},
 		UserId:  &common.UUID{Value: userID},
@@ -26,11 +27,11 @@ func logoutHandler(ctx *gin.Context) {
 	case nil:
 	case storages.ErrTokenNotOwnedBySender:
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New(err.Error()))
 		return
 	case storages.ErrInvalidToken:
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	default:
 		ctx.Error(err)
@@ -38,7 +39,7 @@ func logoutHandler(ctx *gin.Context) {
 		return
 	}
 
-	oneTimeToken, err := svc.DB.GetTokenBySessionID(ctx.GetHeader(SessionIDHeader))
+	oneTimeToken, err := svc.DB.GetTokenBySessionID(ctx.GetHeader(umtypes.SessionIDHeader))
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -46,7 +47,7 @@ func logoutHandler(ctx *gin.Context) {
 	}
 	if oneTimeToken != nil {
 		if oneTimeToken.User.ID != userID {
-			ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(tokenNotOwnedByUser, oneTimeToken.Token, userID))
+			ctx.AbortWithStatusJSON(http.StatusForbidden, errors.Format(tokenNotOwnedByUser, oneTimeToken.Token, userID))
 			return
 		}
 		if err := svc.DB.DeleteToken(oneTimeToken.Token); err != nil {

@@ -3,20 +3,10 @@ package models
 import (
 	"time"
 
+	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/json-iterator/go"
 	"github.com/lib/pq"
 )
-
-type ProfileData struct {
-	Email          string `json:"email,omitempty" binding:"email"`
-	Address        string `json:"address,omitempty"`
-	Phone          string `json:"phone,omitempty"`
-	FirstName      string `json:"first_name,omitempty"`
-	LastName       string `json:"last_name,omitempty"`
-	IsOrganization bool   `json:"is_organization,omitempty"`
-	TaxCode        string `json:"tax_code,omitempty"`
-	Company        string `json:"company,omitempty"`
-}
 
 type Profile struct {
 	ID          string
@@ -28,7 +18,7 @@ type Profile struct {
 
 	User *User
 
-	Data ProfileData
+	Data umtypes.ProfileData
 }
 
 const profileQueryColumnsWithUser = "profiles.id, profiles.referral, profiles.access, profiles.created_at, profiles.blacklist_at, profiles.deleted_at, " +
