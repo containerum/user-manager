@@ -27,7 +27,10 @@ func (c *WebAPIClient) Login(request *umtypes.WebAPILoginRequest) (ret map[strin
 	c.log.WithField("login", request.Username).Infoln("Signing in through web-api")
 	ret = make(map[string]interface{})
 
-	resp, err := c.client.R().SetBody(request).SetError(umtypes.WebAPIError{}).SetResult(ret).Post("/api/login")
+	resp, err := c.client.R().SetQueryParams(map[string]string{
+		"username": request.Username,
+		"password": request.Password,
+	}).SetError(umtypes.WebAPIError{}).SetResult(ret).Post("/api/login")
 	if err != nil {
 		c.log.WithError(err).Errorln("Sign in through web-api request failed")
 		return nil, http.StatusInternalServerError, err
