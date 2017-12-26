@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/google/go-github/github"
 	"github.com/huandu/facebook"
 	"github.com/sirupsen/logrus"
@@ -21,20 +22,12 @@ type OAuthUserInfo struct {
 
 type OAuthClient interface {
 	GetUserInfo(accessToken string) (info *OAuthUserInfo, err error)
-	GetResource() OAuthResource
+	GetResource() umtypes.OAuthResource
 }
 
-type OAuthResource string
+var oAuthClients = make(map[umtypes.OAuthResource]OAuthClient)
 
-const (
-	GitHubOAuth   OAuthResource = "github"
-	GoogleOAuth   OAuthResource = "google"
-	FacebookOAuth OAuthResource = "facebook"
-)
-
-var oAuthClients = make(map[OAuthResource]OAuthClient)
-
-func OAuthClientByResource(resource OAuthResource) (client OAuthClient, exists bool) {
+func OAuthClientByResource(resource umtypes.OAuthResource) (client OAuthClient, exists bool) {
 	client, exists = oAuthClients[resource]
 	return
 }
@@ -60,8 +53,8 @@ func NewGithubOAuthClient(appID, appSecret string) *GithubOAuthClient {
 	}
 }
 
-func (gh *GithubOAuthClient) GetResource() OAuthResource {
-	return GitHubOAuth
+func (gh *GithubOAuthClient) GetResource() umtypes.OAuthResource {
+	return umtypes.GitHubOAuth
 }
 
 func (gh *GithubOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInfo, err error) {
@@ -105,8 +98,8 @@ func NewGoogleOAuthClient(appID, appSecret string) *GoogleOAuthClient {
 	}
 }
 
-func (gc *GoogleOAuthClient) GetResource() OAuthResource {
-	return GoogleOAuth
+func (gc *GoogleOAuthClient) GetResource() umtypes.OAuthResource {
+	return umtypes.GoogleOAuth
 }
 
 func (gc *GoogleOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInfo, err error) {
@@ -145,8 +138,8 @@ func NewFacebookOAuthClient(appID, appSecret string) *FacebookOAuthClient {
 	}
 }
 
-func (fb *FacebookOAuthClient) GetResource() OAuthResource {
-	return FacebookOAuth
+func (fb *FacebookOAuthClient) GetResource() umtypes.OAuthResource {
+	return umtypes.FacebookOAuth
 }
 
 func (fb *FacebookOAuthClient) GetUserInfo(accessToken string) (info *OAuthUserInfo, err error) {

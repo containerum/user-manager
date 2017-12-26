@@ -6,21 +6,14 @@ import (
 	"strings"
 	"time"
 
+	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 )
 
-type LinkType string
-
-const (
-	LinkTypeConfirm   LinkType = "confirm"
-	LinkTypePwdChange LinkType = "pwd_change"
-	LinkTypeDelete    LinkType = "delete"
-)
-
 type Link struct {
 	Link      string
-	Type      LinkType
+	Type      umtypes.LinkType
 	CreatedAt time.Time
 	ExpiredAt time.Time
 	IsActive  bool
@@ -33,7 +26,7 @@ const linkQueryColumnsWithUser = "links.link, links.type, links.created_at, link
 	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist"
 const linkQueryColumns = "link, type, created_at, expired_at, is_active, sent_at"
 
-func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) (*Link, error) {
+func (db *DB) CreateLink(linkType umtypes.LinkType, lifeTime time.Duration, user *User) (*Link, error) {
 	now := time.Now().UTC()
 	ret := &Link{
 		Link:      strings.ToUpper(hex.EncodeToString(sha512.New().Sum([]byte(user.ID)))),
@@ -52,7 +45,7 @@ func (db *DB) CreateLink(linkType LinkType, lifeTime time.Duration, user *User) 
 	return ret, err
 }
 
-func (db *DB) GetLinkForUser(linkType LinkType, user *User) (*Link, error) {
+func (db *DB) GetLinkForUser(linkType umtypes.LinkType, user *User) (*Link, error) {
 	db.log.Debugln("Get link", linkType, "for", user.Login)
 	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumns+" FROM links "+
 		"WHERE user_id = $1 AND type = $2 AND is_active AND expired_at > NOW()", user.ID, linkType)

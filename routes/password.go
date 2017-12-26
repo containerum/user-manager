@@ -7,22 +7,13 @@ import (
 
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
-	"git.containerum.net/ch/mail-templater/upstreams"
+	"git.containerum.net/ch/json-types/errors"
+	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/utils"
-	chutils "git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
 )
-
-type PasswordChangeRequest struct {
-	CurrentPassword string `json:"current_password" binding:"required"`
-	NewPassword     string `json:"new_password" binding:"required"`
-}
-
-type PasswordRestoreRequest struct {
-	Link        string `json:"link" binding:"required"`
-	NewPassword string `json:"new_password" binding:"required"`
-}
 
 const (
 	invalidPassword    = "invalid password provided"
@@ -31,11 +22,11 @@ const (
 )
 
 func passwordChangeHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader(UserIDHeader)
-	var request PasswordChangeRequest
+	userID := ctx.GetHeader(umtypes.UserIDHeader)
+	var request umtypes.PasswordChangeRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	}
 
@@ -46,12 +37,12 @@ func passwordChangeHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userWithIDNotFound, userID))
 		return
 	}
 
 	if !utils.CheckPassword(request.CurrentPassword, user.Salt, user.PasswordHash) {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewError(invalidPassword))
+		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New(invalidPassword))
 		return
 	}
 
@@ -72,7 +63,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.MailClient.SendPasswordChangedMail(&upstreams.Recipient{
+	err = svc.MailClient.SendPasswordChangedMail(&mttypes.Recipient{
 		ID:        user.ID,
 		Name:      user.Login,
 		Email:     user.Login,
@@ -105,11 +96,11 @@ func passwordChangeHandler(ctx *gin.Context) {
 }
 
 func passwordResetHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader(UserIDHeader)
-	var request PasswordChangeRequest
+	userID := ctx.GetHeader(umtypes.UserIDHeader)
+	var request umtypes.PasswordChangeRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	}
 
@@ -120,17 +111,17 @@ func passwordResetHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userWithIDNotFound, userID))
 		return
 	}
 	if user.IsInBlacklist {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(userBanned, user.Login))
+		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.Format(userBanned, user.Login))
 		return
 	}
 
 	var link *models.Link
 	err = svc.DB.Transactional(func(tx *models.DB) (err error) {
-		link, err = svc.DB.CreateLink(models.LinkTypePwdChange, 24*time.Hour, user)
+		link, err = svc.DB.CreateLink(umtypes.LinkTypePwdChange, 24*time.Hour, user)
 		return
 	})
 	if err != nil {
@@ -139,7 +130,7 @@ func passwordResetHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.MailClient.SendPasswordResetMail(&upstreams.Recipient{
+	err = svc.MailClient.SendPasswordResetMail(&mttypes.Recipient{
 		ID:        user.ID,
 		Name:      user.Login,
 		Email:     user.Login,
@@ -153,10 +144,10 @@ func passwordResetHandler(ctx *gin.Context) {
 }
 
 func passwordRestoreHandler(ctx *gin.Context) {
-	var request PasswordRestoreRequest
+	var request umtypes.PasswordRestoreRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	}
 
@@ -167,11 +158,11 @@ func passwordRestoreHandler(ctx *gin.Context) {
 		return
 	}
 	if link == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(linkNotFound, request.Link))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(linkNotFound, request.Link))
 		return
 	}
-	if link.Type != models.LinkTypePwdChange {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(linkNotForPassword, request.Link))
+	if link.Type != umtypes.LinkTypePwdChange {
+		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.Format(linkNotForPassword, request.Link))
 		return
 	}
 
@@ -192,7 +183,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.MailClient.SendPasswordChangedMail(&upstreams.Recipient{
+	err = svc.MailClient.SendPasswordChangedMail(&mttypes.Recipient{
 		ID:        link.User.ID,
 		Name:      link.User.Login,
 		Email:     link.User.Login,

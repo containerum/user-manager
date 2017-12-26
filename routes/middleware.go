@@ -28,6 +28,6 @@ func reCaptchaMiddleware(ctx *gin.Context) {
 	}
 
 	if !checkResp.Success {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewError(reCaptchaFailed))
+		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New(reCaptchaFailed))
 	}*/
 }

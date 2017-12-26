@@ -12,79 +12,14 @@ import (
 
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
-	"git.containerum.net/ch/mail-templater/upstreams"
+	"git.containerum.net/ch/json-types/errors"
+	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/utils"
-	chutils "git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
-
-type UserCreateRequest struct {
-	UserName  string `json:"username" binding:"required,email"`
-	Password  string `json:"password" binding:"required"`
-	Referral  string `json:"referral" binding:"url"`
-	ReCaptcha string `json:"recaptcha" binding:"required"`
-}
-
-type UserCreateResponse struct {
-	ID       string `json:"id"`
-	Login    string `json:"login"`
-	IsActive bool   `json:"is_active"`
-}
-
-type ActivateRequest struct {
-	Link string `json:"link" binding:"required"`
-}
-
-type ResendLinkRequest struct {
-	UserName string `json:"username" binding:"required,email"`
-}
-
-type UserInfoByIDGetResponse struct {
-	Login string             `json:"login"`
-	Data  models.ProfileData `json:"data"`
-}
-
-type BlacklistedUserEntry struct {
-	Login string `json:"login"`
-	ID    string `json:"id"`
-}
-
-type BlacklistGetResponse struct {
-	BlacklistedUsers []BlacklistedUserEntry `json:"blacklist_users"`
-}
-
-type LinksGetResponse struct {
-	Links []models.Link `json:"links"`
-}
-
-type UserInfoGetResponse struct {
-	Login     string             `json:"login"`
-	Data      models.ProfileData `json:"data"`
-	ID        string             `json:"id"`
-	IsActive  bool               `json:"is_active"`
-	CreatedAt time.Time          `json:"created_at"`
-}
-
-type UserListEntry struct {
-	ID            string             `json:"id"`
-	Login         string             `json:"login"`
-	Referral      string             `json:"referral"`
-	Role          models.UserRole    `json:"role"`
-	Access        string             `json:"access"`
-	CreatedAt     time.Time          `json:"created_at"`
-	DeletedAt     time.Time          `json:"deleted_at"`
-	BlacklistedAt time.Time          `json:"blacklisted_at"`
-	Data          models.ProfileData `json:"data"`
-	IsActive      bool               `json:"is_active"`
-	IsInBlacklist bool               `json:"is_in_blacklist"`
-	IsDeleted     bool               `json:"is_deleted"`
-}
-
-type UserListGetResponse struct {
-	Users []UserListEntry `json:"users"`
-}
 
 const (
 	userNotFound            = "user %s was not found"
@@ -98,10 +33,10 @@ const (
 )
 
 func userCreateHandler(ctx *gin.Context) {
-	var request UserCreateRequest
+	var request umtypes.UserCreateRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	}
 
@@ -113,7 +48,7 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 	if blacklisted {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, chutils.NewErrorF(domainInBlacklist, request.UserName))
+		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.Format(domainInBlacklist, request.UserName))
 		return
 	}
 
@@ -124,7 +59,7 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 	if user != nil {
-		ctx.AbortWithStatusJSON(http.StatusConflict, chutils.NewErrorF(userAlreadyExists, request.UserName))
+		ctx.AbortWithStatusJSON(http.StatusConflict, errors.Format(userAlreadyExists, request.UserName))
 		return
 	}
 
@@ -134,7 +69,7 @@ func userCreateHandler(ctx *gin.Context) {
 		Login:        request.UserName,
 		PasswordHash: passwordHash,
 		Salt:         salt,
-		Role:         models.RoleUser,
+		Role:         umtypes.RoleUser,
 		IsActive:     false,
 		IsDeleted:    false,
 	}
@@ -157,7 +92,7 @@ func userCreateHandler(ctx *gin.Context) {
 			return err
 		}
 
-		link, err = svc.DB.CreateLink(models.LinkTypeConfirm, 24*time.Hour, newUser)
+		link, err = svc.DB.CreateLink(umtypes.LinkTypeConfirm, 24*time.Hour, newUser)
 		return err
 	})
 
@@ -167,7 +102,7 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.MailClient.SendConfirmationMail(&upstreams.Recipient{
+	err = svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
 		ID:        newUser.ID,
 		Name:      request.UserName,
 		Email:     request.UserName,
@@ -190,7 +125,7 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, UserCreateResponse{
+	ctx.JSON(http.StatusCreated, umtypes.UserCreateResponse{
 		ID:       newUser.ID,
 		Login:    newUser.Login,
 		IsActive: newUser.IsActive,
@@ -198,10 +133,10 @@ func userCreateHandler(ctx *gin.Context) {
 }
 
 func linkResendHandler(ctx *gin.Context) {
-	var request ResendLinkRequest
+	var request umtypes.ResendLinkRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	}
 
@@ -212,18 +147,18 @@ func linkResendHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userNotFound, user.Login))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userNotFound, user.Login))
 		return
 	}
 
-	link, err := svc.DB.GetLinkForUser(models.LinkTypeConfirm, user)
+	link, err := svc.DB.GetLinkForUser(umtypes.LinkTypeConfirm, user)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	if link == nil {
-		link, err = svc.DB.CreateLink(models.LinkTypeConfirm, 24*time.Hour, user)
+		link, err = svc.DB.CreateLink(umtypes.LinkTypeConfirm, 24*time.Hour, user)
 		if err != nil {
 			ctx.Error(err)
 			ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -232,11 +167,11 @@ func linkResendHandler(ctx *gin.Context) {
 	}
 
 	if tdiff := time.Now().UTC().Sub(link.SentAt.Time); link.SentAt.Valid && tdiff < 5*time.Minute {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewErrorF(waitForResend, int(tdiff.Seconds())))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.Format(waitForResend, int(tdiff.Seconds())))
 		return
 	}
 
-	err = svc.MailClient.SendConfirmationMail(&upstreams.Recipient{
+	err = svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
 		ID:        user.ID,
 		Name:      request.UserName,
 		Email:     request.UserName,
@@ -255,10 +190,10 @@ func linkResendHandler(ctx *gin.Context) {
 }
 
 func activateHandler(ctx *gin.Context) {
-	var request ActivateRequest
+	var request umtypes.ActivateRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	}
 
@@ -269,13 +204,13 @@ func activateHandler(ctx *gin.Context) {
 		return
 	}
 	if link == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(linkNotFound, request.Link))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(linkNotFound, request.Link))
 		return
 	}
 
 	// TODO: send request to billing manager
 
-	err = svc.MailClient.SendActivationMail(&upstreams.Recipient{
+	err = svc.MailClient.SendActivationMail(&mttypes.Recipient{
 		ID:        link.User.ID,
 		Name:      link.User.Login,
 		Email:     link.User.Login,
@@ -306,7 +241,7 @@ func activateHandler(ctx *gin.Context) {
 }
 
 func userToBlacklistHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader(UserIDHeader)
+	userID := ctx.GetHeader(umtypes.UserIDHeader)
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
@@ -314,7 +249,7 @@ func userToBlacklistHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userWithIDNotFound, userID))
 		return
 	}
 
@@ -327,7 +262,7 @@ func userToBlacklistHandler(ctx *gin.Context) {
 
 	// TODO: send request to resource manager
 
-	err = svc.MailClient.SendBlockedMail(&upstreams.Recipient{
+	err = svc.MailClient.SendBlockedMail(&mttypes.Recipient{
 		ID:    user.ID,
 		Name:  user.Login,
 		Email: user.Login,
@@ -356,9 +291,9 @@ func blacklistGetHandler(ctx *gin.Context) {
 		return
 	}
 
-	var resp BlacklistGetResponse
+	var resp umtypes.BlacklistGetResponse
 	for _, v := range blacklisted {
-		resp.BlacklistedUsers = append(resp.BlacklistedUsers, BlacklistedUserEntry{
+		resp.BlacklistedUsers = append(resp.BlacklistedUsers, umtypes.BlacklistedUserEntry{
 			Login: v.Login,
 			ID:    v.ID,
 		})
@@ -367,7 +302,7 @@ func blacklistGetHandler(ctx *gin.Context) {
 }
 
 func linksGetHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader(UserIDHeader)
+	userID := ctx.GetHeader(umtypes.UserIDHeader)
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
@@ -375,7 +310,7 @@ func linksGetHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userWithIDNotFound, userID))
 	}
 
 	links, err := svc.DB.GetUserLinks(user)
@@ -385,11 +320,27 @@ func linksGetHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, LinksGetResponse{Links: links})
+	resp := umtypes.LinksGetResponse{Links: []umtypes.Link{}}
+	for _, v := range links {
+		var sentAt time.Time
+		if v.SentAt.Valid {
+			sentAt = v.SentAt.Time
+		}
+		resp.Links = append(resp.Links, umtypes.Link{
+			Link:      v.Link,
+			Type:      v.Type,
+			CreatedAt: v.CreatedAt,
+			ExpiredAt: v.ExpiredAt,
+			IsActive:  v.IsActive,
+			SentAt:    sentAt,
+		})
+	}
+
+	ctx.JSON(http.StatusOK, resp)
 }
 
 func userInfoGetHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader(UserIDHeader)
+	userID := ctx.GetHeader(umtypes.UserIDHeader)
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
@@ -397,7 +348,7 @@ func userInfoGetHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userWithIDNotFound, userID))
 		return
 	}
 
@@ -408,7 +359,7 @@ func userInfoGetHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, &UserInfoGetResponse{
+	ctx.JSON(http.StatusOK, &umtypes.UserInfoGetResponse{
 		Login:     user.Login,
 		Data:      profile.Data,
 		ID:        user.ID,
@@ -418,7 +369,7 @@ func userInfoGetHandler(ctx *gin.Context) {
 }
 
 func userInfoUpdateHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader(UserIDHeader)
+	userID := ctx.GetHeader(umtypes.UserIDHeader)
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
@@ -426,7 +377,7 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userWithIDNotFound, userID))
 		return
 	}
 
@@ -439,7 +390,7 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindWith(&profile.Data, binding.JSON); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewError(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	}
 
@@ -452,7 +403,7 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, &UserInfoGetResponse{
+	ctx.JSON(http.StatusOK, &umtypes.UserInfoGetResponse{
 		Login:     user.Login,
 		Data:      profile.Data,
 		ID:        user.ID,
@@ -469,7 +420,7 @@ func userListGetHandler(ctx *gin.Context) {
 		return
 	}
 	if profiles == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewError(profilesNotFound))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.New(profilesNotFound))
 		return
 	}
 
@@ -504,12 +455,12 @@ func userListGetHandler(ctx *gin.Context) {
 		return ret
 	}
 
-	var resp UserListGetResponse
+	var resp umtypes.UserListGetResponse
 	for _, v := range profiles {
 		if !satisfiesFilter(v) {
 			continue
 		}
-		resp.Users = append(resp.Users, UserListEntry{
+		resp.Users = append(resp.Users, umtypes.UserListEntry{
 			ID:            v.User.ID,
 			Login:         v.User.Login,
 			Referral:      v.Referral,
@@ -528,7 +479,7 @@ func userListGetHandler(ctx *gin.Context) {
 }
 
 func partialDeleteHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader(UserIDHeader)
+	userID := ctx.GetHeader(umtypes.UserIDHeader)
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
@@ -536,7 +487,7 @@ func partialDeleteHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userWithIDNotFound, userID))
 		return
 	}
 
@@ -565,7 +516,7 @@ func partialDeleteHandler(ctx *gin.Context) {
 }
 
 func completeDeleteHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader(UserIDHeader)
+	userID := ctx.GetHeader(umtypes.UserIDHeader)
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
@@ -573,12 +524,12 @@ func completeDeleteHandler(ctx *gin.Context) {
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, chutils.NewErrorF(userWithIDNotFound, userID))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userWithIDNotFound, userID))
 		return
 	}
 
 	if !user.IsDeleted {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, chutils.NewErrorF(userNotPartiallyDeleted, user.Login))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.Format(userNotPartiallyDeleted, user.Login))
 		return
 	}
 
