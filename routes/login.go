@@ -236,7 +236,7 @@ func oauthLoginHandler(ctx *gin.Context) {
 }
 
 func webAPILoginHandler(ctx *gin.Context) {
-	var request clients.WebAPILoginRequest
+	var request umtypes.WebAPILoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))

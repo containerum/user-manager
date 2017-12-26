@@ -3,6 +3,7 @@ package clients
 import (
 	"net/http"
 
+	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
 )
@@ -10,19 +11,6 @@ import (
 type WebAPIClient struct {
 	log    *logrus.Entry
 	client *resty.Client
-}
-
-type WebAPILoginRequest struct {
-	Login    string `json:"login" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
-
-type WebAPIError struct {
-	Message string `json:"message"`
-}
-
-func (e *WebAPIError) Error() string {
-	return e.Message
 }
 
 func NewWebAPIClient(serverUrl string) *WebAPIClient {
@@ -35,17 +23,17 @@ func NewWebAPIClient(serverUrl string) *WebAPIClient {
 }
 
 // returns raw answer from web-api
-func (c *WebAPIClient) Login(request *WebAPILoginRequest) (ret map[string]interface{}, statusCode int, err error) {
+func (c *WebAPIClient) Login(request *umtypes.WebAPILoginRequest) (ret map[string]interface{}, statusCode int, err error) {
 	c.log.WithField("login", request.Login).Infoln("Signing in through web-api")
 	ret = make(map[string]interface{})
 
-	resp, err := c.client.R().SetBody(request).SetError(WebAPIError{}).SetResult(ret).Post("/api/login")
+	resp, err := c.client.R().SetBody(request).SetError(umtypes.WebAPIError{}).SetResult(ret).Post("/api/login")
 	if err != nil {
 		c.log.WithError(err).Errorln("Sign in through web-api request failed")
 		return nil, http.StatusInternalServerError, err
 	}
 	if resp.StatusCode() > 399 {
-		msg := resp.Error().(*WebAPIError)
+		msg := resp.Error().(*umtypes.WebAPIError)
 		c.log.WithField("message", msg.Message).Infoln("Sign in through web-api failed")
 		return nil, resp.StatusCode(), msg
 	}
