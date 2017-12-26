@@ -12,6 +12,7 @@ import (
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/clients"
 	"git.containerum.net/ch/user-manager/models"
+	"git.containerum.net/ch/user-manager/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,18 +29,23 @@ func basicLoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := svc.DB.GetUserByLogin(request.Login)
+	user, err := svc.DB.GetUserByLogin(request.Username)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userNotFound, request.Login))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userNotFound, request.Username))
 		return
 	}
 	if user.IsInBlacklist {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.Format(userBanned, request.Login))
+		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.Format(userBanned, request.Username))
+		return
+	}
+
+	if !utils.CheckPassword(request.Password, user.Salt, user.PasswordHash) {
+		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New(invalidPassword))
 		return
 	}
 
