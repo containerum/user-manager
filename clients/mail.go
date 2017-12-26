@@ -3,6 +3,7 @@ package clients
 import (
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"git.containerum.net/ch/utils"
+	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
 )
@@ -15,6 +16,8 @@ type MailClient struct {
 func NewMailClient(serverUrl string) *MailClient {
 	log := logrus.WithField("component", "mail_client")
 	client := resty.New().SetHostURL(serverUrl).SetLogger(log.WriterLevel(logrus.DebugLevel))
+	client.JSONMarshal = jsoniter.Marshal
+	client.JSONUnmarshal = jsoniter.Unmarshal
 	return &MailClient{
 		rest: client,
 		log:  log,
