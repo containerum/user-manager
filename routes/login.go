@@ -146,7 +146,7 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 		}
 
 		token.IsActive = false
-		token.SessionID = "sid" // TODO: session ID here
+		token.SessionID = ctx.GetHeader(umtypes.SessionIDHeader)
 		if err := tx.UpdateToken(token); err != nil {
 			return err
 		}
