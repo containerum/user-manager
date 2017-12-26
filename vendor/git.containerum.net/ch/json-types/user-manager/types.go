@@ -40,7 +40,7 @@ const (
 )
 
 type BasicLoginRequest struct {
-	Username  string `json:"login" binding:"required,email"`
+	Username  string `json:"username" binding:"required,email"`
 	Password  string `json:"password" binding:"required"`
 	ReCaptcha string `json:"recaptcha" binding:"required"`
 }
@@ -131,6 +131,6 @@ type UserListGetResponse struct {
 }
 
 type WebAPILoginRequest struct {
-	Login    string `json:"login" binding:"required,email"`
+	Username string `json:"username" binding:"required,email"`
 	Password string `json:"password" binding:"required"`
 }
