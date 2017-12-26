@@ -7,5 +7,5 @@ type WebAPIError struct {
 }
 
 func (e *WebAPIError) Error() string {
-	return fmt.Sprint(e.Message)
+	return fmt.Sprintf("%#v", e.Message)
 }

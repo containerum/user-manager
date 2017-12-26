@@ -40,7 +40,7 @@ const (
 )
 
 type BasicLoginRequest struct {
-	Login     string `json:"login" binding:"required,email"`
+	Username  string `json:"login" binding:"username,email"`
 	Password  string `json:"password" binding:"required"`
 	ReCaptcha string `json:"recaptcha" binding:"required"`
 }
