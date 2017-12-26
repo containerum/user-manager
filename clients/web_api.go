@@ -24,7 +24,7 @@ func NewWebAPIClient(serverUrl string) *WebAPIClient {
 
 // returns raw answer from web-api
 func (c *WebAPIClient) Login(request *umtypes.WebAPILoginRequest) (ret map[string]interface{}, statusCode int, err error) {
-	c.log.WithField("login", request.Login).Infoln("Signing in through web-api")
+	c.log.WithField("login", request.Username).Infoln("Signing in through web-api")
 	ret = make(map[string]interface{})
 
 	resp, err := c.client.R().SetBody(request).SetError(umtypes.WebAPIError{}).SetResult(ret).Post("/api/login")
