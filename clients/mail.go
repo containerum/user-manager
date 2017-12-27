@@ -1,8 +1,8 @@
 package clients
 
 import (
+	"git.containerum.net/ch/json-types/errors"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	"git.containerum.net/ch/utils"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
@@ -15,7 +15,11 @@ type MailClient struct {
 
 func NewMailClient(serverUrl string) *MailClient {
 	log := logrus.WithField("component", "mail_client")
-	client := resty.New().SetHostURL(serverUrl).SetLogger(log.WriterLevel(logrus.DebugLevel)).SetDebug(true)
+	client := resty.New().
+		SetHostURL(serverUrl).
+		SetLogger(log.WriterLevel(logrus.DebugLevel)).
+		SetDebug(true).
+		SetError(errors.Error{})
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
 	return &MailClient{
@@ -31,12 +35,14 @@ func (mc *MailClient) sendOneTemplate(tmplName string, recipient *mttypes.Recipi
 	resp, err := mc.rest.R().
 		SetBody(req).
 		SetResult(mttypes.SendResponse{}).
-		SetError(utils.Error{}).
 		Post("/templates/" + tmplName)
 	if err != nil {
 		return err
 	}
-	return resp.Error().(*utils.Error)
+	if resp.Error() != nil {
+		return resp.Error().(*errors.Error)
+	}
+	return nil
 }
 
 func (mc *MailClient) SendConfirmationMail(recipient *mttypes.Recipient) error {

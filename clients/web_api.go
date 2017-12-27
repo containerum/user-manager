@@ -40,6 +40,9 @@ func (c *WebAPIClient) Login(request *umtypes.WebAPILoginRequest) (ret map[strin
 		c.log.WithError(err).Errorln("Sign in through web-api request failed")
 		return nil, http.StatusInternalServerError, err
 	}
+	if resp.Error() != nil {
+		err = resp.Error().(*umtypes.WebAPIError)
+	}
 
-	return ret, resp.StatusCode(), resp.Error().(*umtypes.WebAPIError)
+	return ret, resp.StatusCode(), err
 }
