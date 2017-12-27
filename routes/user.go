@@ -210,7 +210,11 @@ func activateHandler(ctx *gin.Context) {
 
 	err = svc.DB.Transactional(func(tx *models.DB) error {
 		link.User.IsActive = true
-		return tx.UpdateUser(link.User)
+		if err := tx.UpdateUser(link.User); err != nil {
+			return err
+		}
+		link.IsActive = false
+		return tx.UpdateLink(link)
 	})
 	if err != nil {
 		ctx.Error(err)

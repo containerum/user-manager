@@ -175,8 +175,15 @@ func passwordRestoreHandler(ctx *gin.Context) {
 		return
 	}
 
-	link.User.PasswordHash = utils.GetKey(link.User.Login, request.NewPassword, link.User.Salt)
-	err = svc.DB.UpdateUser(link.User)
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+		link.User.PasswordHash = utils.GetKey(link.User.Login, request.NewPassword, link.User.Salt)
+		if err := svc.DB.UpdateUser(link.User); err != nil {
+			return err
+		}
+		link.IsActive = false
+		return svc.DB.UpdateLink(link)
+	})
+
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
