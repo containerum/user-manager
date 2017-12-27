@@ -71,7 +71,7 @@ func (db *DB) CreateUser(user *User) error {
 func (db *DB) UpdateUser(user *User) error {
 	db.log.Debugln("Update user", user.Login)
 	_, err := db.eLog.Exec("UPDATE users SET "+
-		"login = $2, password_hash = $3, salt = $4, role = $5, is_active = $5, is_deleted = $6 WHERE id = $1",
+		"login = $2, password_hash = $3, salt = $4, role = $5, is_active = $6, is_deleted = $7 WHERE id = $1",
 		user.ID, user.Login, user.PasswordHash, user.Salt, user.Role, user.IsActive, user.IsDeleted)
 	return err
 }
