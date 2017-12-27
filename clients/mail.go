@@ -15,7 +15,7 @@ type MailClient struct {
 
 func NewMailClient(serverUrl string) *MailClient {
 	log := logrus.WithField("component", "mail_client")
-	client := resty.New().SetHostURL(serverUrl).SetLogger(log.WriterLevel(logrus.DebugLevel))
+	client := resty.New().SetHostURL(serverUrl).SetLogger(log.WriterLevel(logrus.DebugLevel)).SetDebug(true)
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
 	return &MailClient{

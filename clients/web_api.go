@@ -16,7 +16,7 @@ type WebAPIClient struct {
 
 func NewWebAPIClient(serverUrl string) *WebAPIClient {
 	log := logrus.WithField("component", "web_api_client")
-	client := resty.New().SetHostURL(serverUrl).SetLogger(log.WriterLevel(logrus.DebugLevel))
+	client := resty.New().SetHostURL(serverUrl).SetLogger(log.WriterLevel(logrus.DebugLevel)).SetDebug(true)
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
 	return &WebAPIClient{
