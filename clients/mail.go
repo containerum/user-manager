@@ -39,7 +39,10 @@ func (mc *MailClient) sendOneTemplate(tmplName string, recipient *mttypes.Recipi
 	if err != nil {
 		return err
 	}
-	return resp.Error().(*errors.Error)
+	if resp.Error() != nil {
+		return resp.Error().(*errors.Error)
+	}
+	return nil
 }
 
 func (mc *MailClient) SendConfirmationMail(recipient *mttypes.Recipient) error {
