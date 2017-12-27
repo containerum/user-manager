@@ -44,7 +44,7 @@ func basicLoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	if !utils.CheckPassword(request.Password, user.Salt, user.PasswordHash) {
+	if !utils.CheckPassword(request.Username, request.Password, user.Salt, user.PasswordHash) {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New(invalidPassword))
 		return
 	}

@@ -41,7 +41,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 		return
 	}
 
-	if !utils.CheckPassword(request.CurrentPassword, user.Salt, user.PasswordHash) {
+	if !utils.CheckPassword(user.Login, request.CurrentPassword, user.Salt, user.PasswordHash) {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New(invalidPassword))
 		return
 	}
@@ -55,7 +55,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 		return
 	}
 
-	user.PasswordHash = utils.GetKey(request.NewPassword, user.Salt)
+	user.PasswordHash = utils.GetKey(user.Login, request.NewPassword, user.Salt)
 	err = svc.DB.UpdateUser(user)
 	if err != nil {
 		ctx.Error(err)
@@ -175,7 +175,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 		return
 	}
 
-	link.User.PasswordHash = utils.GetKey(request.NewPassword, link.User.Salt)
+	link.User.PasswordHash = utils.GetKey(link.User.Login, request.NewPassword, link.User.Salt)
 	err = svc.DB.UpdateUser(link.User)
 	if err != nil {
 		ctx.Error(err)

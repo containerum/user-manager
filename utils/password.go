@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"encoding/hex"
+
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -30,18 +32,21 @@ func GenSalt(args ...string) string {
 	return base64.StdEncoding.EncodeToString(resultSalt)
 }
 
-func GetByteKey(pwd, salt string) []byte {
-	return pbkdf2.Key([]byte(pwd), []byte(salt), pwdIteration, keyLen, sha256.New)
+func GetByteKey(username, pwd, salt string) []byte {
+	return pbkdf2.Key([]byte(WebAPIPasswordEncode(username, pwd)), []byte(salt), pwdIteration, keyLen, sha256.New)
 }
 
-func GetKey(pwd, salt string) string {
-	bKey := GetByteKey(pwd, salt)
+// encode password with function from old web-api to allow old users to login
+func WebAPIPasswordEncode(username, plainPass string) string {
+	sum := sha256.Sum256([]byte(username + plainPass))
+	return hex.EncodeToString(sum[:])
+}
+
+func GetKey(username, pwd, salt string) string {
+	bKey := GetByteKey(username, pwd, salt)
 	return base64.StdEncoding.EncodeToString(bKey)
 }
 
-func CheckPassword(pwd, salt, key string) bool {
-	if key == GetKey(pwd, salt) {
-		return true
-	}
-	return false
+func CheckPassword(username, pwd, salt, key string) bool {
+	return key == GetKey(username, pwd, salt)
 }
