@@ -5,7 +5,7 @@ import (
 )
 
 type ProfileData struct {
-	Email          string `json:"email,omitempty" binding:"email"`
+	Email          string `json:"email,omitempty" binding:"omitempty,email"`
 	Address        string `json:"address,omitempty"`
 	Phone          string `json:"phone,omitempty"`
 	FirstName      string `json:"first_name,omitempty"`
@@ -67,7 +67,7 @@ type PasswordRestoreRequest struct {
 type UserCreateRequest struct {
 	UserName  string `json:"username" binding:"required,email"`
 	Password  string `json:"password" binding:"required"`
-	Referral  string `json:"referral" binding:"url"`
+	Referral  string `json:"referral" binding:"omitempty,url"`
 	ReCaptcha string `json:"recaptcha" binding:"required"`
 }
 

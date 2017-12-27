@@ -208,6 +208,16 @@ func activateHandler(ctx *gin.Context) {
 		return
 	}
 
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+		link.User.IsActive = true
+		return tx.UpdateUser(link.User)
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	// TODO: send request to billing manager
 
 	err = svc.MailClient.SendActivationMail(&mttypes.Recipient{
