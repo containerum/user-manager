@@ -102,23 +102,20 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
-		ID:        newUser.ID,
-		Name:      request.UserName,
-		Email:     request.UserName,
-		Variables: map[string]string{"CONFIRM": link.Link},
-	})
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
 	err = svc.DB.Transactional(func(tx *models.DB) error {
+		err := svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
+			ID:        newUser.ID,
+			Name:      request.UserName,
+			Email:     request.UserName,
+			Variables: map[string]string{"CONFIRM": link.Link},
+		})
+		if err != nil {
+			return err
+		}
 		link.SentAt.Time = time.Now().UTC()
 		link.SentAt.Valid = true
 		return tx.UpdateLink(link)
 	})
-
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
@@ -171,22 +168,27 @@ func linkResendHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
-		ID:        user.ID,
-		Name:      request.UserName,
-		Email:     request.UserName,
-		Variables: map[string]string{"CONFIRM": link.Link},
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+		err := svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
+			ID:        user.ID,
+			Name:      request.UserName,
+			Email:     request.UserName,
+			Variables: map[string]string{"CONFIRM": link.Link},
+		})
+		if err != nil {
+			return err
+		}
+		link.SentAt.Time = time.Now().UTC()
+		link.SentAt.Valid = true
+		return tx.UpdateLink(link)
 	})
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
-	err = svc.DB.Transactional(func(tx *models.DB) error {
-		link.SentAt.Time = time.Now().UTC()
-		link.SentAt.Valid = true
-		return tx.UpdateLink(link)
-	})
+
+	ctx.Status(http.StatusOK)
 }
 
 func activateHandler(ctx *gin.Context) {
