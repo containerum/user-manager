@@ -9,6 +9,8 @@ import (
 
 	"encoding/hex"
 
+	"crypto/md5"
+
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -38,7 +40,7 @@ func GetByteKey(username, pwd, salt string) []byte {
 
 // encode password with function from old web-api to allow old users to login
 func WebAPIPasswordEncode(username, plainPass string) string {
-	sum := sha256.Sum256([]byte(username + plainPass))
+	sum := md5.Sum([]byte(username + plainPass))
 	return hex.EncodeToString(sum[:])
 }
 
