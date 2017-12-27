@@ -19,6 +19,7 @@ import (
 const (
 	oneTimeTokenNotFound = "one-time token %s not exists or already used"
 	resourceNotSupported = "resource %s not supported now"
+	activationNeeded     = "Activate your account please. Check your email"
 )
 
 func basicLoginHandler(ctx *gin.Context) {
@@ -91,7 +92,7 @@ func basicLoginHandler(ctx *gin.Context) {
 			return
 		}
 
-		ctx.Status(http.StatusOK)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.Format(activationNeeded)) // TODO: may be other status code/message
 		return
 	}
 
