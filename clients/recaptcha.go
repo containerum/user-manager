@@ -5,6 +5,7 @@ import (
 
 	"net/url"
 
+	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
 )
@@ -26,7 +27,9 @@ type ReCaptchaResponse struct {
 
 func NewReCaptchaClient(privateKey string) *ReCaptchaClient {
 	log := logrus.WithField("component", "recaptcha")
-	client := resty.New().SetLogger(log.WriterLevel(logrus.DebugLevel)).SetHostURL(reCaptchaAPI)
+	client := resty.New().SetLogger(log.WriterLevel(logrus.DebugLevel)).SetHostURL(reCaptchaAPI).SetDebug(true)
+	client.JSONMarshal = jsoniter.Marshal
+	client.JSONUnmarshal = jsoniter.Unmarshal
 	return &ReCaptchaClient{
 		log:        log,
 		client:     client,
