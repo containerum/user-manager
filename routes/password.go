@@ -33,7 +33,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
 		return
 	}
 	if user == nil {
@@ -51,7 +51,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, deleteTokenFailed)
 		return
 	}
 
@@ -59,7 +59,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 	err = svc.DB.UpdateUser(user)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userUpdateFailed)
 		return
 	}
 
@@ -71,7 +71,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
 		return
 	}
 
@@ -89,7 +89,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, tokenCreateFailed)
 		return
 	}
 
@@ -107,7 +107,7 @@ func passwordResetHandler(ctx *gin.Context) {
 	user, err := svc.DB.GetUserByID(request.Username)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
 		return
 	}
 	if user == nil {
@@ -126,7 +126,7 @@ func passwordResetHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, linkCreateFailed)
 		return
 	}
 
@@ -138,7 +138,7 @@ func passwordResetHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
 		return
 	}
 }
@@ -154,7 +154,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 	link, err := svc.DB.GetLinkFromString(request.Link)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, linkGetFailed)
 		return
 	}
 	if link == nil {
@@ -171,7 +171,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, deleteTokenFailed)
 		return
 	}
 
@@ -183,10 +183,9 @@ func passwordRestoreHandler(ctx *gin.Context) {
 		link.IsActive = false
 		return svc.DB.UpdateLink(link)
 	})
-
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userUpdateFailed)
 		return
 	}
 
@@ -198,7 +197,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
 		return
 	}
 
@@ -216,7 +215,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, tokenCreateFailed)
 		return
 	}
 

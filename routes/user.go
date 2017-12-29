@@ -44,7 +44,7 @@ func userCreateHandler(ctx *gin.Context) {
 	blacklisted, err := svc.DB.IsDomainBlacklisted(domain)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, blacklistDomainCheckFailed)
 		return
 	}
 	if blacklisted {
@@ -55,7 +55,7 @@ func userCreateHandler(ctx *gin.Context) {
 	user, err := svc.DB.GetUserByLogin(request.UserName)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
 		return
 	}
 	if user != nil {
@@ -79,7 +79,7 @@ func userCreateHandler(ctx *gin.Context) {
 	err = svc.DB.Transactional(func(tx *models.DB) error {
 		if err := svc.DB.CreateUser(newUser); err != nil {
 			ctx.Error(err)
-			ctx.AbortWithStatus(http.StatusInternalServerError)
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, userCreateFailed)
 			return err
 		}
 
@@ -98,7 +98,7 @@ func userCreateHandler(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userCreateFailed)
 		return
 	}
 
@@ -118,7 +118,7 @@ func userCreateHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
 		return
 	}
 
@@ -140,7 +140,7 @@ func linkResendHandler(ctx *gin.Context) {
 	user, err := svc.DB.GetUserByLogin(request.UserName)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
 		return
 	}
 	if user == nil {
@@ -151,14 +151,14 @@ func linkResendHandler(ctx *gin.Context) {
 	link, err := svc.DB.GetLinkForUser(umtypes.LinkTypeConfirm, user)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, linkGetFailed)
 		return
 	}
 	if link == nil {
 		link, err = svc.DB.CreateLink(umtypes.LinkTypeConfirm, 24*time.Hour, user)
 		if err != nil {
 			ctx.Error(err)
-			ctx.AbortWithStatus(http.StatusInternalServerError)
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, linkCreateFailed)
 			return
 		}
 	}
@@ -184,7 +184,7 @@ func linkResendHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
 		return
 	}
 
@@ -202,7 +202,7 @@ func activateHandler(ctx *gin.Context) {
 	link, err := svc.DB.GetLinkFromString(request.Link)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, linkGetFailed)
 		return
 	}
 	if link == nil {
@@ -220,23 +220,11 @@ func activateHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userUpdateFailed)
 		return
 	}
 
 	// TODO: send request to billing manager
-
-	err = svc.MailClient.SendActivationMail(&mttypes.Recipient{
-		ID:        link.User.ID,
-		Name:      link.User.Login,
-		Email:     link.User.Login,
-		Variables: map[string]string{},
-	})
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
-		return
-	}
 
 	tokens, err := svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
 		UserAgent:   ctx.Request.UserAgent(),
@@ -250,7 +238,19 @@ func activateHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, tokenCreateFailed)
+		return
+	}
+
+	err = svc.MailClient.SendActivationMail(&mttypes.Recipient{
+		ID:        link.User.ID,
+		Name:      link.User.Login,
+		Email:     link.User.Login,
+		Variables: map[string]string{},
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
 		return
 	}
 
@@ -268,7 +268,7 @@ func userToBlacklistHandler(ctx *gin.Context) {
 	user, err := svc.DB.GetUserByID(request.UserID)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
 		return
 	}
 	if user == nil {
@@ -279,7 +279,7 @@ func userToBlacklistHandler(ctx *gin.Context) {
 	profile, err := svc.DB.GetProfileByUser(user)
 	if err != nil || profile == nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, profileGetFailed)
 		return
 	}
 
@@ -292,14 +292,16 @@ func userToBlacklistHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
 		return
 	}
 
-	err = svc.DB.BlacklistUser(user)
+	err = svc.DB.Transactional(func(tx *models.DB) error {
+		return svc.DB.BlacklistUser(user)
+	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, blacklistUserFailed)
 		return
 	}
 
@@ -317,7 +319,7 @@ func blacklistGetHandler(ctx *gin.Context) {
 	blacklisted, err := svc.DB.GetBlacklistedUsers(params.PerPage, params.Page)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, blacklistUsersGetFailed)
 		return
 	}
 
@@ -328,7 +330,7 @@ func blacklistGetHandler(ctx *gin.Context) {
 			ID:    v.ID,
 		})
 	}
-	ctx.JSON(http.StatusAccepted, resp)
+	ctx.JSON(http.StatusOK, resp)
 }
 
 func linksGetHandler(ctx *gin.Context) {
@@ -336,7 +338,7 @@ func linksGetHandler(ctx *gin.Context) {
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
 		return
 	}
 	if user == nil {
@@ -346,7 +348,7 @@ func linksGetHandler(ctx *gin.Context) {
 	links, err := svc.DB.GetUserLinks(user)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, linkGetFailed)
 		return
 	}
 
@@ -374,7 +376,7 @@ func userInfoGetHandler(ctx *gin.Context) {
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
 		return
 	}
 	if user == nil {
@@ -385,7 +387,7 @@ func userInfoGetHandler(ctx *gin.Context) {
 	profile, err := svc.DB.GetProfileByUser(user)
 	if err != nil || profile == nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, profileGetFailed)
 		return
 	}
 
@@ -403,7 +405,7 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
 		return
 	}
 	if user == nil {
@@ -414,7 +416,7 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 	profile, err := svc.DB.GetProfileByUser(user)
 	if err != nil || profile == nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, profileGetFailed)
 		return
 	}
 
@@ -429,7 +431,7 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userUpdateFailed)
 		return
 	}
 
@@ -453,7 +455,7 @@ func userListGetHandler(ctx *gin.Context) {
 	profiles, err := svc.DB.GetAllProfiles(params.PerPage, params.Page)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, profileGetFailed)
 		return
 	}
 	if profiles == nil {
@@ -520,7 +522,7 @@ func partialDeleteHandler(ctx *gin.Context) {
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
 		return
 	}
 	if user == nil {
@@ -536,7 +538,7 @@ func partialDeleteHandler(ctx *gin.Context) {
 		UserId: &common.UUID{Value: user.ID},
 	}); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, deleteTokenFailed)
 		return
 	}
 
@@ -546,7 +548,7 @@ func partialDeleteHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userUpdateFailed)
 		return
 	}
 
@@ -558,7 +560,7 @@ func partialDeleteHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
 		return
 	}
 
@@ -570,7 +572,7 @@ func completeDeleteHandler(ctx *gin.Context) {
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
 		return
 	}
 	if user == nil {
@@ -591,7 +593,7 @@ func completeDeleteHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userUpdateFailed)
 		return
 	}
 	ctx.Status(http.StatusAccepted)

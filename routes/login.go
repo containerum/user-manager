@@ -33,7 +33,7 @@ func basicLoginHandler(ctx *gin.Context) {
 	user, err := svc.DB.GetUserByLogin(request.Username)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
 		return
 	}
 	if user == nil {
@@ -54,7 +54,7 @@ func basicLoginHandler(ctx *gin.Context) {
 		link, err := svc.DB.GetLinkForUser(umtypes.LinkTypeConfirm, user)
 		if err != nil {
 			ctx.Error(err)
-			ctx.AbortWithStatus(http.StatusInternalServerError)
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, linkGetFailed)
 			return
 		}
 
@@ -62,7 +62,7 @@ func basicLoginHandler(ctx *gin.Context) {
 			link, err = svc.DB.CreateLink(umtypes.LinkTypeConfirm, 24*time.Hour, user)
 			if err != nil {
 				ctx.Error(err)
-				ctx.AbortWithStatus(http.StatusInternalServerError)
+				ctx.AbortWithStatusJSON(http.StatusInternalServerError, linkCreateFailed)
 				return
 			}
 		}
@@ -88,7 +88,7 @@ func basicLoginHandler(ctx *gin.Context) {
 		})
 		if err != nil {
 			ctx.Error(err)
-			ctx.AbortWithStatus(http.StatusInternalServerError)
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
 			return
 		}
 
@@ -111,7 +111,7 @@ func basicLoginHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, tokenCreateFailed)
 		return
 	}
 
@@ -129,7 +129,7 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 	token, err := svc.DB.GetTokenObject(request.Token)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, getTokenFailed)
 		return
 	}
 	if token == nil {
@@ -172,7 +172,7 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, tokenCreateFailed)
 		return
 	}
 
@@ -196,14 +196,14 @@ func oauthLoginHandler(ctx *gin.Context) {
 	info, err := resource.GetUserInfo(request.AccessToken)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, oauthUserInfoGetFailed)
 		return
 	}
 
 	user, err := svc.DB.GetUserByLogin(info.Email)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
 		return
 	}
 	if user == nil {
@@ -218,7 +218,7 @@ func oauthLoginHandler(ctx *gin.Context) {
 	accounts, err := svc.DB.GetUserBoundAccounts(user)
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, boundAccountsGetFailed)
 		return
 	}
 	if accounts == nil {
@@ -226,7 +226,7 @@ func oauthLoginHandler(ctx *gin.Context) {
 			return tx.BindAccount(user, string(request.Resource), info.UserID)
 		}); err != nil {
 			ctx.Error(err)
-			ctx.AbortWithStatus(http.StatusInternalServerError)
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, bindAccountFailed)
 			return
 		}
 	}
@@ -246,7 +246,7 @@ func oauthLoginHandler(ctx *gin.Context) {
 	})
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, tokenCreateFailed)
 		return
 	}
 
@@ -281,6 +281,11 @@ func webAPILoginHandler(ctx *gin.Context) {
 		Access:      access,
 		PartTokenId: nil,
 	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, tokenCreateFailed)
+		return
+	}
 
 	resp["access_token"] = tokens.AccessToken
 	resp["refresh_token"] = tokens.RefreshToken
