@@ -69,3 +69,8 @@ func (mc *MailClient) SendPasswordResetMail(recipient *mttypes.Recipient) error 
 	mc.log.Infoln("Sending reset password mail to", recipient.Email)
 	return mc.sendOneTemplate("reset_pwd", recipient)
 }
+
+func (mc *MailClient) SendAccDeletedMail(recipient *mttypes.Recipient) error {
+	mc.log.Infoln("Sending account deleted mail to", recipient.Email)
+	return mc.sendOneTemplate("delete_acc", recipient)
+}
