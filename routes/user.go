@@ -549,6 +549,19 @@ func partialDeleteHandler(ctx *gin.Context) {
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
+
+	err = svc.MailClient.SendAccDeletedMail(&mttypes.Recipient{
+		ID:        user.ID,
+		Name:      user.Login,
+		Email:     user.Login,
+		Variables: map[string]string{},
+	})
+	if err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
 	ctx.Status(http.StatusAccepted)
 }
 
