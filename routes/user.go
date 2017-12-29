@@ -258,15 +258,21 @@ func activateHandler(ctx *gin.Context) {
 }
 
 func userToBlacklistHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader(umtypes.UserIDHeader)
-	user, err := svc.DB.GetUserByID(userID)
+	var request umtypes.UserToBlacklistRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		return
+	}
+
+	user, err := svc.DB.GetUserByID(request.UserID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userWithIDNotFound, userID))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userWithIDNotFound, request.UserID))
 		return
 	}
 
