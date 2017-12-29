@@ -4,11 +4,6 @@ import umtypes "git.containerum.net/ch/json-types/user-manager"
 
 type UserRole int
 
-const (
-	RoleUser UserRole = iota
-	RoleAdmin
-)
-
 type User struct {
 	ID            string           `db:"id"`
 	Login         string           `db:"login"`

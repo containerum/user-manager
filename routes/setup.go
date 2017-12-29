@@ -32,14 +32,14 @@ func SetupRoutes(app *gin.Engine, services Services) {
 		user.POST("/sign_up", reCaptchaMiddleware, userCreateHandler)
 		user.POST("/sign_up/resend", linkResendHandler)
 		user.POST("/activation", activateHandler)
-		user.POST("/blacklist", userToBlacklistHandler)
+		user.POST("/blacklist", adminAccessMiddleware, userToBlacklistHandler)
 		user.POST("/delete/partial", partialDeleteHandler)
-		user.POST("/delete/complete", completeDeleteHandler)
+		user.POST("/delete/complete", adminAccessMiddleware, completeDeleteHandler)
 
-		user.GET("/links/:user_id", linksGetHandler)
-		user.GET("/blacklist", blacklistGetHandler)
+		user.GET("/:user_id/links/", adminAccessMiddleware, linksGetHandler)
+		user.GET("/blacklist", adminAccessMiddleware, blacklistGetHandler)
 		user.GET("/info", userInfoGetHandler)
-		user.GET("/users", userListGetHandler)
+		user.GET("/users", adminAccessMiddleware, userListGetHandler)
 	}
 
 	login := app.Group("/login")
