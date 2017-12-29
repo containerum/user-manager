@@ -145,5 +145,5 @@ type UserToBlacklistRequest struct {
 
 type UserListQuery struct {
 	Page    int `form:"page" binding:"required,gt=0"`
-	PerPage int `form:"per_pages" binding:"required,gt=0"`
+	PerPage int `form:"per_page" binding:"required,gt=0"`
 }
