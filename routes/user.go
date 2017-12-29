@@ -307,7 +307,14 @@ func userToBlacklistHandler(ctx *gin.Context) {
 }
 
 func blacklistGetHandler(ctx *gin.Context) {
-	blacklisted, err := svc.DB.GetBlacklistedUsers()
+	var params umtypes.UserListQuery
+	if err := ctx.ShouldBindQuery(&params); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, errors.New(err.Error()))
+		return
+	}
+
+	blacklisted, err := svc.DB.GetBlacklistedUsers(params.PerPage, params.Page)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
