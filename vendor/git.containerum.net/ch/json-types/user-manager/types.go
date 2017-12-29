@@ -142,3 +142,8 @@ type WebAPILoginRequest struct {
 type UserToBlacklistRequest struct {
 	UserID string `json:"user_id" binding:"required,uuid4"`
 }
+
+type UserListQuery struct {
+	Page    int `form:"page" binding:"required,gt=0"`
+	PerPage int `form:"per_page" binding:"required,gt=0"`
+}

@@ -76,10 +76,11 @@ func (db *DB) UpdateUser(user *User) error {
 	return err
 }
 
-func (db *DB) GetBlacklistedUsers() ([]User, error) {
+func (db *DB) GetBlacklistedUsers(perPage, page int) ([]User, error) {
 	db.log.Debugln("Get blacklisted users")
-	var resp []User
-	rows, err := db.qLog.Queryx("SELECT " + userQueryColumns + " FROM users WHERE is_in_blacklist")
+	resp := make([]User, 0)
+	rows, err := db.qLog.Queryx("SELECT "+userQueryColumns+" FROM users WHERE is_in_blacklist LIMIT $1 OFFSET $2",
+		perPage, page)
 	if err != nil {
 		return nil, err
 	}

@@ -106,11 +106,12 @@ func (db *DB) UpdateProfile(profile *Profile) error {
 	return err
 }
 
-func (db *DB) GetAllProfiles() ([]Profile, error) {
+func (db *DB) GetAllProfiles(perPage, offset int) ([]Profile, error) {
 	db.log.Debugln("Get all profiles")
-	var profiles []Profile
+	profiles := make([]Profile, 0) // return empty slice instead of nil if no records found
 
-	rows, err := db.qLog.Queryx("SELECT " + profileQueryColumnsWithUser + " FROM profiles JOIN users ON profiles.user_id = users.id")
+	rows, err := db.qLog.Queryx("SELECT "+profileQueryColumnsWithUser+" FROM profiles JOIN users ON profiles.user_id = users.id "+
+		"LIMIT $1 OFFSET $2", perPage, offset)
 	if err != nil {
 		return nil, err
 	}
