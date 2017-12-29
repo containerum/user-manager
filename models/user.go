@@ -94,16 +94,14 @@ func (db *DB) GetBlacklistedUsers(perPage, page int) ([]User, error) {
 
 func (db *DB) BlacklistUser(user *User) error {
 	db.log.Debugln("Blacklisting user", user.Login)
-	return db.Transactional(func(tx *DB) error {
-		_, err := tx.eLog.Exec("UPDATE users SET is_in_blacklist = TRUE WHERE id = $1", user.ID)
-		if err != nil {
-			return err
-		}
-		_, err = tx.eLog.Exec("UPDATE profiles SET blacklist_at = NOW() WHERE user_id = $1", user.ID)
-		if err != nil {
-			return err
-		}
-		user.IsInBlacklist = true
-		return nil
-	})
+	_, err := db.eLog.Exec("UPDATE users SET is_in_blacklist = TRUE WHERE id = $1", user.ID)
+	if err != nil {
+		return err
+	}
+	_, err = db.eLog.Exec("UPDATE profiles SET blacklist_at = NOW() WHERE user_id = $1", user.ID)
+	if err != nil {
+		return err
+	}
+	user.IsInBlacklist = true
+	return nil
 }

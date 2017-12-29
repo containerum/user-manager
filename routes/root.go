@@ -35,14 +35,14 @@ func logoutHandler(ctx *gin.Context) {
 		return
 	default:
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, deleteTokenFailed)
 		return
 	}
 
 	oneTimeToken, err := svc.DB.GetTokenBySessionID(ctx.GetHeader(umtypes.SessionIDHeader))
 	if err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, getTokenFailed)
 		return
 	}
 	if oneTimeToken != nil {
@@ -52,7 +52,7 @@ func logoutHandler(ctx *gin.Context) {
 		}
 		if err := svc.DB.DeleteToken(oneTimeToken.Token); err != nil {
 			ctx.Error(err)
-			ctx.AbortWithStatus(http.StatusInternalServerError)
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, oneTimeTokenDeleteFailed)
 			return
 		}
 	}
