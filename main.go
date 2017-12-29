@@ -17,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 func exitOnErr(err error) {
@@ -50,8 +51,12 @@ func main() {
 	authConn, err := grpc.Dial(viper.GetString("auth_grpc_addr"), grpc.WithInsecure(), grpc.WithUnaryInterceptor(
 		grpc_middleware.ChainUnaryClient(
 			grpc_logrus.UnaryClientInterceptor(logrus.WithField("component", "auth_client")),
-		),
-	))
+		)),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                10 * time.Second,
+			Timeout:             20 * time.Second,
+			PermitWithoutStream: true,
+		}))
 	exitOnErr(err)
 	defer authConn.Close()
 	authClient := auth.NewAuthClient(authConn)
