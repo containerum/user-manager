@@ -79,6 +79,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 
 	tokens, err := svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
 		UserAgent:   ctx.Request.UserAgent(),
+		Fingerprint: ctx.GetHeader(umtypes.FingerprintHeader),
 		UserId:      &common.UUID{Value: user.ID},
 		UserIp:      ctx.ClientIP(),
 		UserRole:    auth.Role(user.Role),
@@ -206,6 +207,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 
 	tokens, err := svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
 		UserAgent:   ctx.Request.UserAgent(),
+		Fingerprint: ctx.GetHeader(umtypes.FingerprintHeader),
 		UserId:      &common.UUID{Value: link.User.ID},
 		UserIp:      ctx.ClientIP(),
 		UserRole:    auth.Role(link.User.Role),

@@ -101,6 +101,7 @@ func basicLoginHandler(ctx *gin.Context) {
 
 	tokens, err := svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
 		UserAgent:   ctx.Request.UserAgent(),
+		Fingerprint: ctx.GetHeader(umtypes.FingerprintHeader),
 		UserId:      &common.UUID{Value: user.ID},
 		UserIp:      ctx.ClientIP(),
 		UserRole:    auth.Role(user.Role),
@@ -149,6 +150,7 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 		var err error
 		tokens, err = svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
 			UserAgent:   ctx.Request.UserAgent(),
+			Fingerprint: ctx.GetHeader(umtypes.FingerprintHeader),
 			UserId:      &common.UUID{Value: token.User.ID},
 			UserIp:      ctx.ClientIP(),
 			UserRole:    auth.Role(token.User.Role),
@@ -234,6 +236,7 @@ func oauthLoginHandler(ctx *gin.Context) {
 
 	tokens, err := svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
 		UserAgent:   ctx.Request.UserAgent(),
+		Fingerprint: ctx.GetHeader(umtypes.FingerprintHeader),
 		UserId:      &common.UUID{Value: user.ID},
 		UserIp:      ctx.ClientIP(),
 		UserRole:    auth.Role(user.Role),
@@ -270,6 +273,7 @@ func webAPILoginHandler(ctx *gin.Context) {
 
 	tokens, err := svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
 		UserAgent:   ctx.Request.UserAgent(),
+		Fingerprint: ctx.GetHeader(umtypes.FingerprintHeader),
 		UserId:      &common.UUID{Value: resp["user"].(map[string]interface{})["id"].(string)},
 		UserIp:      ctx.ClientIP(),
 		UserRole:    auth.Role_USER,

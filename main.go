@@ -12,9 +12,12 @@ import (
 	"git.containerum.net/ch/user-manager/routes"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
+	"github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/keepalive"
 )
 
 func exitOnErr(err error) {
@@ -45,7 +48,15 @@ func main() {
 	clients.RegisterOAuthClient(clients.NewGoogleOAuthClient(viper.GetString("google_app_id"), viper.GetString("google_secret")))
 	clients.RegisterOAuthClient(clients.NewFacebookOAuthClient(viper.GetString("facebook_app_id"), viper.GetString("facebook_secret")))
 
-	authConn, err := grpc.Dial(viper.GetString("auth_grpc_addr"), grpc.WithInsecure())
+	authConn, err := grpc.Dial(viper.GetString("auth_grpc_addr"), grpc.WithInsecure(), grpc.WithUnaryInterceptor(
+		grpc_middleware.ChainUnaryClient(
+			grpc_logrus.UnaryClientInterceptor(logrus.WithField("component", "auth_client")),
+		)),
+		grpc.WithKeepaliveParams(keepalive.ClientParameters{
+			Time:                10 * time.Second,
+			Timeout:             20 * time.Second,
+			PermitWithoutStream: true,
+		}))
 	exitOnErr(err)
 	defer authConn.Close()
 	authClient := auth.NewAuthClient(authConn)

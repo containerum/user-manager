@@ -240,6 +240,7 @@ func activateHandler(ctx *gin.Context) {
 
 	tokens, err := svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
 		UserAgent:   ctx.Request.UserAgent(),
+		Fingerprint: ctx.GetHeader(umtypes.FingerprintHeader),
 		UserId:      &common.UUID{Value: link.User.ID},
 		UserIp:      ctx.ClientIP(),
 		UserRole:    auth.Role_USER,
