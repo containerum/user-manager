@@ -97,22 +97,21 @@ func passwordChangeHandler(ctx *gin.Context) {
 }
 
 func passwordResetHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader(umtypes.UserIDHeader)
-	var request umtypes.PasswordChangeRequest
+	var request umtypes.PasswordResetRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
 	}
 
-	user, err := svc.DB.GetUserByID(userID)
+	user, err := svc.DB.GetUserByID(request.Username)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return
 	}
 	if user == nil {
-		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userWithIDNotFound, userID))
+		ctx.AbortWithStatusJSON(http.StatusNotFound, errors.Format(userNotFound, request.Username))
 		return
 	}
 	if user.IsInBlacklist {
