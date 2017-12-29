@@ -332,7 +332,7 @@ func blacklistGetHandler(ctx *gin.Context) {
 }
 
 func linksGetHandler(ctx *gin.Context) {
-	userID := ctx.GetHeader(umtypes.UserIDHeader)
+	userID := ctx.Param("user_id")
 	user, err := svc.DB.GetUserByID(userID)
 	if err != nil {
 		ctx.Error(err)
