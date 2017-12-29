@@ -18,8 +18,8 @@ const (
 )
 
 func reCaptchaMiddleware(ctx *gin.Context) {
-	var request ReCaptchaRequest
-	/*if err := ctx.ShouldBindJSON(&request); err != nil {
+	/*var request ReCaptchaRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
