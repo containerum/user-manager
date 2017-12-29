@@ -64,7 +64,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
-  packages = ["proto","ptypes","ptypes/any","ptypes/duration","ptypes/empty","ptypes/timestamp"]
+  packages = ["jsonpb","proto","ptypes","ptypes/any","ptypes/duration","ptypes/empty","ptypes/struct","ptypes/timestamp"]
   revision = "1e59b77b52bf8e4b449a57e6f79f21226d571845"
 
 [[projects]]
@@ -78,6 +78,12 @@
   name = "github.com/google/go-querystring"
   packages = ["query"]
   revision = "53e6ce116135b80d037921a7fdd5138cf32d7a8a"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/grpc-ecosystem/go-grpc-middleware"
+  packages = [".","logging","logging/logrus","tags","tags/logrus"]
+  revision = "967bee733a734780623ac3d7c8e9216e4372ea62"
 
 [[projects]]
   branch = "master"
@@ -238,7 +244,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/oauth2"
-  packages = [".","github","google","internal","jws","jwt"]
+  packages = [".","facebook","github","google","internal","jws","jwt"]
   revision = "0448841f0cbe9d174c6c1cedd177f583337b8e2c"
 
 [[projects]]
@@ -298,6 +304,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "80f18a73d1d69d00857f2ac701bfdb664cc936567ebaae99a3341a4ec65d5884"
+  inputs-digest = "d7598f3bc84bf91f31d808ffe20d07cd3783df1579ce56fc4b3eb7f099f4f26e"
   solver-name = "gps-cdcl"
   solver-version = 1
