@@ -104,7 +104,7 @@ func passwordResetHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := svc.DB.GetUserByID(request.Username)
+	user, err := svc.DB.GetUserByLogin(request.Username)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
