@@ -29,7 +29,7 @@ const linkQueryColumns = "link, type, created_at, expired_at, is_active, sent_at
 func (db *DB) CreateLink(linkType umtypes.LinkType, lifeTime time.Duration, user *User) (*Link, error) {
 	now := time.Now().UTC()
 	ret := &Link{
-		Link:      strings.ToUpper(hex.EncodeToString(sha256.New().Sum([]byte(user.ID)))),
+		Link:      strings.ToUpper(hex.EncodeToString(sha256.New().Sum([]byte(user.ID + string(linkType) + lifeTime.String())))),
 		User:      user,
 		Type:      linkType,
 		CreatedAt: now,
