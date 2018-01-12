@@ -14,6 +14,7 @@ import (
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -72,25 +73,25 @@ func basicLoginHandler(ctx *gin.Context) {
 			return
 		}
 
-		err = svc.DB.Transactional(func(tx *models.DB) error {
-			err := svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
-				ID:        user.ID,
-				Name:      user.Login,
-				Email:     user.Login,
-				Variables: map[string]string{"CONFIRM": link.Link},
+		go func() {
+			err := svc.DB.Transactional(func(tx *models.DB) error {
+				err := svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
+					ID:        user.ID,
+					Name:      user.Login,
+					Email:     user.Login,
+					Variables: map[string]string{"CONFIRM": link.Link},
+				})
+				if err != nil {
+					return err
+				}
+				link.SentAt.Time = time.Now().UTC()
+				link.SentAt.Valid = true
+				return tx.UpdateLink(link)
 			})
 			if err != nil {
-				return err
+				logrus.WithError(err).Error("email send failed")
 			}
-			link.SentAt.Time = time.Now().UTC()
-			link.SentAt.Valid = true
-			return tx.UpdateLink(link)
-		})
-		if err != nil {
-			ctx.Error(err)
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
-			return
-		}
+		}()
 
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.Format(activationNeeded)) // TODO: may be other status code/message
 		return

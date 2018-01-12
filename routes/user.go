@@ -19,6 +19,7 @@ import (
 	"git.containerum.net/ch/user-manager/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -102,25 +103,25 @@ func userCreateHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.DB.Transactional(func(tx *models.DB) error {
-		err := svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
-			ID:        newUser.ID,
-			Name:      request.UserName,
-			Email:     request.UserName,
-			Variables: map[string]string{"CONFIRM": link.Link},
+	go func() {
+		err := svc.DB.Transactional(func(tx *models.DB) error {
+			err := svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
+				ID:        newUser.ID,
+				Name:      request.UserName,
+				Email:     request.UserName,
+				Variables: map[string]string{"CONFIRM": link.Link},
+			})
+			if err != nil {
+				return err
+			}
+			link.SentAt.Time = time.Now().UTC()
+			link.SentAt.Valid = true
+			return tx.UpdateLink(link)
 		})
 		if err != nil {
-			return err
+			logrus.WithError(err).Error("email send failed")
 		}
-		link.SentAt.Time = time.Now().UTC()
-		link.SentAt.Valid = true
-		return tx.UpdateLink(link)
-	})
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
-		return
-	}
+	}()
 
 	ctx.JSON(http.StatusCreated, umtypes.UserCreateResponse{
 		ID:       newUser.ID,
@@ -168,25 +169,25 @@ func linkResendHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.DB.Transactional(func(tx *models.DB) error {
-		err := svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
-			ID:        user.ID,
-			Name:      request.UserName,
-			Email:     request.UserName,
-			Variables: map[string]string{"CONFIRM": link.Link},
+	go func() {
+		err := svc.DB.Transactional(func(tx *models.DB) error {
+			err := svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
+				ID:        user.ID,
+				Name:      request.UserName,
+				Email:     request.UserName,
+				Variables: map[string]string{"CONFIRM": link.Link},
+			})
+			if err != nil {
+				return err
+			}
+			link.SentAt.Time = time.Now().UTC()
+			link.SentAt.Valid = true
+			return tx.UpdateLink(link)
 		})
 		if err != nil {
-			return err
+			logrus.WithError(err).Error("email send failed")
 		}
-		link.SentAt.Time = time.Now().UTC()
-		link.SentAt.Valid = true
-		return tx.UpdateLink(link)
-	})
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
-		return
-	}
+	}()
 
 	ctx.Status(http.StatusOK)
 }
@@ -242,17 +243,17 @@ func activateHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.MailClient.SendActivationMail(&mttypes.Recipient{
-		ID:        link.User.ID,
-		Name:      link.User.Login,
-		Email:     link.User.Login,
-		Variables: map[string]string{},
-	})
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
-		return
-	}
+	go func() {
+		err := svc.MailClient.SendActivationMail(&mttypes.Recipient{
+			ID:        link.User.ID,
+			Name:      link.User.Login,
+			Email:     link.User.Login,
+			Variables: map[string]string{},
+		})
+		if err != nil {
+			logrus.WithError(err).Error("email send failed")
+		}
+	}()
 
 	ctx.JSON(http.StatusOK, tokens)
 }
@@ -285,16 +286,16 @@ func userToBlacklistHandler(ctx *gin.Context) {
 
 	// TODO: send request to resource manager
 
-	err = svc.MailClient.SendBlockedMail(&mttypes.Recipient{
-		ID:    user.ID,
-		Name:  user.Login,
-		Email: user.Login,
-	})
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
-		return
-	}
+	go func() {
+		err := svc.MailClient.SendBlockedMail(&mttypes.Recipient{
+			ID:    user.ID,
+			Name:  user.Login,
+			Email: user.Login,
+		})
+		if err != nil {
+			logrus.WithError(err).Error("email send failed")
+		}
+	}()
 
 	err = svc.DB.Transactional(func(tx *models.DB) error {
 		return svc.DB.BlacklistUser(user)
@@ -552,12 +553,18 @@ func partialDeleteHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.MailClient.SendAccDeletedMail(&mttypes.Recipient{
-		ID:        user.ID,
-		Name:      user.Login,
-		Email:     user.Login,
-		Variables: map[string]string{},
-	})
+	go func() {
+		err := svc.MailClient.SendAccDeletedMail(&mttypes.Recipient{
+			ID:        user.ID,
+			Name:      user.Login,
+			Email:     user.Login,
+			Variables: map[string]string{},
+		})
+		if err != nil {
+			logrus.WithError(err).Error("email send failed")
+		}
+	}()
+
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
