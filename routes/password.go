@@ -13,6 +13,7 @@ import (
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -63,17 +64,17 @@ func passwordChangeHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.MailClient.SendPasswordChangedMail(&mttypes.Recipient{
-		ID:        user.ID,
-		Name:      user.Login,
-		Email:     user.Login,
-		Variables: map[string]string{},
-	})
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
-		return
-	}
+	go func() {
+		err := svc.MailClient.SendPasswordChangedMail(&mttypes.Recipient{
+			ID:        user.ID,
+			Name:      user.Login,
+			Email:     user.Login,
+			Variables: map[string]string{},
+		})
+		if err != nil {
+			logrus.WithError(err).Error("email send failed")
+		}
+	}()
 
 	// TODO: get access from resource manager
 
@@ -130,17 +131,17 @@ func passwordResetHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.MailClient.SendPasswordResetMail(&mttypes.Recipient{
-		ID:        user.ID,
-		Name:      user.Login,
-		Email:     user.Login,
-		Variables: map[string]string{"TOKEN": link.Link},
-	})
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
-		return
-	}
+	go func() {
+		err := svc.MailClient.SendPasswordResetMail(&mttypes.Recipient{
+			ID:        user.ID,
+			Name:      user.Login,
+			Email:     user.Login,
+			Variables: map[string]string{"TOKEN": link.Link},
+		})
+		if err != nil {
+			logrus.WithError(err).Error("email send failed")
+		}
+	}()
 }
 
 func passwordRestoreHandler(ctx *gin.Context) {
@@ -189,17 +190,17 @@ func passwordRestoreHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.MailClient.SendPasswordChangedMail(&mttypes.Recipient{
-		ID:        link.User.ID,
-		Name:      link.User.Login,
-		Email:     link.User.Login,
-		Variables: map[string]string{},
-	})
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, emailSendFailed)
-		return
-	}
+	go func() {
+		err := svc.MailClient.SendPasswordChangedMail(&mttypes.Recipient{
+			ID:        link.User.ID,
+			Name:      link.User.Login,
+			Email:     link.User.Login,
+			Variables: map[string]string{},
+		})
+		if err != nil {
+			logrus.WithError(err).Error("email send failed")
+		}
+	}()
 
 	// TODO: get access from resource manager
 
