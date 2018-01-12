@@ -6,6 +6,10 @@ import (
 
 	"time"
 
+	"context"
+	"net/http"
+	"os/signal"
+
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/user-manager/clients"
 	"git.containerum.net/ch/user-manager/models"
@@ -31,6 +35,8 @@ func main() {
 	viper.SetEnvPrefix("ch_user")
 	viper.AutomaticEnv()
 	exitOnErr(setupLogger())
+
+	logrus.Infoln("starting server...")
 
 	app := gin.New()
 	app.Use(gin.RecoveryWithWriter(logrus.StandardLogger().WithField("component", "gin_recovery").WriterLevel(logrus.ErrorLevel)))
@@ -71,5 +77,21 @@ func main() {
 		WebAPIClient:    webAPIClient,
 	})
 
-	exitOnErr(app.Run(getListenAddr()))
+	// graceful shutdown support
+
+	srv := http.Server{
+		Addr:    getListenAddr(),
+		Handler: app,
+	}
+
+	go exitOnErr(srv.ListenAndServe())
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	logrus.Infoln("shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	exitOnErr(srv.Shutdown(ctx))
 }
