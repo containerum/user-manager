@@ -13,7 +13,7 @@ type Services struct {
 	DB              models.DB
 	AuthClient      auth.AuthClient
 	ReCaptchaClient clients.ReCaptchaClient
-	WebAPIClient    *clients.WebAPIClient
+	WebAPIClient    clients.WebAPIClient
 }
 
 // for response with http.InternalServerError

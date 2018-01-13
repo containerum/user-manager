@@ -11,7 +11,6 @@ import (
 	"os/signal"
 
 	"git.containerum.net/ch/grpc-proto-files/auth"
-	"git.containerum.net/ch/user-manager/clients"
 	"git.containerum.net/ch/user-manager/routes"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
@@ -66,7 +65,8 @@ func main() {
 	defer authConn.Close()
 	authClient := auth.NewAuthClient(authConn)
 
-	webAPIClient := clients.NewWebAPIClient(viper.GetString("web_api_url"))
+	webAPIClient, err := getWebAPIClient()
+	exitOnErr(err)
 
 	routes.SetupRoutes(app, routes.Services{
 		MailClient:      mailClient,

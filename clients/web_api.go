@@ -9,12 +9,16 @@ import (
 	"gopkg.in/resty.v1"
 )
 
-type WebAPIClient struct {
+type WebAPIClient interface {
+	Login(request *umtypes.WebAPILoginRequest) (ret map[string]interface{}, statusCode int, err error)
+}
+
+type HTTPWebAPIClient struct {
 	log    *logrus.Entry
 	client *resty.Client
 }
 
-func NewWebAPIClient(serverUrl string) *WebAPIClient {
+func NewHTTPWebAPIClient(serverUrl string) *HTTPWebAPIClient {
 	log := logrus.WithField("component", "web_api_client")
 	client := resty.New().
 		SetHostURL(serverUrl).
@@ -24,14 +28,14 @@ func NewWebAPIClient(serverUrl string) *WebAPIClient {
 		SetError(umtypes.WebAPIError{})
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
-	return &WebAPIClient{
+	return &HTTPWebAPIClient{
 		log:    log,
 		client: client,
 	}
 }
 
 // returns raw answer from web-api
-func (c *WebAPIClient) Login(request *umtypes.WebAPILoginRequest) (ret map[string]interface{}, statusCode int, err error) {
+func (c *HTTPWebAPIClient) Login(request *umtypes.WebAPILoginRequest) (ret map[string]interface{}, statusCode int, err error) {
 	c.log.WithField("login", request.Username).Infoln("Signing in through web-api")
 
 	ret = make(map[string]interface{})
