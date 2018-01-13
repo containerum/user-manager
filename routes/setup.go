@@ -12,7 +12,7 @@ type Services struct {
 	MailClient      clients.MailClient
 	DB              models.DB
 	AuthClient      auth.AuthClient
-	ReCaptchaClient *clients.ReCaptchaClient
+	ReCaptchaClient clients.ReCaptchaClient
 	WebAPIClient    *clients.WebAPIClient
 }
 

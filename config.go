@@ -50,3 +50,13 @@ func getMailClient() (clients.MailClient, error) {
 		return nil, errors.New("invalid mail client")
 	}
 }
+
+func getReCaptchaClient() (clients.ReCaptchaClient, error) {
+	viper.SetDefault("recaptcha", "http")
+	switch viper.GetString("recaptcha") {
+	case "http":
+		return clients.NewHTTPReCaptchaClient(viper.GetString("recaptcha_key")), nil
+	default:
+		return nil, errors.New("invalid reCaptcha client")
+	}
+}

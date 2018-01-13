@@ -48,7 +48,8 @@ func main() {
 	mailClient, err := getMailClient()
 	exitOnErr(err)
 
-	reCaptchaClient := clients.NewReCaptchaClient(viper.GetString("recaptcha_key"))
+	reCaptchaClient, err := getReCaptchaClient()
+	exitOnErr(err)
 
 	clients.RegisterOAuthClient(clients.NewGithubOAuthClient(viper.GetString("github_app_id"), viper.GetString("github_secret")))
 	clients.RegisterOAuthClient(clients.NewGoogleOAuthClient(viper.GetString("google_app_id"), viper.GetString("google_secret")))
