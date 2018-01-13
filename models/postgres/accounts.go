@@ -6,7 +6,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (db *DB) GetUserByBoundAccount(service, accountID string) (*User, error) {
+func (db *PgDB) GetUserByBoundAccount(service, accountID string) (*User, error) {
 	db.log.WithFields(logrus.Fields{
 		"service":    service,
 		"account_id": accountID,
@@ -22,7 +22,7 @@ func (db *DB) GetUserByBoundAccount(service, accountID string) (*User, error) {
 	return &ret, nil
 }
 
-func (db *DB) GetUserBoundAccounts(user *User) (*Accounts, error) {
+func (db *PgDB) GetUserBoundAccounts(user *User) (*Accounts, error) {
 	db.log.Debugln("Get bound accounts for user", user.Login)
 	rows, err := db.qLog.Queryx("SELECT id, github, facebook, google FROM accounts WHERE user_id = $1", user.ID)
 	if err != nil {
@@ -38,7 +38,7 @@ func (db *DB) GetUserBoundAccounts(user *User) (*Accounts, error) {
 	return &ret, err
 }
 
-func (db *DB) BindAccount(user *User, service, accountID string) error {
+func (db *PgDB) BindAccount(user *User, service, accountID string) error {
 	db.log.Debugf("Bind account %s (%s) for user %s", service, accountID, user.Login)
 	_, err := db.eLog.Exec("INSERT INTO accounts (user_id, $2) VALUES ($1, $3) ON CONFLICT (user_id) DO UPDATE SET $2 = $3",
 		user.ID, service, accountID)

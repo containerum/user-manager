@@ -15,16 +15,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var _ models.DB = &DB{}
+var _ models.DB = &PgDB{}
 
-type DB struct {
+type PgDB struct {
 	conn *sqlx.DB // do not use it in select/exec operations
 	log  *logrus.Entry
 	qLog *chutils.SQLXQueryLogger
 	eLog *chutils.SQLXExecLogger
 }
 
-func DBConnect(pgConnStr string) (*DB, error) {
+func DBConnect(pgConnStr string) (*PgDB, error) {
 	log := logrus.WithField("component", "db")
 	log.Infoln("Connecting to ", pgConnStr)
 	conn, err := sqlx.Open("postgres", pgConnStr)
@@ -33,7 +33,7 @@ func DBConnect(pgConnStr string) (*DB, error) {
 		return nil, err
 	}
 
-	ret := &DB{
+	ret := &PgDB{
 		conn: conn,
 		log:  log,
 		qLog: chutils.NewSQLXQueryLogger(conn, log),
@@ -50,7 +50,7 @@ func DBConnect(pgConnStr string) (*DB, error) {
 	return ret, nil
 }
 
-func (db *DB) migrateUp(path string) (*migrate.Migrate, error) {
+func (db *PgDB) migrateUp(path string) (*migrate.Migrate, error) {
 	db.log.Infof("Running migrations")
 	instance, err := migdrv.WithInstance(db.conn.DB, &migdrv.Config{})
 	if err != nil {
@@ -66,7 +66,7 @@ func (db *DB) migrateUp(path string) (*migrate.Migrate, error) {
 	return m, nil
 }
 
-func (db *DB) Transactional(f func(tx models.DB) error) (err error) {
+func (db *PgDB) Transactional(f func(tx models.DB) error) (err error) {
 	start := time.Now().Format(time.ANSIC)
 	e := db.log.WithField("transaction_at", start)
 	e.Debugln("Begin transaction")
@@ -76,7 +76,7 @@ func (db *DB) Transactional(f func(tx models.DB) error) (err error) {
 		return models.ErrTransactionBegin
 	}
 
-	arg := &DB{
+	arg := &PgDB{
 		conn: db.conn,
 		log:  e,
 		eLog: chutils.NewSQLXExecLogger(tx, e),
@@ -110,6 +110,6 @@ func (db *DB) Transactional(f func(tx models.DB) error) (err error) {
 	return
 }
 
-func (db *DB) Close() error {
+func (db *PgDB) Close() error {
 	return db.conn.Close()
 }
