@@ -10,7 +10,7 @@ func (db *PgDB) GetUserByBoundAccount(service, accountID string) (*User, error) 
 	db.log.WithFields(logrus.Fields{
 		"service":    service,
 		"account_id": accountID,
-	}).Debugln("Get bound account")
+	}).Infoln("Get bound account")
 
 	var ret User
 	err := sqlx.Get(db.qLog, &ret, "SELECT users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist "+
@@ -23,7 +23,7 @@ func (db *PgDB) GetUserByBoundAccount(service, accountID string) (*User, error) 
 }
 
 func (db *PgDB) GetUserBoundAccounts(user *User) (*Accounts, error) {
-	db.log.Debugln("Get bound accounts for user", user.Login)
+	db.log.Infoln("Get bound accounts for user", user.Login)
 	rows, err := db.qLog.Queryx("SELECT id, github, facebook, google FROM accounts WHERE user_id = $1", user.ID)
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func (db *PgDB) GetUserBoundAccounts(user *User) (*Accounts, error) {
 }
 
 func (db *PgDB) BindAccount(user *User, service, accountID string) error {
-	db.log.Debugf("Bind account %s (%s) for user %s", service, accountID, user.Login)
+	db.log.Infof("Bind account %s (%s) for user %s", service, accountID, user.Login)
 	_, err := db.eLog.Exec("INSERT INTO accounts (user_id, $2) VALUES ($1, $3) ON CONFLICT (user_id) DO UPDATE SET $2 = $3",
 		user.ID, service, accountID)
 	return err

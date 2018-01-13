@@ -28,14 +28,14 @@ func (db *PgDB) CreateLink(linkType umtypes.LinkType, lifeTime time.Duration, us
 	db.log.WithFields(logrus.Fields{
 		"user":          user.Login,
 		"creation_time": now.Format(time.ANSIC),
-	}).Debugln("Create activation link")
+	}).Infoln("Create activation link")
 	_, err := db.eLog.Exec("INSERT INTO links (link, type, created_at, expired_at, is_active, user_id) VALUES "+
 		"($1, $2, $3, $4, $5, $6)", ret.Link, ret.Type, ret.CreatedAt, ret.ExpiredAt, ret.IsActive, ret.User.ID)
 	return ret, err
 }
 
 func (db *PgDB) GetLinkForUser(linkType umtypes.LinkType, user *User) (*Link, error) {
-	db.log.Debugln("Get link", linkType, "for", user.Login)
+	db.log.Infoln("Get link", linkType, "for", user.Login)
 	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumns+" FROM links "+
 		"WHERE user_id = $1 AND type = $2 AND is_active AND expired_at > NOW()", user.ID, linkType)
 	if err != nil {
@@ -52,7 +52,7 @@ func (db *PgDB) GetLinkForUser(linkType umtypes.LinkType, user *User) (*Link, er
 }
 
 func (db *PgDB) GetLinkFromString(strLink string) (*Link, error) {
-	db.log.Debugln("Get link", strLink)
+	db.log.Infoln("Get link", strLink)
 	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumnsWithUser+" FROM links "+
 		"JOIN users ON links.user_id = users.id "+
 		"WHERE link = $1 AND links.is_active AND links.expired_at > NOW()", strLink)
@@ -72,14 +72,14 @@ func (db *PgDB) GetLinkFromString(strLink string) (*Link, error) {
 }
 
 func (db *PgDB) UpdateLink(link *Link) error {
-	db.log.Debugf("Update link %#v", link)
+	db.log.Infof("Update link %#v", link)
 	_, err := db.eLog.Exec("UPDATE links set type = $2, expired_at = $3, is_active = $4, sent_at = $5 "+
 		"WHERE link = $1", link.Link, link.Type, link.ExpiredAt, link.IsActive, link.SentAt)
 	return err
 }
 
 func (db *PgDB) GetUserLinks(user *User) ([]Link, error) {
-	db.log.Debugln("Get links for", user.Login)
+	db.log.Infoln("Get links for", user.Login)
 	var ret []Link
 	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumns+" FROM links "+
 		"WHERE user_id = $1 AND is_active AND expired_at > NOW()", user.ID)

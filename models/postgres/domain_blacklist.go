@@ -1,20 +1,20 @@
 package postgres
 
 func (db *PgDB) BlacklistDomain(domain string) error {
-	db.log.Debugln("Blacklisting domain", domain)
+	db.log.Infoln("Blacklisting domain", domain)
 	_, err := db.eLog.Exec("INSERT INTO domains (domain) VALUES ($1) ON CONFLICT DO NOTHING",
 		domain)
 	return err
 }
 
 func (db *PgDB) UnBlacklistDomain(domain string) error {
-	db.log.Debugln("UnBlacklisting domain", domain)
+	db.log.Infoln("UnBlacklisting domain", domain)
 	_, err := db.eLog.Exec("DELETE FROM domains WHERE domain = $1", domain)
 	return err
 }
 
 func (db *PgDB) IsDomainBlacklisted(domain string) (bool, error) {
-	db.log.Debugf("Checking if domain %s in blacklist", domain)
+	db.log.Infof("Checking if domain %s in blacklist", domain)
 	rows, err := db.qLog.Queryx("SELECT COUNT(*) FROM domains WHERE domain = $1", domain)
 	if err != nil {
 		return false, err

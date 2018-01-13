@@ -11,7 +11,7 @@ const profileQueryColumnsWithUser = "profiles.id, profiles.referral, profiles.ac
 const profileQueryColumns = "id, referral, access, created_at, blacklist_at, deleted_at, data"
 
 func (db *PgDB) CreateProfile(profile *Profile) error {
-	db.log.Debugln("Create profile for", profile.User.Login)
+	db.log.Infoln("Create profile for", profile.User.Login)
 	profileData, err := jsoniter.MarshalToString(profile.Data)
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func (db *PgDB) CreateProfile(profile *Profile) error {
 }
 
 func (db *PgDB) GetProfileByID(id string) (*Profile, error) {
-	db.log.Debugln("Get profile by id", id)
+	db.log.Infoln("Get profile by id", id)
 	rows, err := db.qLog.Queryx("SELECT "+profileQueryColumnsWithUser+" FROM profiles "+
 		"JOIN users ON profiles.user_id = user.id WHERE profiles.id = $1", id)
 	if err != nil {
@@ -60,7 +60,7 @@ func (db *PgDB) GetProfileByID(id string) (*Profile, error) {
 }
 
 func (db *PgDB) GetProfileByUser(user *User) (*Profile, error) {
-	db.log.Debugf("Get profile by user %#v", user)
+	db.log.Infof("Get profile by user %#v", user)
 	rows, err := db.qLog.Queryx("SELECT "+profileQueryColumns+" FROM profiles "+
 		"WHERE profiles.user_id = $1", user.ID)
 	if err != nil {
@@ -85,14 +85,14 @@ func (db *PgDB) GetProfileByUser(user *User) (*Profile, error) {
 }
 
 func (db *PgDB) UpdateProfile(profile *Profile) error {
-	db.log.Debugf("Update profile %#v", profile)
+	db.log.Infof("Update profile %#v", profile)
 	_, err := db.eLog.Exec("UPDATE profiles SET referal = $2, access = $3, data = '$4 WHERE id = $1",
 		profile.ID, profile.Referral, profile.Access, profile.Data)
 	return err
 }
 
 func (db *PgDB) GetAllProfiles(perPage, offset int) ([]Profile, error) {
-	db.log.Debugln("Get all profiles")
+	db.log.Infoln("Get all profiles")
 	profiles := make([]Profile, 0) // return empty slice instead of nil if no records found
 
 	rows, err := db.qLog.Queryx("SELECT "+profileQueryColumnsWithUser+" FROM profiles JOIN users ON profiles.user_id = users.id "+

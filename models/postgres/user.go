@@ -5,7 +5,7 @@ import . "git.containerum.net/ch/user-manager/models"
 const userQueryColumns = "id, login, password_hash, salt, role, is_active, is_deleted, is_in_blacklist"
 
 func (db *PgDB) GetUserByLogin(login string) (*User, error) {
-	db.log.Debugln("Get user by login", login)
+	db.log.Infoln("Get user by login", login)
 	var user User
 	rows, err := db.qLog.Queryx("SELECT "+userQueryColumns+" FROM users WHERE login = $1 AND NOT is_deleted", login)
 	if err != nil {
@@ -20,7 +20,7 @@ func (db *PgDB) GetUserByLogin(login string) (*User, error) {
 }
 
 func (db *PgDB) GetUserByID(id string) (*User, error) {
-	db.log.Debugln("Get user by id", id)
+	db.log.Infoln("Get user by id", id)
 	var user User
 	rows, err := db.qLog.Queryx("SELECT "+userQueryColumns+" FROM users WHERE id = $1 AND NOT is_deleted", id)
 	if err != nil {
@@ -35,7 +35,7 @@ func (db *PgDB) GetUserByID(id string) (*User, error) {
 }
 
 func (db *PgDB) CreateUser(user *User) error {
-	db.log.Debugln("Create user", user.Login)
+	db.log.Infoln("Create user", user.Login)
 	rows, err := db.qLog.Queryx("INSERT INTO users (login, password_hash, salt, role) "+
 		"VALUES ($1, $2, $3, $4) RETURNING id",
 		user.Login, user.PasswordHash, user.Salt, user.Role)
@@ -51,7 +51,7 @@ func (db *PgDB) CreateUser(user *User) error {
 }
 
 func (db *PgDB) UpdateUser(user *User) error {
-	db.log.Debugln("Update user", user.Login)
+	db.log.Infoln("Update user", user.Login)
 	_, err := db.eLog.Exec("UPDATE users SET "+
 		"login = $2, password_hash = $3, salt = $4, role = $5, is_active = $6, is_deleted = $7 WHERE id = $1",
 		user.ID, user.Login, user.PasswordHash, user.Salt, user.Role, user.IsActive, user.IsDeleted)
@@ -59,7 +59,7 @@ func (db *PgDB) UpdateUser(user *User) error {
 }
 
 func (db *PgDB) GetBlacklistedUsers(perPage, page int) ([]User, error) {
-	db.log.Debugln("Get blacklisted users")
+	db.log.Infoln("Get blacklisted users")
 	resp := make([]User, 0)
 	rows, err := db.qLog.Queryx("SELECT "+userQueryColumns+" FROM users WHERE is_in_blacklist LIMIT $1 OFFSET $2",
 		perPage, page)
@@ -80,7 +80,7 @@ func (db *PgDB) GetBlacklistedUsers(perPage, page int) ([]User, error) {
 }
 
 func (db *PgDB) BlacklistUser(user *User) error {
-	db.log.Debugln("Blacklisting user", user.Login)
+	db.log.Infoln("Blacklisting user", user.Login)
 	_, err := db.eLog.Exec("UPDATE users SET is_in_blacklist = TRUE WHERE id = $1", user.ID)
 	if err != nil {
 		return err
