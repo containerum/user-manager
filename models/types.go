@@ -88,9 +88,9 @@ type DB interface {
 	UpdateProfile(profile *Profile) error
 	GetAllProfiles(perPage, offset int) ([]Profile, error)
 
-	GetUserByBoundAccount(service, accountID string) (*User, error)
+	GetUserByBoundAccount(service umtypes.OAuthResource, accountID string) (*User, error)
 	GetUserBoundAccounts(user *User) (*Accounts, error)
-	BindAccount(user *User, service, accountID string) error
+	BindAccount(user *User, service umtypes.OAuthResource, accountID string) error
 
 	BlacklistDomain(domain string) error
 	UnBlacklistDomain(domain string) error

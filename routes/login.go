@@ -224,7 +224,7 @@ func oauthLoginHandler(ctx *gin.Context) {
 	}
 	if accounts == nil {
 		if err := svc.DB.Transactional(func(tx models.DB) error {
-			return tx.BindAccount(user, string(request.Resource), info.UserID)
+			return tx.BindAccount(user, request.Resource, info.UserID)
 		}); err != nil {
 			ctx.Error(err)
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, bindAccountFailed)
