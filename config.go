@@ -30,11 +30,11 @@ func getListenAddr() string {
 	return viper.GetString("listen_addr")
 }
 
-func getDB(dbDSN string) (models.DB, error) {
+func getDB() (models.DB, error) {
 	viper.SetDefault("db", "postgres")
 	switch viper.GetString("db") {
 	case "postgres":
-		return postgres.DBConnect(dbDSN)
+		return postgres.DBConnect(viper.GetString("pg_url"))
 	default:
 		return nil, errors.New("invalid db")
 	}
