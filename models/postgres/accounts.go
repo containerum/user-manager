@@ -1,18 +1,10 @@
-package models
+package postgres
 
 import (
+	. "git.containerum.net/ch/user-manager/models"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 )
-
-type Accounts struct {
-	ID       string
-	Github   string
-	Facebook string
-	Google   string
-
-	User *User
-}
 
 func (db *DB) GetUserByBoundAccount(service, accountID string) (*User, error) {
 	db.log.WithFields(logrus.Fields{

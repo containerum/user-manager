@@ -74,7 +74,7 @@ func basicLoginHandler(ctx *gin.Context) {
 		}
 
 		go func() {
-			err := svc.DB.Transactional(func(tx *models.DB) error {
+			err := svc.DB.Transactional(func(tx models.DB) error {
 				err := svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
 					ID:        user.ID,
 					Name:      user.Login,
@@ -147,7 +147,7 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 
 	var tokens *auth.CreateTokenResponse
 
-	err = svc.DB.Transactional(func(tx *models.DB) error {
+	err = svc.DB.Transactional(func(tx models.DB) error {
 		var err error
 		tokens, err = svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
 			UserAgent:   ctx.Request.UserAgent(),
@@ -223,7 +223,7 @@ func oauthLoginHandler(ctx *gin.Context) {
 		return
 	}
 	if accounts == nil {
-		if err := svc.DB.Transactional(func(tx *models.DB) error {
+		if err := svc.DB.Transactional(func(tx models.DB) error {
 			return tx.BindAccount(user, string(request.Resource), info.UserID)
 		}); err != nil {
 			ctx.Error(err)

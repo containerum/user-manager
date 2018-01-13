@@ -10,7 +10,7 @@ import (
 
 type Services struct {
 	MailClient      *clients.MailClient
-	DB              *models.DB
+	DB              models.DB
 	AuthClient      auth.AuthClient
 	ReCaptchaClient *clients.ReCaptchaClient
 	WebAPIClient    *clients.WebAPIClient

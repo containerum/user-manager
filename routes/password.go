@@ -121,7 +121,7 @@ func passwordResetHandler(ctx *gin.Context) {
 	}
 
 	var link *models.Link
-	err = svc.DB.Transactional(func(tx *models.DB) (err error) {
+	err = svc.DB.Transactional(func(tx models.DB) (err error) {
 		link, err = svc.DB.CreateLink(umtypes.LinkTypePwdChange, 24*time.Hour, user)
 		return
 	})
@@ -176,7 +176,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.DB.Transactional(func(tx *models.DB) error {
+	err = svc.DB.Transactional(func(tx models.DB) error {
 		link.User.PasswordHash = utils.GetKey(link.User.Login, request.NewPassword, link.User.Salt)
 		if err := svc.DB.UpdateUser(link.User); err != nil {
 			return err

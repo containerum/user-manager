@@ -12,7 +12,6 @@ import (
 
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/user-manager/clients"
-	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/routes"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
@@ -42,7 +41,7 @@ func main() {
 	app.Use(gin.RecoveryWithWriter(logrus.StandardLogger().WithField("component", "gin_recovery").WriterLevel(logrus.ErrorLevel)))
 	app.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
 
-	db, err := models.DBConnect(viper.GetString("pg_url"))
+	db, err := getDB(viper.GetString("pg_url"))
 	exitOnErr(err)
 	defer db.Close()
 

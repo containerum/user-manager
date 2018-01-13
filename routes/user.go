@@ -77,7 +77,7 @@ func userCreateHandler(ctx *gin.Context) {
 
 	var link *models.Link
 
-	err = svc.DB.Transactional(func(tx *models.DB) error {
+	err = svc.DB.Transactional(func(tx models.DB) error {
 		if err := svc.DB.CreateUser(newUser); err != nil {
 			ctx.Error(err)
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, userCreateFailed)
@@ -104,7 +104,7 @@ func userCreateHandler(ctx *gin.Context) {
 	}
 
 	go func() {
-		err := svc.DB.Transactional(func(tx *models.DB) error {
+		err := svc.DB.Transactional(func(tx models.DB) error {
 			err := svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
 				ID:        newUser.ID,
 				Name:      request.UserName,
@@ -170,7 +170,7 @@ func linkResendHandler(ctx *gin.Context) {
 	}
 
 	go func() {
-		err := svc.DB.Transactional(func(tx *models.DB) error {
+		err := svc.DB.Transactional(func(tx models.DB) error {
 			err := svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
 				ID:        user.ID,
 				Name:      request.UserName,
@@ -211,7 +211,7 @@ func activateHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.DB.Transactional(func(tx *models.DB) error {
+	err = svc.DB.Transactional(func(tx models.DB) error {
 		link.User.IsActive = true
 		if err := tx.UpdateUser(link.User); err != nil {
 			return err
@@ -297,7 +297,7 @@ func userToBlacklistHandler(ctx *gin.Context) {
 		}
 	}()
 
-	err = svc.DB.Transactional(func(tx *models.DB) error {
+	err = svc.DB.Transactional(func(tx models.DB) error {
 		return svc.DB.BlacklistUser(user)
 	})
 	if err != nil {
@@ -427,7 +427,7 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.DB.Transactional(func(tx *models.DB) error {
+	err = svc.DB.Transactional(func(tx models.DB) error {
 		return tx.UpdateProfile(profile)
 	})
 	if err != nil {
@@ -543,7 +543,7 @@ func partialDeleteHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.DB.Transactional(func(tx *models.DB) error {
+	err = svc.DB.Transactional(func(tx models.DB) error {
 		user.IsDeleted = true
 		return tx.UpdateUser(user)
 	})
@@ -594,7 +594,7 @@ func completeDeleteHandler(ctx *gin.Context) {
 
 	// TODO: send request to billing manager
 
-	err = svc.DB.Transactional(func(tx *models.DB) error {
+	err = svc.DB.Transactional(func(tx models.DB) error {
 		user.Login = user.Login + strconv.Itoa(rand.Int())
 		return svc.DB.UpdateUser(user)
 	})

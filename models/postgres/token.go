@@ -1,19 +1,11 @@
-package models
+package postgres
 
 import (
 	"time"
 
+	. "git.containerum.net/ch/user-manager/models"
 	chutils "git.containerum.net/ch/user-manager/utils"
 )
-
-type Token struct {
-	Token     string
-	CreatedAt time.Time
-	IsActive  bool
-	SessionID string
-
-	User *User
-}
 
 const tokenQueryColumnsWithUser = "tokens.token, tokens.created_at, tokens.is_active, tokens.session_id, " +
 	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist"

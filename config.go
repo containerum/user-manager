@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 
+	"git.containerum.net/ch/user-manager/models"
+	"git.containerum.net/ch/user-manager/models/postgres"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -26,4 +28,14 @@ func setupLogger() error {
 func getListenAddr() string {
 	viper.SetDefault("listen_addr", ":8111")
 	return viper.GetString("listen_addr")
+}
+
+func getDB(dbDSN string) (models.DB, error) {
+	viper.SetDefault("db", "postgres")
+	switch viper.GetString("db") {
+	case "postgres":
+		return postgres.DBConnect(dbDSN)
+	default:
+		return nil, errors.New("invalid db")
+	}
 }

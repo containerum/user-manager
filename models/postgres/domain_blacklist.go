@@ -1,11 +1,4 @@
-package models
-
-import "time"
-
-type DomainBlacklistEntry struct {
-	Domain    string
-	CreatedAt time.Time
-}
+package postgres
 
 func (db *DB) BlacklistDomain(domain string) error {
 	db.log.Debugln("Blacklisting domain", domain)

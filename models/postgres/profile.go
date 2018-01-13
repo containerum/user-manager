@@ -1,25 +1,10 @@
-package models
+package postgres
 
 import (
-	"time"
-
-	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/json-iterator/go"
-	"github.com/lib/pq"
+
+	. "git.containerum.net/ch/user-manager/models"
 )
-
-type Profile struct {
-	ID          string
-	Referral    string
-	Access      string
-	CreatedAt   time.Time
-	BlacklistAt pq.NullTime
-	DeletedAt   pq.NullTime
-
-	User *User
-
-	Data umtypes.ProfileData
-}
 
 const profileQueryColumnsWithUser = "profiles.id, profiles.referral, profiles.access, profiles.created_at, profiles.blacklist_at, profiles.deleted_at, " +
 	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist, profiles.data"

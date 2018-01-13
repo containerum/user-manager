@@ -1,4 +1,4 @@
-package models
+package postgres
 
 import (
 	"crypto/sha256"
@@ -7,20 +7,9 @@ import (
 	"time"
 
 	umtypes "git.containerum.net/ch/json-types/user-manager"
-	"github.com/lib/pq"
+	. "git.containerum.net/ch/user-manager/models"
 	"github.com/sirupsen/logrus"
 )
-
-type Link struct {
-	Link      string
-	Type      umtypes.LinkType
-	CreatedAt time.Time
-	ExpiredAt time.Time
-	IsActive  bool
-	SentAt    pq.NullTime
-
-	User *User
-}
 
 const linkQueryColumnsWithUser = "links.link, links.type, links.created_at, links.expired_at, links.is_active, links.sent_at, " +
 	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist"

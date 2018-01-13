@@ -1,11 +1,11 @@
-package models
+package postgres
 
 import (
-	"errors"
 	"time"
 
 	"fmt"
 
+	"git.containerum.net/ch/user-manager/models"
 	chutils "git.containerum.net/ch/utils"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -15,18 +15,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var _ models.DB = &DB{}
+
 type DB struct {
 	conn *sqlx.DB // do not use it in select/exec operations
 	log  *logrus.Entry
 	qLog *chutils.SQLXQueryLogger
 	eLog *chutils.SQLXExecLogger
 }
-
-var (
-	ErrTransactionBegin    = errors.New("transaction begin error")
-	ErrTransactionRollback = errors.New("transaction rollback error")
-	ErrTransactionCommit   = errors.New("transaction commit error")
-)
 
 func DBConnect(pgConnStr string) (*DB, error) {
 	log := logrus.WithField("component", "db")
@@ -70,14 +66,14 @@ func (db *DB) migrateUp(path string) (*migrate.Migrate, error) {
 	return m, nil
 }
 
-func (db *DB) Transactional(f func(tx *DB) error) (err error) {
+func (db *DB) Transactional(f func(tx models.DB) error) (err error) {
 	start := time.Now().Format(time.ANSIC)
 	e := db.log.WithField("transaction_at", start)
 	e.Debugln("Begin transaction")
 	tx, txErr := db.conn.Beginx()
 	if txErr != nil {
 		e.WithError(txErr).Errorln("Begin transaction error")
-		return ErrTransactionBegin
+		return models.ErrTransactionBegin
 	}
 
 	arg := &DB{
@@ -98,7 +94,7 @@ func (db *DB) Transactional(f func(tx *DB) error) (err error) {
 			e.WithError(dberr).Debugln("Rollback transaction")
 			if rerr := tx.Rollback(); rerr != nil {
 				e.WithError(rerr).Errorln("Rollback error")
-				err = ErrTransactionRollback
+				err = models.ErrTransactionRollback
 			}
 			err = dberr // forward error with panic description
 			return
@@ -107,7 +103,7 @@ func (db *DB) Transactional(f func(tx *DB) error) (err error) {
 		e.Debugln("Commit transaction")
 		if cerr := tx.Commit(); cerr != nil {
 			e.WithError(cerr).Errorln("Commit error")
-			err = ErrTransactionCommit
+			err = models.ErrTransactionCommit
 		}
 	}(f(arg))
 
