@@ -3,6 +3,8 @@ package postgres
 import (
 	"errors"
 
+	"fmt"
+
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	. "git.containerum.net/ch/user-manager/models"
 	"github.com/jmoiron/sqlx"
@@ -48,9 +50,10 @@ func (db *pgDB) BindAccount(user *User, service umtypes.OAuthResource, accountID
 	default:
 		return errors.New("unrecognised service " + service)
 	}
-	_, err := db.eLog.Exec(`INSERT INTO accounts (user_id, $2)
-									VALUES ($1, $3)
-									ON CONFLICT ON CONSTRAINT unique_||$2 DO UPDATE SET $2 = $3`,
-		user.ID, service, accountID)
+	// see migrations/1515872648_accounts_constraint.up.sql
+	query := fmt.Sprintf(`INSERT INTO accounts (user_id, %[1]s)
+									VALUES ($1, $2)
+									ON CONFLICT ON CONSTRAINT unique_%[1]s DO UPDATE SET %[1]s = EXCLUDED.%[1]s`, service)
+	_, err := db.eLog.Exec(query, user.ID, accountID)
 	return err
 }
