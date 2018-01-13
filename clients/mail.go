@@ -8,12 +8,21 @@ import (
 	"gopkg.in/resty.v1"
 )
 
-type MailClient struct {
+type MailClient interface {
+	SendConfirmationMail(recipient *mttypes.Recipient) error
+	SendActivationMail(recipient *mttypes.Recipient) error
+	SendBlockedMail(recipient *mttypes.Recipient) error
+	SendPasswordChangedMail(recipient *mttypes.Recipient) error
+	SendPasswordResetMail(recipient *mttypes.Recipient) error
+	SendAccDeletedMail(recipient *mttypes.Recipient) error
+}
+
+type HTTPMailClient struct {
 	rest *resty.Client
 	log  *logrus.Entry
 }
 
-func NewMailClient(serverUrl string) *MailClient {
+func NewHTTPMailClient(serverUrl string) *HTTPMailClient {
 	log := logrus.WithField("component", "mail_client")
 	client := resty.New().
 		SetHostURL(serverUrl).
@@ -22,13 +31,13 @@ func NewMailClient(serverUrl string) *MailClient {
 		SetError(errors.Error{})
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
-	return &MailClient{
+	return &HTTPMailClient{
 		rest: client,
 		log:  log,
 	}
 }
 
-func (mc *MailClient) sendOneTemplate(tmplName string, recipient *mttypes.Recipient) error {
+func (mc *HTTPMailClient) sendOneTemplate(tmplName string, recipient *mttypes.Recipient) error {
 	req := &mttypes.SendRequest{}
 	req.Delay = 0
 	req.Message.Recipients = append(req.Message.Recipients, *recipient)
@@ -45,32 +54,32 @@ func (mc *MailClient) sendOneTemplate(tmplName string, recipient *mttypes.Recipi
 	return nil
 }
 
-func (mc *MailClient) SendConfirmationMail(recipient *mttypes.Recipient) error {
+func (mc *HTTPMailClient) SendConfirmationMail(recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending confirmation mail to", recipient.Email)
 	return mc.sendOneTemplate("confirm_reg", recipient)
 }
 
-func (mc *MailClient) SendActivationMail(recipient *mttypes.Recipient) error {
+func (mc *HTTPMailClient) SendActivationMail(recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending confirmation mail to", recipient.Email)
 	return mc.sendOneTemplate("activate_acc", recipient)
 }
 
-func (mc *MailClient) SendBlockedMail(recipient *mttypes.Recipient) error {
+func (mc *HTTPMailClient) SendBlockedMail(recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending blocked mail to", recipient.Email)
 	return mc.sendOneTemplate("blocked_acc", recipient)
 }
 
-func (mc *MailClient) SendPasswordChangedMail(recipient *mttypes.Recipient) error {
+func (mc *HTTPMailClient) SendPasswordChangedMail(recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending password changed mail to", recipient.Email)
 	return mc.sendOneTemplate("pwd_changed", recipient)
 }
 
-func (mc *MailClient) SendPasswordResetMail(recipient *mttypes.Recipient) error {
+func (mc *HTTPMailClient) SendPasswordResetMail(recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending reset password mail to", recipient.Email)
 	return mc.sendOneTemplate("reset_pwd", recipient)
 }
 
-func (mc *MailClient) SendAccDeletedMail(recipient *mttypes.Recipient) error {
+func (mc *HTTPMailClient) SendAccDeletedMail(recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending account deleted mail to", recipient.Email)
 	return mc.sendOneTemplate("delete_acc", recipient)
 }

@@ -45,7 +45,8 @@ func main() {
 	exitOnErr(err)
 	defer db.Close()
 
-	mailClient := clients.NewMailClient(viper.GetString("mail_url"))
+	mailClient, err := getMailClient()
+	exitOnErr(err)
 
 	reCaptchaClient := clients.NewReCaptchaClient(viper.GetString("recaptcha_key"))
 

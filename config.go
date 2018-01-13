@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 
+	"git.containerum.net/ch/user-manager/clients"
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/models/postgres"
 	"github.com/gin-gonic/gin"
@@ -37,5 +38,15 @@ func getDB() (models.DB, error) {
 		return postgres.DBConnect(viper.GetString("pg_url"))
 	default:
 		return nil, errors.New("invalid db")
+	}
+}
+
+func getMailClient() (clients.MailClient, error) {
+	viper.SetDefault("mail", "http")
+	switch viper.GetString("mail") {
+	case "http":
+		return clients.NewHTTPMailClient(viper.GetString("mail_url")), nil
+	default:
+		return nil, errors.New("invalid mail client")
 	}
 }

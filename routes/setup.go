@@ -9,7 +9,7 @@ import (
 )
 
 type Services struct {
-	MailClient      *clients.MailClient
+	MailClient      clients.MailClient
 	DB              models.DB
 	AuthClient      auth.AuthClient
 	ReCaptchaClient *clients.ReCaptchaClient
