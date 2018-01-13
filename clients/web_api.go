@@ -13,12 +13,12 @@ type WebAPIClient interface {
 	Login(request *umtypes.WebAPILoginRequest) (ret map[string]interface{}, statusCode int, err error)
 }
 
-type HTTPWebAPIClient struct {
+type httpWebAPIClient struct {
 	log    *logrus.Entry
 	client *resty.Client
 }
 
-func NewHTTPWebAPIClient(serverUrl string) *HTTPWebAPIClient {
+func NewHTTPWebAPIClient(serverUrl string) WebAPIClient {
 	log := logrus.WithField("component", "web_api_client")
 	client := resty.New().
 		SetHostURL(serverUrl).
@@ -28,14 +28,14 @@ func NewHTTPWebAPIClient(serverUrl string) *HTTPWebAPIClient {
 		SetError(umtypes.WebAPIError{})
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
-	return &HTTPWebAPIClient{
+	return &httpWebAPIClient{
 		log:    log,
 		client: client,
 	}
 }
 
 // returns raw answer from web-api
-func (c *HTTPWebAPIClient) Login(request *umtypes.WebAPILoginRequest) (ret map[string]interface{}, statusCode int, err error) {
+func (c *httpWebAPIClient) Login(request *umtypes.WebAPILoginRequest) (ret map[string]interface{}, statusCode int, err error) {
 	c.log.WithField("login", request.Username).Infoln("Signing in through web-api")
 
 	ret = make(map[string]interface{})

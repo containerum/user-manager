@@ -24,7 +24,7 @@ type PgDB struct {
 	eLog *chutils.SQLXExecLogger
 }
 
-func DBConnect(pgConnStr string) (*PgDB, error) {
+func DBConnect(pgConnStr string) (models.DB, error) {
 	log := logrus.WithField("component", "db")
 	log.Infoln("Connecting to ", pgConnStr)
 	conn, err := sqlx.Open("postgres", pgConnStr)

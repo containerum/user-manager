@@ -16,7 +16,7 @@ type ReCaptchaClient interface {
 	Check(remoteIP, clientResponse string) (r *ReCaptchaResponse, err error)
 }
 
-type HTTPReCaptchaClient struct {
+type httpReCaptchaClient struct {
 	client     *resty.Client
 	log        *logrus.Entry
 	privateKey string
@@ -29,19 +29,19 @@ type ReCaptchaResponse struct {
 	ErrorCodes  []int     `json:"error-codes"`
 }
 
-func NewHTTPReCaptchaClient(privateKey string) *HTTPReCaptchaClient {
+func NewHTTPReCaptchaClient(privateKey string) ReCaptchaClient {
 	log := logrus.WithField("component", "recaptcha")
 	client := resty.New().SetLogger(log.WriterLevel(logrus.DebugLevel)).SetHostURL(reCaptchaAPI).SetDebug(true)
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
-	return &HTTPReCaptchaClient{
+	return &httpReCaptchaClient{
 		log:        log,
 		client:     client,
 		privateKey: privateKey,
 	}
 }
 
-func (c *HTTPReCaptchaClient) Check(remoteIP, clientResponse string) (r *ReCaptchaResponse, err error) {
+func (c *httpReCaptchaClient) Check(remoteIP, clientResponse string) (r *ReCaptchaResponse, err error) {
 	c.log.Infoln("Checking ReCaptcha from", remoteIP)
 	r = new(ReCaptchaResponse)
 	_, err = c.client.R().SetResult(r).SetMultiValueFormData(url.Values{
