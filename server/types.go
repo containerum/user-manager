@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 
+	"io"
+
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 )
@@ -35,4 +37,6 @@ type UserManager interface {
 	GetUsers(ctx context.Context, params umtypes.UserListQuery, filters ...string) (umtypes.UserListGetResponse, error)
 
 	LinkResend(ctx context.Context, request umtypes.ResendLinkRequest) error
+
+	io.Closer
 }
