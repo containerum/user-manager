@@ -51,9 +51,7 @@ func main() {
 	reCaptchaClient, err := getReCaptchaClient()
 	exitOnErr(err)
 
-	clients.RegisterOAuthClient(clients.NewGithubOAuthClient(viper.GetString("github_app_id"), viper.GetString("github_secret")))
-	clients.RegisterOAuthClient(clients.NewGoogleOAuthClient(viper.GetString("google_app_id"), viper.GetString("google_secret")))
-	clients.RegisterOAuthClient(clients.NewFacebookOAuthClient(viper.GetString("facebook_app_id"), viper.GetString("facebook_secret")))
+	exitOnErr(oauthClientsSetup())
 
 	authConn, err := grpc.Dial(viper.GetString("auth_grpc_addr"), grpc.WithInsecure(), grpc.WithUnaryInterceptor(
 		grpc_middleware.ChainUnaryClient(
