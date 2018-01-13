@@ -10,16 +10,11 @@ import (
 	"net/http"
 	"os/signal"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/user-manager/routes"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
-	"github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/keepalive"
 )
 
 func exitOnErr(err error) {
@@ -52,18 +47,9 @@ func main() {
 
 	exitOnErr(oauthClientsSetup())
 
-	authConn, err := grpc.Dial(viper.GetString("auth_grpc_addr"), grpc.WithInsecure(), grpc.WithUnaryInterceptor(
-		grpc_middleware.ChainUnaryClient(
-			grpc_logrus.UnaryClientInterceptor(logrus.WithField("component", "auth_client")),
-		)),
-		grpc.WithKeepaliveParams(keepalive.ClientParameters{
-			Time:                10 * time.Second,
-			Timeout:             20 * time.Second,
-			PermitWithoutStream: true,
-		}))
+	authClient, err := getAuthClient()
 	exitOnErr(err)
-	defer authConn.Close()
-	authClient := auth.NewAuthClient(authConn)
+	defer authClient.Close()
 
 	webAPIClient, err := getWebAPIClient()
 	exitOnErr(err)

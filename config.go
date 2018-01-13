@@ -83,3 +83,13 @@ func getWebAPIClient() (clients.WebAPIClient, error) {
 		return nil, errors.New("invalid web_api client")
 	}
 }
+
+func getAuthClient() (clients.AuthClientCloser, error) {
+	viper.SetDefault("auth", "grpc")
+	switch viper.GetString("auth") {
+	case "grpc":
+		return clients.NewGRPCAuthClient(viper.GetString("auth_grpc_addr"))
+	default:
+		return nil, errors.New("invalid auth client")
+	}
+}
