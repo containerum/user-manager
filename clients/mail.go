@@ -1,6 +1,8 @@
 package clients
 
 import (
+	"context"
+
 	"git.containerum.net/ch/json-types/errors"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"github.com/json-iterator/go"
@@ -9,12 +11,12 @@ import (
 )
 
 type MailClient interface {
-	SendConfirmationMail(recipient *mttypes.Recipient) error
-	SendActivationMail(recipient *mttypes.Recipient) error
-	SendBlockedMail(recipient *mttypes.Recipient) error
-	SendPasswordChangedMail(recipient *mttypes.Recipient) error
-	SendPasswordResetMail(recipient *mttypes.Recipient) error
-	SendAccDeletedMail(recipient *mttypes.Recipient) error
+	SendConfirmationMail(ctx context.Context, recipient *mttypes.Recipient) error
+	SendActivationMail(ctx context.Context, recipient *mttypes.Recipient) error
+	SendBlockedMail(ctx context.Context, recipient *mttypes.Recipient) error
+	SendPasswordChangedMail(ctx context.Context, recipient *mttypes.Recipient) error
+	SendPasswordResetMail(ctx context.Context, recipient *mttypes.Recipient) error
+	SendAccDeletedMail(ctx context.Context, recipient *mttypes.Recipient) error
 }
 
 type httpMailClient struct {
@@ -37,11 +39,12 @@ func NewHTTPMailClient(serverUrl string) MailClient {
 	}
 }
 
-func (mc *httpMailClient) sendOneTemplate(tmplName string, recipient *mttypes.Recipient) error {
+func (mc *httpMailClient) sendOneTemplate(ctx context.Context, tmplName string, recipient *mttypes.Recipient) error {
 	req := &mttypes.SendRequest{}
 	req.Delay = 0
 	req.Message.Recipients = append(req.Message.Recipients, *recipient)
 	resp, err := mc.rest.R().
+		SetContext(ctx).
 		SetBody(req).
 		SetResult(mttypes.SendResponse{}).
 		Post("/templates/" + tmplName)
@@ -54,32 +57,32 @@ func (mc *httpMailClient) sendOneTemplate(tmplName string, recipient *mttypes.Re
 	return nil
 }
 
-func (mc *httpMailClient) SendConfirmationMail(recipient *mttypes.Recipient) error {
+func (mc *httpMailClient) SendConfirmationMail(ctx context.Context, recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending confirmation mail to", recipient.Email)
-	return mc.sendOneTemplate("confirm_reg", recipient)
+	return mc.sendOneTemplate(ctx, "confirm_reg", recipient)
 }
 
-func (mc *httpMailClient) SendActivationMail(recipient *mttypes.Recipient) error {
+func (mc *httpMailClient) SendActivationMail(ctx context.Context, recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending confirmation mail to", recipient.Email)
-	return mc.sendOneTemplate("activate_acc", recipient)
+	return mc.sendOneTemplate(ctx, "activate_acc", recipient)
 }
 
-func (mc *httpMailClient) SendBlockedMail(recipient *mttypes.Recipient) error {
+func (mc *httpMailClient) SendBlockedMail(ctx context.Context, recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending blocked mail to", recipient.Email)
-	return mc.sendOneTemplate("blocked_acc", recipient)
+	return mc.sendOneTemplate(ctx, "blocked_acc", recipient)
 }
 
-func (mc *httpMailClient) SendPasswordChangedMail(recipient *mttypes.Recipient) error {
+func (mc *httpMailClient) SendPasswordChangedMail(ctx context.Context, recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending password changed mail to", recipient.Email)
-	return mc.sendOneTemplate("pwd_changed", recipient)
+	return mc.sendOneTemplate(ctx, "pwd_changed", recipient)
 }
 
-func (mc *httpMailClient) SendPasswordResetMail(recipient *mttypes.Recipient) error {
+func (mc *httpMailClient) SendPasswordResetMail(ctx context.Context, recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending reset password mail to", recipient.Email)
-	return mc.sendOneTemplate("reset_pwd", recipient)
+	return mc.sendOneTemplate(ctx, "reset_pwd", recipient)
 }
 
-func (mc *httpMailClient) SendAccDeletedMail(recipient *mttypes.Recipient) error {
+func (mc *httpMailClient) SendAccDeletedMail(ctx context.Context, recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending account deleted mail to", recipient.Email)
-	return mc.sendOneTemplate("delete_acc", recipient)
+	return mc.sendOneTemplate(ctx, "delete_acc", recipient)
 }

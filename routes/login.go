@@ -5,6 +5,8 @@ import (
 
 	"time"
 
+	"context"
+
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
 	"git.containerum.net/ch/json-types/errors"
@@ -31,7 +33,7 @@ func basicLoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := svc.DB.GetUserByLogin(request.Username)
+	user, err := svc.DB.GetUserByLogin(ctx, request.Username)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
@@ -52,7 +54,7 @@ func basicLoginHandler(ctx *gin.Context) {
 	}
 
 	if !user.IsActive {
-		link, err := svc.DB.GetLinkForUser(umtypes.LinkTypeConfirm, user)
+		link, err := svc.DB.GetLinkForUser(ctx, umtypes.LinkTypeConfirm, user)
 		if err != nil {
 			ctx.Error(err)
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, linkGetFailed)
@@ -60,7 +62,7 @@ func basicLoginHandler(ctx *gin.Context) {
 		}
 
 		if link == nil {
-			link, err = svc.DB.CreateLink(umtypes.LinkTypeConfirm, 24*time.Hour, user)
+			link, err = svc.DB.CreateLink(ctx, umtypes.LinkTypeConfirm, 24*time.Hour, user)
 			if err != nil {
 				ctx.Error(err)
 				ctx.AbortWithStatusJSON(http.StatusInternalServerError, linkCreateFailed)
@@ -74,8 +76,8 @@ func basicLoginHandler(ctx *gin.Context) {
 		}
 
 		go func() {
-			err := svc.DB.Transactional(func(tx models.DB) error {
-				err := svc.MailClient.SendConfirmationMail(&mttypes.Recipient{
+			err := svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+				err := svc.MailClient.SendConfirmationMail(ctx, &mttypes.Recipient{
 					ID:        user.ID,
 					Name:      user.Login,
 					Email:     user.Login,
@@ -86,7 +88,7 @@ func basicLoginHandler(ctx *gin.Context) {
 				}
 				link.SentAt.Time = time.Now().UTC()
 				link.SentAt.Valid = true
-				return tx.UpdateLink(link)
+				return tx.UpdateLink(ctx, link)
 			})
 			if err != nil {
 				logrus.WithError(err).Error("email send failed")
@@ -127,7 +129,7 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	token, err := svc.DB.GetTokenObject(request.Token)
+	token, err := svc.DB.GetTokenObject(ctx, request.Token)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, getTokenFailed)
@@ -147,13 +149,14 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 
 	var tokens *auth.CreateTokenResponse
 
-	err = svc.DB.Transactional(func(tx models.DB) error {
+	rctx := ctx
+	err = svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		var err error
 		tokens, err = svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
-			UserAgent:   ctx.Request.UserAgent(),
-			Fingerprint: ctx.GetHeader(umtypes.FingerprintHeader),
+			UserAgent:   rctx.Request.UserAgent(),
+			Fingerprint: rctx.GetHeader(umtypes.FingerprintHeader),
 			UserId:      &common.UUID{Value: token.User.ID},
-			UserIp:      ctx.ClientIP(),
+			UserIp:      rctx.ClientIP(),
 			UserRole:    auth.Role(token.User.Role),
 			RwAccess:    true,
 			Access:      access,
@@ -164,8 +167,8 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 		}
 
 		token.IsActive = false
-		token.SessionID = ctx.GetHeader(umtypes.SessionIDHeader)
-		if err := tx.UpdateToken(token); err != nil {
+		token.SessionID = rctx.GetHeader(umtypes.SessionIDHeader)
+		if err := tx.UpdateToken(ctx, token); err != nil {
 			return err
 		}
 
@@ -194,14 +197,14 @@ func oauthLoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	info, err := resource.GetUserInfo(request.AccessToken)
+	info, err := resource.GetUserInfo(ctx, request.AccessToken)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, oauthUserInfoGetFailed)
 		return
 	}
 
-	user, err := svc.DB.GetUserByLogin(info.Email)
+	user, err := svc.DB.GetUserByLogin(ctx, info.Email)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
@@ -216,15 +219,15 @@ func oauthLoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	accounts, err := svc.DB.GetUserBoundAccounts(user)
+	accounts, err := svc.DB.GetUserBoundAccounts(ctx, user)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, boundAccountsGetFailed)
 		return
 	}
 	if accounts == nil {
-		if err := svc.DB.Transactional(func(tx models.DB) error {
-			return tx.BindAccount(user, request.Resource, info.UserID)
+		if err := svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+			return tx.BindAccount(ctx, user, request.Resource, info.UserID)
 		}); err != nil {
 			ctx.Error(err)
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, bindAccountFailed)
@@ -262,7 +265,7 @@ func webAPILoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	resp, code, err := svc.WebAPIClient.Login(&request)
+	resp, code, err := svc.WebAPIClient.Login(ctx, &request)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(code, errors.New(err.Error()))

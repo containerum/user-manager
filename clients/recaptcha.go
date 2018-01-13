@@ -5,6 +5,8 @@ import (
 
 	"net/url"
 
+	"context"
+
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
@@ -13,7 +15,7 @@ import (
 const reCaptchaAPI = "https://www.google.com/recaptcha/api"
 
 type ReCaptchaClient interface {
-	Check(remoteIP, clientResponse string) (r *ReCaptchaResponse, err error)
+	Check(ctx context.Context, remoteIP, clientResponse string) (r *ReCaptchaResponse, err error)
 }
 
 type httpReCaptchaClient struct {
@@ -41,10 +43,10 @@ func NewHTTPReCaptchaClient(privateKey string) ReCaptchaClient {
 	}
 }
 
-func (c *httpReCaptchaClient) Check(remoteIP, clientResponse string) (r *ReCaptchaResponse, err error) {
+func (c *httpReCaptchaClient) Check(ctx context.Context, remoteIP, clientResponse string) (r *ReCaptchaResponse, err error) {
 	c.log.Infoln("Checking ReCaptcha from", remoteIP)
 	r = new(ReCaptchaResponse)
-	_, err = c.client.R().SetResult(r).SetMultiValueFormData(url.Values{
+	_, err = c.client.R().SetContext(ctx).SetResult(r).SetMultiValueFormData(url.Values{
 		"secret":   {c.privateKey},
 		"remoteip": {remoteIP},
 		"response": {clientResponse},

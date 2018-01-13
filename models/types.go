@@ -5,6 +5,8 @@ import (
 
 	"io"
 
+	"context"
+
 	"git.containerum.net/ch/json-types/errors"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/lib/pq"
@@ -75,45 +77,45 @@ var (
 )
 
 type DB interface {
-	GetUserByLogin(login string) (*User, error)
-	GetUserByID(id string) (*User, error)
-	CreateUser(user *User) error
-	UpdateUser(user *User) error
-	GetBlacklistedUsers(perPage, page int) ([]User, error)
-	BlacklistUser(user *User) error
+	GetUserByLogin(ctx context.Context, login string) (*User, error)
+	GetUserByID(ctx context.Context, id string) (*User, error)
+	CreateUser(ctx context.Context, user *User) error
+	UpdateUser(ctx context.Context, user *User) error
+	GetBlacklistedUsers(ctx context.Context, perPage, page int) ([]User, error)
+	BlacklistUser(ctx context.Context, user *User) error
 
-	CreateProfile(profile *Profile) error
-	GetProfileByID(id string) (*Profile, error)
-	GetProfileByUser(user *User) (*Profile, error)
-	UpdateProfile(profile *Profile) error
-	GetAllProfiles(perPage, offset int) ([]Profile, error)
+	CreateProfile(ctx context.Context, profile *Profile) error
+	GetProfileByID(ctx context.Context, id string) (*Profile, error)
+	GetProfileByUser(ctx context.Context, user *User) (*Profile, error)
+	UpdateProfile(ctx context.Context, profile *Profile) error
+	GetAllProfiles(ctx context.Context, perPage, offset int) ([]Profile, error)
 
-	GetUserByBoundAccount(service umtypes.OAuthResource, accountID string) (*User, error)
-	GetUserBoundAccounts(user *User) (*Accounts, error)
-	BindAccount(user *User, service umtypes.OAuthResource, accountID string) error
+	GetUserByBoundAccount(ctx context.Context, service umtypes.OAuthResource, accountID string) (*User, error)
+	GetUserBoundAccounts(ctx context.Context, user *User) (*Accounts, error)
+	BindAccount(ctx context.Context, user *User, service umtypes.OAuthResource, accountID string) error
 
-	BlacklistDomain(domain string) error
-	UnBlacklistDomain(domain string) error
-	IsDomainBlacklisted(domain string) (bool, error)
+	BlacklistDomain(ctx context.Context, domain string) error
+	UnBlacklistDomain(ctx context.Context, domain string) error
+	IsDomainBlacklisted(ctx context.Context, domain string) (bool, error)
 	/*GetBlacklistedDomains() ([]DomainBlacklistEntry, error)*/
 
-	CreateLink(linkType umtypes.LinkType, lifeTime time.Duration, user *User) (*Link, error)
-	GetLinkForUser(linkType umtypes.LinkType, user *User) (*Link, error)
-	GetLinkFromString(strLink string) (*Link, error)
-	UpdateLink(link *Link) error
-	GetUserLinks(user *User) ([]Link, error)
+	CreateLink(ctx context.Context, linkType umtypes.LinkType, lifeTime time.Duration, user *User) (*Link, error)
+	GetLinkForUser(ctx context.Context, linkType umtypes.LinkType, user *User) (*Link, error)
+	GetLinkFromString(ctx context.Context, strLink string) (*Link, error)
+	UpdateLink(ctx context.Context, link *Link) error
+	GetUserLinks(ctx context.Context, user *User) ([]Link, error)
 
-	GetTokenObject(token string) (*Token, error)
-	CreateToken(user *User, sessionID string) (*Token, error)
-	GetTokenBySessionID(sessionID string) (*Token, error)
-	DeleteToken(token string) error
-	UpdateToken(token *Token) error
+	GetTokenObject(ctx context.Context, token string) (*Token, error)
+	CreateToken(ctx context.Context, user *User, sessionID string) (*Token, error)
+	GetTokenBySessionID(ctx context.Context, sessionID string) (*Token, error)
+	DeleteToken(ctx context.Context, token string) error
+	UpdateToken(ctx context.Context, token *Token) error
 
 	// Perform operations inside transaction
 	// Transaction commits if `f` returns nil error, rollbacks and forwards error otherwise
 	// May return ErrTransactionBegin if transaction start failed,
 	// ErrTransactionCommit if commit failed, ErrTransactionRollback if rollback failed
-	Transactional(f func(tx DB) error) error
+	Transactional(ctx context.Context, f func(ctx context.Context, tx DB) error) error
 
 	io.Closer
 }

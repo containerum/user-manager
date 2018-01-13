@@ -1,21 +1,23 @@
 package postgres
 
-func (db *pgDB) BlacklistDomain(domain string) error {
+import "context"
+
+func (db *pgDB) BlacklistDomain(ctx context.Context, domain string) error {
 	db.log.Infoln("Blacklisting domain", domain)
-	_, err := db.eLog.Exec("INSERT INTO domains (domain) VALUES ($1) ON CONFLICT DO NOTHING",
+	_, err := db.eLog.ExecContext(ctx, "INSERT INTO domains (domain) VALUES ($1) ON CONFLICT DO NOTHING",
 		domain)
 	return err
 }
 
-func (db *pgDB) UnBlacklistDomain(domain string) error {
+func (db *pgDB) UnBlacklistDomain(ctx context.Context, domain string) error {
 	db.log.Infoln("UnBlacklisting domain", domain)
-	_, err := db.eLog.Exec("DELETE FROM domains WHERE domain = $1", domain)
+	_, err := db.eLog.ExecContext(ctx, "DELETE FROM domains WHERE domain = $1", domain)
 	return err
 }
 
-func (db *pgDB) IsDomainBlacklisted(domain string) (bool, error) {
+func (db *pgDB) IsDomainBlacklisted(ctx context.Context, domain string) (bool, error) {
 	db.log.Infof("Checking if domain %s in blacklist", domain)
-	rows, err := db.qLog.Queryx("SELECT COUNT(*) FROM domains WHERE domain = $1", domain)
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT COUNT(*) FROM domains WHERE domain = $1", domain)
 	if err != nil {
 		return false, err
 	}

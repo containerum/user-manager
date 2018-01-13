@@ -1,13 +1,17 @@
 package postgres
 
-import . "git.containerum.net/ch/user-manager/models"
+import (
+	"context"
+
+	. "git.containerum.net/ch/user-manager/models"
+)
 
 const userQueryColumns = "id, login, password_hash, salt, role, is_active, is_deleted, is_in_blacklist"
 
-func (db *pgDB) GetUserByLogin(login string) (*User, error) {
+func (db *pgDB) GetUserByLogin(ctx context.Context, login string) (*User, error) {
 	db.log.Infoln("Get user by login", login)
 	var user User
-	rows, err := db.qLog.Queryx("SELECT "+userQueryColumns+" FROM users WHERE login = $1 AND NOT is_deleted", login)
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE login = $1 AND NOT is_deleted", login)
 	if err != nil {
 		return nil, err
 	}
@@ -19,10 +23,10 @@ func (db *pgDB) GetUserByLogin(login string) (*User, error) {
 	return &user, err
 }
 
-func (db *pgDB) GetUserByID(id string) (*User, error) {
+func (db *pgDB) GetUserByID(ctx context.Context, id string) (*User, error) {
 	db.log.Infoln("Get user by id", id)
 	var user User
-	rows, err := db.qLog.Queryx("SELECT "+userQueryColumns+" FROM users WHERE id = $1 AND NOT is_deleted", id)
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE id = $1 AND NOT is_deleted", id)
 	if err != nil {
 		return nil, err
 	}
@@ -34,9 +38,9 @@ func (db *pgDB) GetUserByID(id string) (*User, error) {
 	return &user, err
 }
 
-func (db *pgDB) CreateUser(user *User) error {
+func (db *pgDB) CreateUser(ctx context.Context, user *User) error {
 	db.log.Infoln("Create user", user.Login)
-	rows, err := db.qLog.Queryx("INSERT INTO users (login, password_hash, salt, role) "+
+	rows, err := db.qLog.QueryxContext(ctx, "INSERT INTO users (login, password_hash, salt, role) "+
 		"VALUES ($1, $2, $3, $4) RETURNING id",
 		user.Login, user.PasswordHash, user.Salt, user.Role)
 	if err != nil {
@@ -50,18 +54,18 @@ func (db *pgDB) CreateUser(user *User) error {
 	return err
 }
 
-func (db *pgDB) UpdateUser(user *User) error {
+func (db *pgDB) UpdateUser(ctx context.Context, user *User) error {
 	db.log.Infoln("Update user", user.Login)
-	_, err := db.eLog.Exec("UPDATE users SET "+
+	_, err := db.eLog.ExecContext(ctx, "UPDATE users SET "+
 		"login = $2, password_hash = $3, salt = $4, role = $5, is_active = $6, is_deleted = $7 WHERE id = $1",
 		user.ID, user.Login, user.PasswordHash, user.Salt, user.Role, user.IsActive, user.IsDeleted)
 	return err
 }
 
-func (db *pgDB) GetBlacklistedUsers(perPage, page int) ([]User, error) {
+func (db *pgDB) GetBlacklistedUsers(ctx context.Context, perPage, page int) ([]User, error) {
 	db.log.Infoln("Get blacklisted users")
 	resp := make([]User, 0)
-	rows, err := db.qLog.Queryx("SELECT "+userQueryColumns+" FROM users WHERE is_in_blacklist LIMIT $1 OFFSET $2",
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE is_in_blacklist LIMIT $1 OFFSET $2",
 		perPage, page)
 	if err != nil {
 		return nil, err
@@ -79,13 +83,13 @@ func (db *pgDB) GetBlacklistedUsers(perPage, page int) ([]User, error) {
 	return resp, rows.Err()
 }
 
-func (db *pgDB) BlacklistUser(user *User) error {
+func (db *pgDB) BlacklistUser(ctx context.Context, user *User) error {
 	db.log.Infoln("Blacklisting user", user.Login)
-	_, err := db.eLog.Exec("UPDATE users SET is_in_blacklist = TRUE WHERE id = $1", user.ID)
+	_, err := db.eLog.ExecContext(ctx, "UPDATE users SET is_in_blacklist = TRUE WHERE id = $1", user.ID)
 	if err != nil {
 		return err
 	}
-	_, err = db.eLog.Exec("UPDATE profiles SET blacklist_at = NOW() WHERE user_id = $1", user.ID)
+	_, err = db.eLog.ExecContext(ctx, "UPDATE profiles SET blacklist_at = NOW() WHERE user_id = $1", user.ID)
 	if err != nil {
 		return err
 	}

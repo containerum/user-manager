@@ -25,7 +25,7 @@ func reCaptchaMiddleware(ctx *gin.Context) {
 		return
 	}
 
-	checkResp, err := svc.ReCaptchaClient.Check(ctx.ClientIP(), request.ReCaptcha)
+	checkResp, err := svc.ReCaptchaClient.Check(ctx, ctx.ClientIP(), request.ReCaptcha)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, reCaptchaRequestFailed)
@@ -39,7 +39,7 @@ func reCaptchaMiddleware(ctx *gin.Context) {
 
 func adminAccessMiddleware(ctx *gin.Context) {
 	userID := ctx.GetHeader(umtypes.UserIDHeader)
-	user, err := svc.DB.GetUserByID(userID)
+	user, err := svc.DB.GetUserByID(ctx, userID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))

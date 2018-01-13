@@ -5,6 +5,8 @@ import (
 
 	"time"
 
+	"context"
+
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
 	"git.containerum.net/ch/json-types/errors"
@@ -31,7 +33,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := svc.DB.GetUserByID(userID)
+	user, err := svc.DB.GetUserByID(ctx, userID)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
@@ -57,7 +59,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 	}
 
 	user.PasswordHash = utils.GetKey(user.Login, request.NewPassword, user.Salt)
-	err = svc.DB.UpdateUser(user)
+	err = svc.DB.UpdateUser(ctx, user)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userUpdateFailed)
@@ -65,7 +67,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 	}
 
 	go func() {
-		err := svc.MailClient.SendPasswordChangedMail(&mttypes.Recipient{
+		err := svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
 			ID:        user.ID,
 			Name:      user.Login,
 			Email:     user.Login,
@@ -105,7 +107,7 @@ func passwordResetHandler(ctx *gin.Context) {
 		return
 	}
 
-	user, err := svc.DB.GetUserByLogin(request.Username)
+	user, err := svc.DB.GetUserByLogin(ctx, request.Username)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, userGetFailed)
@@ -121,8 +123,8 @@ func passwordResetHandler(ctx *gin.Context) {
 	}
 
 	var link *models.Link
-	err = svc.DB.Transactional(func(tx models.DB) (err error) {
-		link, err = svc.DB.CreateLink(umtypes.LinkTypePwdChange, 24*time.Hour, user)
+	err = svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) (err error) {
+		link, err = svc.DB.CreateLink(ctx, umtypes.LinkTypePwdChange, 24*time.Hour, user)
 		return
 	})
 	if err != nil {
@@ -132,7 +134,7 @@ func passwordResetHandler(ctx *gin.Context) {
 	}
 
 	go func() {
-		err := svc.MailClient.SendPasswordResetMail(&mttypes.Recipient{
+		err := svc.MailClient.SendPasswordResetMail(ctx, &mttypes.Recipient{
 			ID:        user.ID,
 			Name:      user.Login,
 			Email:     user.Login,
@@ -152,7 +154,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 		return
 	}
 
-	link, err := svc.DB.GetLinkFromString(request.Link)
+	link, err := svc.DB.GetLinkFromString(ctx, request.Link)
 	if err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, linkGetFailed)
@@ -176,13 +178,13 @@ func passwordRestoreHandler(ctx *gin.Context) {
 		return
 	}
 
-	err = svc.DB.Transactional(func(tx models.DB) error {
+	err = svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		link.User.PasswordHash = utils.GetKey(link.User.Login, request.NewPassword, link.User.Salt)
-		if err := svc.DB.UpdateUser(link.User); err != nil {
+		if err := svc.DB.UpdateUser(ctx, link.User); err != nil {
 			return err
 		}
 		link.IsActive = false
-		return svc.DB.UpdateLink(link)
+		return svc.DB.UpdateLink(ctx, link)
 	})
 	if err != nil {
 		ctx.Error(err)
@@ -191,7 +193,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 	}
 
 	go func() {
-		err := svc.MailClient.SendPasswordChangedMail(&mttypes.Recipient{
+		err := svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
 			ID:        link.User.ID,
 			Name:      link.User.Login,
 			Email:     link.User.Login,

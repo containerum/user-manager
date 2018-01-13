@@ -5,6 +5,8 @@ import (
 
 	"fmt"
 
+	"context"
+
 	"git.containerum.net/ch/user-manager/models"
 	chutils "git.containerum.net/ch/utils"
 	"github.com/jmoiron/sqlx"
@@ -15,13 +17,11 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var _ models.DB = &pgDB{}
-
 type pgDB struct {
 	conn *sqlx.DB // do not use it in select/exec operations
 	log  *logrus.Entry
-	qLog *chutils.SQLXQueryLogger
-	eLog *chutils.SQLXExecLogger
+	qLog sqlx.QueryerContext
+	eLog sqlx.ExecerContext
 }
 
 func DBConnect(pgConnStr string) (models.DB, error) {
@@ -36,8 +36,8 @@ func DBConnect(pgConnStr string) (models.DB, error) {
 	ret := &pgDB{
 		conn: conn,
 		log:  log,
-		qLog: chutils.NewSQLXQueryLogger(conn, log),
-		eLog: chutils.NewSQLXExecLogger(conn, log),
+		qLog: chutils.NewSQLXContextQueryLogger(conn, log),
+		eLog: chutils.NewSQLXContextExecLogger(conn, log),
 	}
 
 	m, err := ret.migrateUp("migrations")
@@ -66,7 +66,7 @@ func (db *pgDB) migrateUp(path string) (*migrate.Migrate, error) {
 	return m, nil
 }
 
-func (db *pgDB) Transactional(f func(tx models.DB) error) (err error) {
+func (db *pgDB) Transactional(ctx context.Context, f func(ctx context.Context, tx models.DB) error) (err error) {
 	start := time.Now().Format(time.ANSIC)
 	e := db.log.WithField("transaction_at", start)
 	e.Debugln("Begin transaction")
@@ -79,8 +79,8 @@ func (db *pgDB) Transactional(f func(tx models.DB) error) (err error) {
 	arg := &pgDB{
 		conn: db.conn,
 		log:  e,
-		eLog: chutils.NewSQLXExecLogger(tx, e),
-		qLog: chutils.NewSQLXQueryLogger(tx, e),
+		eLog: chutils.NewSQLXContextExecLogger(tx, e),
+		qLog: chutils.NewSQLXContextQueryLogger(tx, e),
 	}
 
 	// needed for recovering panics in transactions.
@@ -105,7 +105,7 @@ func (db *pgDB) Transactional(f func(tx models.DB) error) (err error) {
 			e.WithError(cerr).Errorln("Commit error")
 			err = models.ErrTransactionCommit
 		}
-	}(f(arg))
+	}(f(ctx, arg))
 
 	return
 }
