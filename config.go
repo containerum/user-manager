@@ -58,6 +58,8 @@ func getReCaptchaClient() (clients.ReCaptchaClient, error) {
 	switch viper.GetString("recaptcha") {
 	case "http":
 		return clients.NewHTTPReCaptchaClient(viper.GetString("recaptcha_key")), nil
+	case "dummy":
+		return clients.NewDummyReCaptchaClient(), nil
 	default:
 		return nil, errors.New("invalid reCaptcha client")
 	}
