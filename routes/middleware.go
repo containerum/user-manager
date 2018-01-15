@@ -20,6 +20,22 @@ var hdrToKey = map[string]interface{}{
 	umtypes.ClientIPHeader:    server.ClientIPContextKey,
 }
 
+func requireHeaders(headers ...string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var notFoundHeaders []string
+		for _, v := range headers {
+			if ctx.GetHeader(v) == "" {
+				notFoundHeaders = append(notFoundHeaders, v)
+			}
+		}
+		if len(notFoundHeaders) > 0 {
+			err := errors.Format("required headers %v was not provided", notFoundHeaders)
+			ctx.Error(err)
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+		}
+	}
+}
+
 func prepareContext(ctx *gin.Context) {
 	for hn, ck := range hdrToKey {
 		if hv := ctx.GetHeader(hn); hv != "" {

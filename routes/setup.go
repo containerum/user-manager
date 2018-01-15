@@ -1,6 +1,7 @@
 package routes
 
 import (
+	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/server"
 	"github.com/gin-gonic/gin"
 )
@@ -12,9 +13,11 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 
 	app.Use(prepareContext)
 
+	requireIdentityHeaders := requireHeaders(umtypes.UserIDHeader)
+
 	root := app.Group("/")
 	{
-		root.POST("/logout/:token_id", logoutHandler)
+		root.POST("/logout/:token_id", requireIdentityHeaders, logoutHandler)
 	}
 
 	user := app.Group("/user")
@@ -24,27 +27,27 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 		user.POST("/sign_up", userCreateHandler)
 		user.POST("/sign_up/resend", linkResendHandler)
 		user.POST("/activation", activateHandler)
-		user.POST("/blacklist", adminAccessMiddleware, userToBlacklistHandler)
-		user.POST("/delete/partial", partialDeleteHandler)
-		user.POST("/delete/complete", adminAccessMiddleware, completeDeleteHandler)
-
-		user.GET("/links/:user_id", adminAccessMiddleware, linksGetHandler)
-		user.GET("/blacklist", adminAccessMiddleware, blacklistGetHandler)
-		user.GET("/info", userInfoGetHandler)
-		user.GET("/users", adminAccessMiddleware, userListGetHandler)
+		user.POST("/blacklist", requireIdentityHeaders, adminAccessMiddleware, userToBlacklistHandler)
+		user.POST("/delete/partial", requireIdentityHeaders, partialDeleteHandler)
+		user.POST("/delete/complete", requireIdentityHeaders, adminAccessMiddleware, completeDeleteHandler)
+		user.GET("/links/:user_id", requireIdentityHeaders, adminAccessMiddleware, linksGetHandler)
+		user.GET("/blacklist", requireIdentityHeaders, adminAccessMiddleware, blacklistGetHandler)
+		user.GET("/info", requireIdentityHeaders, userInfoGetHandler)
+		user.GET("/users", requireIdentityHeaders, adminAccessMiddleware, userListGetHandler)
 	}
 
+	requireLoginHeaders := requireHeaders(umtypes.UserAgentHeader, umtypes.FingerprintHeader, umtypes.ClientIPHeader)
 	login := app.Group("/login")
 	{
-		login.POST("/basic", basicLoginHandler)
-		login.POST("/token", oneTimeTokenLoginHandler)
-		login.POST("/oauth", oauthLoginHandler)
-		login.POST("", webAPILoginHandler) // login through old web-api
+		login.POST("/basic", requireLoginHeaders, basicLoginHandler)
+		login.POST("/token", requireLoginHeaders, oneTimeTokenLoginHandler)
+		login.POST("/oauth", requireLoginHeaders, oauthLoginHandler)
+		login.POST("", requireLoginHeaders, webAPILoginHandler) // login through old web-api
 	}
 
 	password := app.Group("/password")
 	{
-		password.PUT("/change", passwordChangeHandler)
+		password.PUT("/change", requireIdentityHeaders, passwordChangeHandler)
 
 		password.POST("/reset", passwordResetHandler)
 		password.POST("/restore", passwordRestoreHandler)
