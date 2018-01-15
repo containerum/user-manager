@@ -56,7 +56,7 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 			ID:        user.ID,
 			Name:      user.Login,
 			Email:     user.Login,
-			Variables: map[string]string{},
+			Variables: map[string]interface{}{},
 		})
 		if err != nil {
 			u.log.WithError(err).Error("password change email send failed")
