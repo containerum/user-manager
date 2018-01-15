@@ -1,37 +1,24 @@
-package models
+package postgres
 
 import (
-	"time"
-
-	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/json-iterator/go"
-	"github.com/lib/pq"
+
+	"context"
+
+	. "git.containerum.net/ch/user-manager/models"
 )
-
-type Profile struct {
-	ID          string
-	Referral    string
-	Access      string
-	CreatedAt   time.Time
-	BlacklistAt pq.NullTime
-	DeletedAt   pq.NullTime
-
-	User *User
-
-	Data umtypes.ProfileData
-}
 
 const profileQueryColumnsWithUser = "profiles.id, profiles.referral, profiles.access, profiles.created_at, profiles.blacklist_at, profiles.deleted_at, " +
 	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist, profiles.data"
 const profileQueryColumns = "id, referral, access, created_at, blacklist_at, deleted_at, data"
 
-func (db *DB) CreateProfile(profile *Profile) error {
-	db.log.Debugln("Create profile for", profile.User.Login)
+func (db *pgDB) CreateProfile(ctx context.Context, profile *Profile) error {
+	db.log.Infoln("Create profile for", profile.User.Login)
 	profileData, err := jsoniter.MarshalToString(profile.Data)
 	if err != nil {
 		return err
 	}
-	rows, err := db.qLog.Queryx("INSERT INTO profiles (referral, access, user_id, data) VALUES "+
+	rows, err := db.qLog.QueryxContext(ctx, "INSERT INTO profiles (referral, access, user_id, data) VALUES "+
 		"($1, $2, $3, $4) RETURNING id, created_at", profile.Referral, profile.Access, profile.User.ID, profileData)
 	if err != nil {
 		return err
@@ -45,9 +32,9 @@ func (db *DB) CreateProfile(profile *Profile) error {
 	return err
 }
 
-func (db *DB) GetProfileByID(id string) (*Profile, error) {
-	db.log.Debugln("Get profile by id", id)
-	rows, err := db.qLog.Queryx("SELECT "+profileQueryColumnsWithUser+" FROM profiles "+
+func (db *pgDB) GetProfileByID(ctx context.Context, id string) (*Profile, error) {
+	db.log.Infoln("Get profile by id", id)
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+profileQueryColumnsWithUser+" FROM profiles "+
 		"JOIN users ON profiles.user_id = user.id WHERE profiles.id = $1", id)
 	if err != nil {
 		return nil, err
@@ -74,9 +61,9 @@ func (db *DB) GetProfileByID(id string) (*Profile, error) {
 	return &profile, nil
 }
 
-func (db *DB) GetProfileByUser(user *User) (*Profile, error) {
-	db.log.Debugf("Get profile by user %#v", user)
-	rows, err := db.qLog.Queryx("SELECT "+profileQueryColumns+" FROM profiles "+
+func (db *pgDB) GetProfileByUser(ctx context.Context, user *User) (*Profile, error) {
+	db.log.Infof("Get profile by user %#v", user)
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+profileQueryColumns+" FROM profiles "+
 		"WHERE profiles.user_id = $1", user.ID)
 	if err != nil {
 		return nil, err
@@ -99,18 +86,18 @@ func (db *DB) GetProfileByUser(user *User) (*Profile, error) {
 	return &profile, nil
 }
 
-func (db *DB) UpdateProfile(profile *Profile) error {
-	db.log.Debugf("Update profile %#v", profile)
-	_, err := db.eLog.Exec("UPDATE profiles SET referal = $2, access = $3, data = '$4 WHERE id = $1",
+func (db *pgDB) UpdateProfile(ctx context.Context, profile *Profile) error {
+	db.log.Infof("Update profile %#v", profile)
+	_, err := db.eLog.ExecContext(ctx, "UPDATE profiles SET referal = $2, access = $3, data = '$4 WHERE id = $1",
 		profile.ID, profile.Referral, profile.Access, profile.Data)
 	return err
 }
 
-func (db *DB) GetAllProfiles(perPage, offset int) ([]Profile, error) {
-	db.log.Debugln("Get all profiles")
+func (db *pgDB) GetAllProfiles(ctx context.Context, perPage, offset int) ([]Profile, error) {
+	db.log.Infoln("Get all profiles")
 	profiles := make([]Profile, 0) // return empty slice instead of nil if no records found
 
-	rows, err := db.qLog.Queryx("SELECT "+profileQueryColumnsWithUser+" FROM profiles JOIN users ON profiles.user_id = users.id "+
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+profileQueryColumnsWithUser+" FROM profiles JOIN users ON profiles.user_id = users.id "+
 		"LIMIT $1 OFFSET $2", perPage, offset)
 	if err != nil {
 		return nil, err

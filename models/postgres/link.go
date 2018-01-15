@@ -1,4 +1,4 @@
-package models
+package postgres
 
 import (
 	"crypto/sha256"
@@ -6,27 +6,18 @@ import (
 	"strings"
 	"time"
 
+	"context"
+
 	umtypes "git.containerum.net/ch/json-types/user-manager"
-	"github.com/lib/pq"
+	. "git.containerum.net/ch/user-manager/models"
 	"github.com/sirupsen/logrus"
 )
-
-type Link struct {
-	Link      string
-	Type      umtypes.LinkType
-	CreatedAt time.Time
-	ExpiredAt time.Time
-	IsActive  bool
-	SentAt    pq.NullTime
-
-	User *User
-}
 
 const linkQueryColumnsWithUser = "links.link, links.type, links.created_at, links.expired_at, links.is_active, links.sent_at, " +
 	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist"
 const linkQueryColumns = "link, type, created_at, expired_at, is_active, sent_at"
 
-func (db *DB) CreateLink(linkType umtypes.LinkType, lifeTime time.Duration, user *User) (*Link, error) {
+func (db *pgDB) CreateLink(ctx context.Context, linkType umtypes.LinkType, lifeTime time.Duration, user *User) (*Link, error) {
 	now := time.Now().UTC()
 	ret := &Link{
 		Link:      strings.ToUpper(hex.EncodeToString(sha256.New().Sum([]byte(user.ID + string(linkType) + lifeTime.String())))),
@@ -39,15 +30,15 @@ func (db *DB) CreateLink(linkType umtypes.LinkType, lifeTime time.Duration, user
 	db.log.WithFields(logrus.Fields{
 		"user":          user.Login,
 		"creation_time": now.Format(time.ANSIC),
-	}).Debugln("Create activation link")
-	_, err := db.eLog.Exec("INSERT INTO links (link, type, created_at, expired_at, is_active, user_id) VALUES "+
+	}).Infoln("Create activation link")
+	_, err := db.eLog.ExecContext(ctx, "INSERT INTO links (link, type, created_at, expired_at, is_active, user_id) VALUES "+
 		"($1, $2, $3, $4, $5, $6)", ret.Link, ret.Type, ret.CreatedAt, ret.ExpiredAt, ret.IsActive, ret.User.ID)
 	return ret, err
 }
 
-func (db *DB) GetLinkForUser(linkType umtypes.LinkType, user *User) (*Link, error) {
-	db.log.Debugln("Get link", linkType, "for", user.Login)
-	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumns+" FROM links "+
+func (db *pgDB) GetLinkForUser(ctx context.Context, linkType umtypes.LinkType, user *User) (*Link, error) {
+	db.log.Infoln("Get link", linkType, "for", user.Login)
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+linkQueryColumns+" FROM links "+
 		"WHERE user_id = $1 AND type = $2 AND is_active AND expired_at > NOW()", user.ID, linkType)
 	if err != nil {
 		return nil, err
@@ -62,9 +53,9 @@ func (db *DB) GetLinkForUser(linkType umtypes.LinkType, user *User) (*Link, erro
 	return &link, err
 }
 
-func (db *DB) GetLinkFromString(strLink string) (*Link, error) {
-	db.log.Debugln("Get link", strLink)
-	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumnsWithUser+" FROM links "+
+func (db *pgDB) GetLinkFromString(ctx context.Context, strLink string) (*Link, error) {
+	db.log.Infoln("Get link", strLink)
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+linkQueryColumnsWithUser+" FROM links "+
 		"JOIN users ON links.user_id = users.id "+
 		"WHERE link = $1 AND links.is_active AND links.expired_at > NOW()", strLink)
 	if err != nil {
@@ -82,17 +73,17 @@ func (db *DB) GetLinkFromString(strLink string) (*Link, error) {
 	return &link, err
 }
 
-func (db *DB) UpdateLink(link *Link) error {
-	db.log.Debugf("Update link %#v", link)
-	_, err := db.eLog.Exec("UPDATE links set type = $2, expired_at = $3, is_active = $4, sent_at = $5 "+
+func (db *pgDB) UpdateLink(ctx context.Context, link *Link) error {
+	db.log.Infof("Update link %#v", link)
+	_, err := db.eLog.ExecContext(ctx, "UPDATE links set type = $2, expired_at = $3, is_active = $4, sent_at = $5 "+
 		"WHERE link = $1", link.Link, link.Type, link.ExpiredAt, link.IsActive, link.SentAt)
 	return err
 }
 
-func (db *DB) GetUserLinks(user *User) ([]Link, error) {
-	db.log.Debugln("Get links for", user.Login)
+func (db *pgDB) GetUserLinks(ctx context.Context, user *User) ([]Link, error) {
+	db.log.Infoln("Get links for", user.Login)
 	var ret []Link
-	rows, err := db.qLog.Queryx("SELECT "+linkQueryColumns+" FROM links "+
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+linkQueryColumns+" FROM links "+
 		"WHERE user_id = $1 AND is_active AND expired_at > NOW()", user.ID)
 	if err != nil {
 		return nil, err

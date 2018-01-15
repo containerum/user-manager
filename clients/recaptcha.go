@@ -5,6 +5,8 @@ import (
 
 	"net/url"
 
+	"context"
+
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
@@ -12,7 +14,11 @@ import (
 
 const reCaptchaAPI = "https://www.google.com/recaptcha/api"
 
-type ReCaptchaClient struct {
+type ReCaptchaClient interface {
+	Check(ctx context.Context, remoteIP, clientResponse string) (r *ReCaptchaResponse, err error)
+}
+
+type httpReCaptchaClient struct {
 	client     *resty.Client
 	log        *logrus.Entry
 	privateKey string
@@ -25,22 +31,22 @@ type ReCaptchaResponse struct {
 	ErrorCodes  []int     `json:"error-codes"`
 }
 
-func NewReCaptchaClient(privateKey string) *ReCaptchaClient {
+func NewHTTPReCaptchaClient(privateKey string) ReCaptchaClient {
 	log := logrus.WithField("component", "recaptcha")
 	client := resty.New().SetLogger(log.WriterLevel(logrus.DebugLevel)).SetHostURL(reCaptchaAPI).SetDebug(true)
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
-	return &ReCaptchaClient{
+	return &httpReCaptchaClient{
 		log:        log,
 		client:     client,
 		privateKey: privateKey,
 	}
 }
 
-func (c *ReCaptchaClient) Check(remoteIP, clientResponse string) (r *ReCaptchaResponse, err error) {
+func (c *httpReCaptchaClient) Check(ctx context.Context, remoteIP, clientResponse string) (r *ReCaptchaResponse, err error) {
 	c.log.Infoln("Checking ReCaptcha from", remoteIP)
 	r = new(ReCaptchaResponse)
-	_, err = c.client.R().SetResult(r).SetMultiValueFormData(url.Values{
+	_, err = c.client.R().SetContext(ctx).SetResult(r).SetMultiValueFormData(url.Values{
 		"secret":   {c.privateKey},
 		"remoteip": {remoteIP},
 		"response": {clientResponse},

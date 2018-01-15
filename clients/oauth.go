@@ -24,7 +24,7 @@ type OAuthUserInfo struct {
 }
 
 type OAuthClient interface {
-	GetUserInfo(authCode string) (info *OAuthUserInfo, err error)
+	GetUserInfo(ctx context.Context, authCode string) (info *OAuthUserInfo, err error)
 	GetResource() umtypes.OAuthResource
 }
 
@@ -44,16 +44,15 @@ type oAuthClientConfig struct {
 	*oauth2.Config
 }
 
-func (c *oAuthClientConfig) exchange(authCode string) (*http.Client, context.Context, error) {
+func (c *oAuthClientConfig) exchange(ctx context.Context, authCode string) (*http.Client, error) {
 	c.log.WithField("auth_code", authCode).Debugln("exchanging auth code")
-	ctx := context.Background()
 	token, err := c.Exchange(ctx, authCode)
 	if err != nil {
-		return nil, ctx, err
+		return nil, err
 	}
 	ts := c.TokenSource(ctx, token)
 	tc := oauth2.NewClient(ctx, ts)
-	return tc, ctx, nil
+	return tc, nil
 }
 
 type GithubOAuthClient struct {
@@ -78,9 +77,9 @@ func (gh *GithubOAuthClient) GetResource() umtypes.OAuthResource {
 	return umtypes.GitHubOAuth
 }
 
-func (gh *GithubOAuthClient) GetUserInfo(authCode string) (info *OAuthUserInfo, err error) {
+func (gh *GithubOAuthClient) GetUserInfo(ctx context.Context, authCode string) (info *OAuthUserInfo, err error) {
 	gh.log.Infoln("Get GitHub user info")
-	tc, ctx, err := gh.exchange(authCode)
+	tc, err := gh.exchange(ctx, authCode)
 	if err != nil {
 		return nil, err
 	}
@@ -125,9 +124,9 @@ func (gc *GoogleOAuthClient) GetResource() umtypes.OAuthResource {
 	return umtypes.GoogleOAuth
 }
 
-func (gc *GoogleOAuthClient) GetUserInfo(authCode string) (info *OAuthUserInfo, err error) {
+func (gc *GoogleOAuthClient) GetUserInfo(ctx context.Context, authCode string) (info *OAuthUserInfo, err error) {
 	gc.log.Infoln("Get Google user info")
-	tc, _, err := gc.exchange(authCode)
+	tc, err := gc.exchange(ctx, authCode)
 	if err != nil {
 		return nil, err
 	}
@@ -172,10 +171,10 @@ func (fb *FacebookOAuthClient) GetResource() umtypes.OAuthResource {
 	return umtypes.FacebookOAuth
 }
 
-func (fb *FacebookOAuthClient) GetUserInfo(authCode string) (info *OAuthUserInfo, err error) {
+func (fb *FacebookOAuthClient) GetUserInfo(ctx context.Context, authCode string) (info *OAuthUserInfo, err error) {
 	fb.log.Infoln("Get Facebook user info")
 
-	tc, _, err := fb.exchange(authCode)
+	tc, err := fb.exchange(ctx, authCode)
 	if err != nil {
 		return nil, err
 	}

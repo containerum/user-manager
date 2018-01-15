@@ -9,11 +9,11 @@ import (
 )
 
 type Services struct {
-	MailClient      *clients.MailClient
-	DB              *models.DB
+	MailClient      clients.MailClient
+	DB              models.DB
 	AuthClient      auth.AuthClient
-	ReCaptchaClient *clients.ReCaptchaClient
-	WebAPIClient    *clients.WebAPIClient
+	ReCaptchaClient clients.ReCaptchaClient
+	WebAPIClient    clients.WebAPIClient
 }
 
 // for response with http.InternalServerError
