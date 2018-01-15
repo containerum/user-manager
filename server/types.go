@@ -39,7 +39,6 @@ type UserManager interface {
 	GetUserInfoByID(ctx context.Context, userID string) (*umtypes.UserInfoByIDGetResponse, error)
 	GetBlacklistedUsers(ctx context.Context, params umtypes.UserListQuery) (*umtypes.BlacklistGetResponse, error)
 	GetUsers(ctx context.Context, params umtypes.UserListQuery, filters ...string) (*umtypes.UserListGetResponse, error)
-	CheckUserAdmin(ctxt context.Context) error
 
 	LinkResend(ctx context.Context, request umtypes.ResendLinkRequest) error
 

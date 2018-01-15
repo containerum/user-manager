@@ -13,7 +13,7 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 
 	app.Use(prepareContext)
 
-	requireIdentityHeaders := requireHeaders(umtypes.UserIDHeader)
+	requireIdentityHeaders := requireHeaders(umtypes.UserIDHeader, umtypes.UserRoleHeader, umtypes.SessionIDHeader)
 
 	root := app.Group("/")
 	{
@@ -27,13 +27,14 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 		user.POST("/sign_up", userCreateHandler)
 		user.POST("/sign_up/resend", linkResendHandler)
 		user.POST("/activation", activateHandler)
-		user.POST("/blacklist", requireIdentityHeaders, adminAccessMiddleware, userToBlacklistHandler)
+		user.POST("/blacklist", requireIdentityHeaders, requireAdminRole, userToBlacklistHandler)
 		user.POST("/delete/partial", requireIdentityHeaders, partialDeleteHandler)
-		user.POST("/delete/complete", requireIdentityHeaders, adminAccessMiddleware, completeDeleteHandler)
-		user.GET("/links/:user_id", requireIdentityHeaders, adminAccessMiddleware, linksGetHandler)
-		user.GET("/blacklist", requireIdentityHeaders, adminAccessMiddleware, blacklistGetHandler)
+		user.POST("/delete/complete", requireIdentityHeaders, requireAdminRole, completeDeleteHandler)
+
+		user.GET("/links/:user_id", requireIdentityHeaders, requireAdminRole, linksGetHandler)
+		user.GET("/blacklist", requireIdentityHeaders, requireAdminRole, blacklistGetHandler)
 		user.GET("/info", requireIdentityHeaders, userInfoGetHandler)
-		user.GET("/users", requireIdentityHeaders, adminAccessMiddleware, userListGetHandler)
+		user.GET("/users", requireIdentityHeaders, requireAdminRole, userListGetHandler)
 	}
 
 	requireLoginHeaders := requireHeaders(umtypes.UserAgentHeader, umtypes.FingerprintHeader, umtypes.ClientIPHeader)
