@@ -14,16 +14,16 @@ import (
 func (u *serverImpl) GetUserLinks(ctx context.Context, userID string) (*umtypes.LinksGetResponse, error) {
 	u.log.WithField("user_id", userID).Info("get user links")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, userGetFailed
 	}
 	if user == nil {
 		return nil, &server.NotFoundError{Err: errors.New(userNotFound)}
 	}
 
 	links, err := u.svc.DB.GetUserLinks(ctx, user)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, linkGetFailed
 	}
 
 	resp := umtypes.LinksGetResponse{Links: []umtypes.Link{}}
@@ -49,16 +49,16 @@ func (u *serverImpl) GetUserInfo(ctx context.Context) (*umtypes.UserInfoGetRespo
 	userID := server.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("get user info")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
 		return nil, err
 	}
 
 	profile, err := u.svc.DB.GetProfileByUser(ctx, user)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, profileGetFailed
 	}
 
 	return &umtypes.UserInfoGetResponse{
@@ -73,16 +73,16 @@ func (u *serverImpl) GetUserInfo(ctx context.Context) (*umtypes.UserInfoGetRespo
 func (u *serverImpl) GetUserInfoByID(ctx context.Context, userID string) (*umtypes.UserInfoByIDGetResponse, error) {
 	u.log.WithField("user_id", userID).Info("get user info by id")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, userGetFailed
 	}
 	if user == nil {
 		return nil, &server.NotFoundError{Err: errors.New(userNotFound)}
 	}
 
 	profile, err := u.svc.DB.GetProfileByUser(ctx, user)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, profileGetFailed
 	}
 
 	return &umtypes.UserInfoByIDGetResponse{
@@ -94,8 +94,8 @@ func (u *serverImpl) GetUserInfoByID(ctx context.Context, userID string) (*umtyp
 func (u *serverImpl) GetBlacklistedUsers(ctx context.Context, params umtypes.UserListQuery) (*umtypes.BlacklistGetResponse, error) {
 	u.log.WithField("per_page", params.PerPage).WithField("page", params.Page).Info("get blacklisted users")
 	blacklisted, err := u.svc.DB.GetBlacklistedUsers(ctx, params.PerPage, params.Page)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, blacklistUsersGetFailed
 	}
 	var resp umtypes.BlacklistGetResponse
 	for _, v := range blacklisted {
@@ -110,8 +110,8 @@ func (u *serverImpl) GetBlacklistedUsers(ctx context.Context, params umtypes.Use
 func (u *serverImpl) GetUsers(ctx context.Context, params umtypes.UserListQuery, filters ...string) (*umtypes.UserListGetResponse, error) {
 	u.log.WithField("per_page", params.PerPage).WithField("page", params.Page).Info("get users")
 	profiles, err := u.svc.DB.GetAllProfiles(ctx, params.PerPage, params.Page)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, profileGetFailed
 	}
 	if profiles == nil {
 		return nil, &server.NotFoundError{Err: errors.New(profilesNotFound)}
@@ -176,16 +176,16 @@ func (u *serverImpl) GetUsers(ctx context.Context, params umtypes.UserListQuery,
 func (u *serverImpl) LinkResend(ctx context.Context, request umtypes.ResendLinkRequest) error {
 	u.log.WithField("login", request.UserName).Info("resend link")
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.UserName)
-	if err := handleDBError(err); err != nil {
-		return err
+	if err := u.handleDBError(err); err != nil {
+		return userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
 		return err
 	}
 
 	link, err := u.svc.DB.GetLinkForUser(ctx, umtypes.LinkTypeConfirm, user)
-	if err := handleDBError(err); err != nil {
-		return err
+	if err := u.handleDBError(err); err != nil {
+		return linkGetFailed
 	}
 	if link == nil {
 		err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
@@ -193,8 +193,8 @@ func (u *serverImpl) LinkResend(ctx context.Context, request umtypes.ResendLinkR
 			link, err = tx.CreateLink(ctx, umtypes.LinkTypeConfirm, 24*time.Hour, user)
 			return err
 		})
-		if err := handleDBError(err); err != nil {
-			return err
+		if err := u.handleDBError(err); err != nil {
+			return linkCreateFailed
 		}
 	}
 	if err := u.checkLinkResendTime(ctx, link); err != nil {
@@ -210,8 +210,8 @@ func (u *serverImpl) CheckUserAdmin(ctx context.Context) error {
 	userID := server.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("checking if user admin")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
-	if err := handleDBError(err); err != nil {
-		return err
+	if err := u.handleDBError(err); err != nil {
+		return userGetFailed
 	}
 	if user.Role != umtypes.RoleAdmin {
 		return &server.AccessDeniedError{Err: errors.New(adminRequired)}

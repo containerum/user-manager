@@ -23,8 +23,8 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.BasicLoginR
 		return nil, err
 	}
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Username)
-	if err := handleDBError(err); err != nil {
-		return resp, err
+	if err := u.handleDBError(err); err != nil {
+		return resp, userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
 		return resp, err
@@ -43,7 +43,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.BasicLoginR
 				link, err = tx.CreateLink(ctx, umtypes.LinkTypeConfirm, 24*time.Hour, user)
 				return err
 			})
-			if err != nil {
+			if err := u.handleDBError(err); err != nil {
 				return resp, linkCreateFailed
 			}
 		}
@@ -61,7 +61,7 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneT
 	u.log.WithField("token", request.Token).Info("One-time token login")
 	token, err := u.svc.DB.GetTokenObject(ctx, request.Token)
 	if err != nil {
-		return nil, getTokenFailed
+		return nil, oneTimeTokenGetFailed
 	}
 	if err := u.loginUserChecks(ctx, token.User); err != nil {
 		return nil, err
@@ -72,15 +72,17 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneT
 		token.IsActive = false
 		token.SessionID = server.MustGetSessionID(ctx)
 		if err := tx.UpdateToken(ctx, token); err != nil {
-			return err
+			return oneTimeTokenUpdateFailed
 		}
 
 		var err error
 		tokens, err = u.createTokens(ctx, token.User)
 		return err
 	})
-	err = handleDBError(err)
-	return tokens, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, err
+	}
+	return tokens, nil
 }
 
 func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginRequest) (*auth.CreateTokenResponse, error) {
@@ -98,22 +100,22 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	}
 
 	user, err := u.svc.DB.GetUserByLogin(ctx, info.Email)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
 		return nil, err
 	}
 
 	accounts, err := u.svc.DB.GetUserBoundAccounts(ctx, user)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, boundAccountsGetFailed
 	}
 	if accounts == nil {
 		err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 			return tx.BindAccount(ctx, user, request.Resource, info.UserID)
 		})
-		if err != nil {
+		if err := u.handleDBError(err); err != nil {
 			return nil, bindAccountFailed
 		}
 	}
@@ -165,12 +167,12 @@ func (u *serverImpl) Logout(ctx context.Context) error {
 	case err.Error() == storages.ErrTokenNotOwnedBySender.Error():
 		return &server.AccessDeniedError{Err: errors.New(err.Error())}
 	default:
-		return deleteTokenFailed
+		return oneTimeTokenDeleteFailed
 	}
 
 	oneTimeToken, err := u.svc.DB.GetTokenBySessionID(ctx, sessionID)
-	if err := handleDBError(err); err != nil {
-		return err
+	if err := u.handleDBError(err); err != nil {
+		return oneTimeTokenGetFailed
 	}
 	if oneTimeToken != nil {
 		if oneTimeToken.User.ID != userID {
@@ -179,9 +181,8 @@ func (u *serverImpl) Logout(ctx context.Context) error {
 		err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 			return u.svc.DB.DeleteToken(ctx, oneTimeToken.Token)
 		})
-		err = handleDBError(err)
-		if err != nil {
-			return err
+		if err = u.handleDBError(err); err != nil {
+			return oneTimeTokenDeleteFailed
 		}
 	}
 	return nil

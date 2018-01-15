@@ -27,16 +27,16 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 
 	domain := strings.Split(request.UserName, "@")[1]
 	blacklisted, err := u.svc.DB.IsDomainBlacklisted(ctx, domain)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, blacklistDomainCheckFailed
 	}
 	if blacklisted {
 		return nil, &server.AccessDeniedError{Err: errors.Format(domainInBlacklist, domain)}
 	}
 
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.UserName)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, userGetFailed
 	}
 	if user != nil {
 		return nil, &server.AlreadyExistsError{Err: errors.Format(userAlreadyExists, request.UserName)}
@@ -58,7 +58,7 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		if err := tx.CreateUser(ctx, newUser); err != nil {
-			return err
+			return userCreateFailed
 		}
 
 		if err := tx.CreateProfile(ctx, &models.Profile{
@@ -67,18 +67,18 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 			Access:    "rw",
 			CreatedAt: time.Now().UTC(),
 		}); err != nil {
-			return err
+			return profileCreateFailed
 		}
 
 		link, err = tx.CreateLink(ctx, umtypes.LinkTypeConfirm, 24*time.Hour, newUser)
 		if err != nil {
-			return err
+			return linkCreateFailed
 		}
 
 		tokens, err = u.createTokens(ctx, user)
 		return err
 	})
-	if err := handleDBError(err); err != nil {
+	if err := u.handleDBError(err); err != nil {
 		return nil, err
 	}
 
@@ -94,8 +94,8 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.ActivateRequest) (*auth.CreateTokenResponse, error) {
 	u.log.WithField("link", request.Link).Info("activating user")
 	link, err := u.svc.DB.GetLinkFromString(ctx, request.Link)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, linkGetFailed
 	}
 	if link == nil {
 		return nil, &server.NotFoundError{Err: errors.Format(linkNotFound, request.Link)}
@@ -109,11 +109,11 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.ActivateR
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		link.User.IsActive = true
 		if err := tx.UpdateUser(ctx, link.User); err != nil {
-			return err
+			return userUpdateFailed
 		}
 		link.IsActive = false
 		if err := tx.UpdateLink(ctx, link); err != nil {
-			return err
+			return linkUpdateFailed
 		}
 
 		// TODO: send request to billing manager
@@ -122,7 +122,7 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.ActivateR
 		tokens, err = u.createTokens(ctx, link.User)
 		return err
 	})
-	if err := handleDBError(err); err != nil {
+	if err := u.handleDBError(err); err != nil {
 		return nil, err
 	}
 
@@ -144,8 +144,8 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.ActivateR
 func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserToBlacklistRequest) error {
 	u.log.WithField("user_id", request.UserID).Info("blacklisting user")
 	user, err := u.svc.DB.GetUserByID(ctx, request.UserID)
-	if err := handleDBError(err); err != nil {
-		return err
+	if err := u.handleDBError(err); err != nil {
+		return userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
 		return err
@@ -155,8 +155,8 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserToBl
 		// TODO: send request to resource manager
 		return tx.BlacklistUser(ctx, user)
 	})
-	if err := handleDBError(err); err != nil {
-		return err
+	if err := u.handleDBError(err); err != nil {
+		return blacklistUserFailed
 	}
 
 	go func() {
@@ -177,23 +177,26 @@ func (u *serverImpl) UpdateUser(ctx context.Context, newData umtypes.ProfileData
 	userID := server.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("updating user profile data")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
 		return nil, err
 	}
 
 	profile, err := u.svc.DB.GetProfileByUser(ctx, user)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil || profile == nil {
+		return nil, profileGetFailed
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		profile.Data = newData
 		return tx.UpdateProfile(ctx, profile)
 	})
-	err = handleDBError(err)
+	err = u.handleDBError(err)
+	if err != nil {
+		return nil, profileUpdateFailed
+	}
 
 	return &umtypes.UserInfoGetResponse{
 		Login:     user.Login,
@@ -208,8 +211,8 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 	userID := server.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("partially delete user")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
-	if err := handleDBError(err); err != nil {
-		return err
+	if err := u.handleDBError(err); err != nil {
+		return userGetFailed
 	}
 	if user == nil {
 		return &server.NotFoundError{Err: errors.New(userNotFound)}
@@ -218,7 +221,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		user.IsDeleted = true
 		if err := tx.UpdateUser(ctx, user); err != nil {
-			return err
+			return userUpdateFailed
 		}
 
 		// TODO: send request to billing manager
@@ -227,11 +230,11 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 			UserId: &common.UUID{Value: user.ID},
 		})
 		if err != nil {
-			return deleteTokenFailed
+			return tokenDeleteFailed
 		}
 		return nil
 	})
-	if err := handleDBError(err); err != nil {
+	if err := u.handleDBError(err); err != nil {
 		return err
 	}
 
@@ -253,8 +256,8 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) error {
 	u.log.WithField("user_id", userID).Info("completely delete user")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
-	if err := handleDBError(err); err != nil {
-		return err
+	if err := u.handleDBError(err); err != nil {
+		return userGetFailed
 	}
 	if user == nil {
 		return &server.NotFoundError{Err: errors.New(userNotFound)}
@@ -268,5 +271,8 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 		// TODO: send request to billing manager
 		return tx.UpdateUser(ctx, user)
 	})
-	return handleDBError(err)
+	if err := u.handleDBError(err); err != nil {
+		return userUpdateFailed
+	}
+	return nil
 }

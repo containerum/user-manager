@@ -73,7 +73,7 @@ func (u *serverImpl) linkSend(ctx context.Context, link *models.Link) {
 		link.SentAt.Valid = true
 		return tx.UpdateLink(ctx, link)
 	})
-	err = handleDBError(err)
+	err = u.handleDBError(err)
 	if err != nil {
 		logrus.WithError(err).WithFields(logrus.Fields{
 			"id":    link.User.ID,
@@ -98,7 +98,7 @@ func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp 
 	})
 	u.log.WithError(err).Error("token create failed")
 	if err != nil {
-		err = tokenCreateFailed
+		err = oneTimeTokenCreateFailed
 	}
 	return
 }
@@ -130,17 +130,22 @@ func (u *serverImpl) checkReCaptcha(ctx context.Context, clientResponse string) 
 	return nil
 }
 
-func handleDBError(err error) error {
+func (u *serverImpl) handleDBError(err error) error {
 	switch err.(type) {
 	case *errors.Error:
+		return err
+	case *server.InternalError, *server.WebAPIError, *server.AlreadyExistsError,
+		*server.BadRequestError, *server.NotFoundError, *server.AccessDeniedError:
 		return err
 	}
 	switch err {
 	case nil:
 		return nil
 	case models.ErrTransactionRollback, models.ErrTransactionCommit, models.ErrTransactionBegin:
-		return &server.InternalError{Err: errors.New("error on db transaction")}
+		u.log.WithError(err).Error("db transaction error")
+		return err
 	default:
-		return &server.InternalError{Err: errors.New(err.Error())}
+		u.log.WithError(err).Error("db error")
+		return err
 	}
 }

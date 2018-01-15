@@ -20,8 +20,8 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 	u.log.WithField("user_id", userID).Info("Changing password")
 
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
 		return nil, err
@@ -43,12 +43,13 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 			UserId: &common.UUID{Value: user.ID},
 		})
 		if err != nil {
-			return deleteTokenFailed
+			return tokenDeleteFailed
 		}
 
 		tokens, err = u.createTokens(ctx, user)
 		return err
 	})
+	err = u.handleDBError(err)
 
 	go func() {
 		err := u.svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
@@ -62,14 +63,14 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 		}
 	}()
 
-	return tokens, nil
+	return tokens, err
 }
 
 func (u *serverImpl) ResetPassword(ctx context.Context, request umtypes.PasswordResetRequest) error {
 	u.log.WithField("login", request.Username).Info("resetting password")
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Username)
-	if err := handleDBError(err); err != nil {
-		return err
+	if err := u.handleDBError(err); err != nil {
+		return userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
 		return err
@@ -81,8 +82,8 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request umtypes.Password
 		link, err = tx.CreateLink(ctx, umtypes.LinkTypePwdChange, 24*time.Hour, user)
 		return err
 	})
-	if err := handleDBError(err); err != nil {
-		return err
+	if err := u.handleDBError(err); err != nil {
+		return linkCreateFailed
 	}
 
 	go func() {
@@ -103,8 +104,8 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request umtypes.Password
 func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.PasswordRestoreRequest) (*auth.CreateTokenResponse, error) {
 	u.log.WithField("link", request.Link).Info("Restore password")
 	link, err := u.svc.DB.GetLinkFromString(ctx, request.Link)
-	if err := handleDBError(err); err != nil {
-		return nil, err
+	if err := u.handleDBError(err); err != nil {
+		return nil, linkGetFailed
 	}
 	if link == nil {
 		return nil, &server.NotFoundError{Err: errors.Format(linkNotFound, request.Link)}
@@ -118,7 +119,7 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		link.User.PasswordHash = utils.GetKey(link.User.Login, request.NewPassword, link.User.Salt)
 		if err := tx.UpdateUser(ctx, link.User); err != nil {
-			return err
+			return userUpdateFailed
 		}
 		link.IsActive = false
 
@@ -126,18 +127,17 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 			UserId: &common.UUID{Value: link.User.ID},
 		})
 		if err != nil {
-			return deleteTokenFailed
+			return oneTimeTokenDeleteFailed
 		}
 
 		if err := tx.UpdateLink(ctx, link); err != nil {
-			return nil
+			return linkUpdateFailed
 		}
 
 		tokens, err = u.createTokens(ctx, link.User)
-
 		return err
 	})
-	if err := handleDBError(err); err != nil {
+	if err := u.handleDBError(err); err != nil {
 		return nil, err
 	}
 
