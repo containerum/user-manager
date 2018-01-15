@@ -13,11 +13,11 @@ import (
 
 var hdrToKey = map[string]interface{}{
 	umtypes.UserIDHeader:      server.UserIDContextKey,
-	"X-User-Agent":            server.UserAgentContextKey,
+	umtypes.UserAgentHeader:   server.UserAgentContextKey,
 	umtypes.FingerprintHeader: server.FingerPrintContextKey,
 	umtypes.SessionIDHeader:   server.SessionIDContextKey,
-	"X-Token-ID":              server.TokenIDContextKey,
-	"X-Client-IP":             server.ClientIPContextKey,
+	umtypes.TokenIDHeader:     server.TokenIDContextKey,
+	umtypes.ClientIPHeader:    server.ClientIPContextKey,
 }
 
 func prepareContext(ctx *gin.Context) {

@@ -147,3 +147,7 @@ type UserListQuery struct {
 	Page    int `form:"page" binding:"required,gt=0"`
 	PerPage int `form:"per_page" binding:"required,gt=0"`
 }
+
+type CompleteDeleteHandlerRequest struct {
+	UserID string `json:"user_id" binding:"required,uuid4"`
+}

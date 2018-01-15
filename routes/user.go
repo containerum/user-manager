@@ -162,7 +162,14 @@ func partialDeleteHandler(ctx *gin.Context) {
 }
 
 func completeDeleteHandler(ctx *gin.Context) {
-	err := srv.CompletelyDeleteUser(ctx.Request.Context(), "") // TODO: take from request
+	var request umtypes.CompleteDeleteHandlerRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		return
+	}
+
+	err := srv.CompletelyDeleteUser(ctx.Request.Context(), request.UserID)
 	if err != nil {
 		ctx.AbortWithStatusJSON(errorWithHTTPStatus(err))
 		return
