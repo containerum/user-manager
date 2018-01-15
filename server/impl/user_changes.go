@@ -131,7 +131,7 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.ActivateR
 			ID:        link.User.ID,
 			Name:      link.User.Login,
 			Email:     link.User.Login,
-			Variables: map[string]string{},
+			Variables: map[string]interface{}{},
 		})
 		if err != nil {
 			u.log.WithError(err).Error("activation email send failed")
@@ -243,7 +243,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 			ID:        user.ID,
 			Name:      user.Login,
 			Email:     user.Login,
-			Variables: map[string]string{},
+			Variables: map[string]interface{}{},
 		})
 		if err != nil {
 			u.log.WithError(err).Error("delete account email send failed")

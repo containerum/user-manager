@@ -64,7 +64,7 @@ func (u *serverImpl) linkSend(ctx context.Context, link *models.Link) {
 			ID:        link.User.ID,
 			Name:      link.User.Login,
 			Email:     link.User.Login,
-			Variables: map[string]string{"CONFIRM": link.Link},
+			Variables: map[string]interface{}{"CONFIRM": link.Link},
 		})
 		if err != nil {
 			return err

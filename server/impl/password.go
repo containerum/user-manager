@@ -91,7 +91,7 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request umtypes.Password
 			ID:        user.ID,
 			Name:      user.Login,
 			Email:     user.Login,
-			Variables: map[string]string{"TOKEN": link.Link},
+			Variables: map[string]interface{}{"TOKEN": link.Link},
 		})
 		if err != nil {
 			u.log.WithError(err).Error("password reset email send failed")
@@ -146,7 +146,7 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 			ID:        link.User.ID,
 			Name:      link.User.Login,
 			Email:     link.User.Login,
-			Variables: map[string]string{},
+			Variables: map[string]interface{}{},
 		})
 		if err != nil {
 			u.log.WithError(err).Error("password changed email send failed")
