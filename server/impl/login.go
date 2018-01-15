@@ -19,6 +19,9 @@ import (
 
 func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.BasicLoginRequest) (resp *auth.CreateTokenResponse, err error) {
 	u.log.Infof("Basic login: %#v", request)
+	if err := u.checkReCaptcha(ctx, request.ReCaptcha); err != nil {
+		return nil, err
+	}
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Username)
 	if err := handleDBError(err); err != nil {
 		return resp, err

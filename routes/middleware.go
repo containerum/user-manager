@@ -11,10 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ReCaptchaRequest struct {
-	ReCaptcha string `json:"recaptcha" binding:"required"`
-}
-
 var hdrToKey = map[string]interface{}{
 	umtypes.UserIDHeader:      server.UserIDContextKey,
 	"X-User-Agent":            server.UserAgentContextKey,
@@ -31,26 +27,6 @@ func prepareContext(ctx *gin.Context) {
 			ctx.Request.WithContext(rctx)
 		}
 	}
-}
-
-func reCaptchaMiddleware(ctx *gin.Context) {
-	/*var request ReCaptchaRequest
-	if err := ctx.ShouldBindJSON(&request); err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
-		return
-	}
-
-	checkResp, err := svc.ReCaptchaClient.Check(ctx, ctx.ClientIP(), request.ReCaptcha)
-	if err != nil {
-		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, reCaptchaRequestFailed)
-		return
-	}
-
-	if !checkResp.Success {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New(reCaptchaFailed))
-	}*/
 }
 
 func errorWithHTTPStatus(err error) (int, *errors.Error) {

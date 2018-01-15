@@ -113,6 +113,23 @@ func (u *serverImpl) loginUserChecks(ctx context.Context, user *models.User) err
 	return nil
 }
 
+func (u *serverImpl) checkReCaptcha(ctx context.Context, clientResponse string) error {
+	remoteIP := server.MustGetClientIP(ctx)
+	u.log.WithFields(logrus.Fields{
+		"remote_ip":       remoteIP,
+		"client_response": clientResponse,
+	}).Info("checking recaptcha")
+	resp, err := u.svc.ReCaptchaClient.Check(ctx, remoteIP, clientResponse)
+	if err != nil {
+		return reCaptchaRequestFailed
+	}
+	if !resp.Success {
+		return &server.InternalError{Err: errors.New(invalidReCaptcha)}
+	}
+
+	return nil
+}
+
 func handleDBError(err error) error {
 	switch err.(type) {
 	case *errors.Error:

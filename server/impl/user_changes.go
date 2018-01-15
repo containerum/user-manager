@@ -21,6 +21,10 @@ import (
 
 func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateRequest) (*umtypes.UserCreateResponse, error) {
 	u.log.WithField("login", request.UserName).Info("creating user")
+	if err := u.checkReCaptcha(ctx, request.ReCaptcha); err != nil {
+		return nil, err
+	}
+
 	domain := strings.Split(request.UserName, "@")[1]
 	blacklisted, err := u.svc.DB.IsDomainBlacklisted(ctx, domain)
 	if err := handleDBError(err); err != nil {

@@ -21,7 +21,7 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 	{
 		user.PUT("/info", userInfoUpdateHandler)
 
-		user.POST("/sign_up", reCaptchaMiddleware, userCreateHandler)
+		user.POST("/sign_up", userCreateHandler)
 		user.POST("/sign_up/resend", linkResendHandler)
 		user.POST("/activation", activateHandler)
 		user.POST("/blacklist", adminAccessMiddleware, userToBlacklistHandler)
@@ -36,7 +36,7 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 
 	login := app.Group("/login")
 	{
-		login.POST("/basic", reCaptchaMiddleware, basicLoginHandler)
+		login.POST("/basic", basicLoginHandler)
 		login.POST("/token", oneTimeTokenLoginHandler)
 		login.POST("/oauth", oauthLoginHandler)
 		login.POST("", webAPILoginHandler) // login through old web-api
