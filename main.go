@@ -11,6 +11,7 @@ import (
 	"os/signal"
 
 	"git.containerum.net/ch/user-manager/routes"
+	"git.containerum.net/ch/user-manager/server"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -37,7 +38,6 @@ func main() {
 
 	db, err := getDB()
 	exitOnErr(err)
-	defer db.Close()
 
 	mailClient, err := getMailClient()
 	exitOnErr(err)
@@ -49,18 +49,21 @@ func main() {
 
 	authClient, err := getAuthClient()
 	exitOnErr(err)
-	defer authClient.Close()
 
 	webAPIClient, err := getWebAPIClient()
 	exitOnErr(err)
 
-	routes.SetupRoutes(app, routes.Services{
+	userManager, err := getUserManager(server.Services{
 		MailClient:      mailClient,
 		DB:              db,
 		AuthClient:      authClient,
 		ReCaptchaClient: reCaptchaClient,
 		WebAPIClient:    webAPIClient,
 	})
+	exitOnErr(err)
+	defer userManager.Close()
+
+	routes.SetupRoutes(app, userManager)
 
 	// graceful shutdown support
 

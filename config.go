@@ -6,6 +6,8 @@ import (
 	"git.containerum.net/ch/user-manager/clients"
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/models/postgres"
+	"git.containerum.net/ch/user-manager/server"
+	"git.containerum.net/ch/user-manager/server/impl"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -91,5 +93,15 @@ func getAuthClient() (clients.AuthClientCloser, error) {
 		return clients.NewGRPCAuthClient(viper.GetString("auth_grpc_addr"))
 	default:
 		return nil, errors.New("invalid auth client")
+	}
+}
+
+func getUserManager(services server.Services) (server.UserManager, error) {
+	viper.SetDefault("user_manager", "impl")
+	switch viper.Get("user_manager") {
+	case "impl":
+		return impl.NewUserManagerImpl(services), nil
+	default:
+		return nil, errors.New("invalid user manager impl")
 	}
 }
