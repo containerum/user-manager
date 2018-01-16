@@ -205,17 +205,3 @@ func (u *serverImpl) LinkResend(ctx context.Context, request umtypes.ResendLinkR
 
 	return nil
 }
-
-func (u *serverImpl) CheckUserAdmin(ctx context.Context) error {
-	userID := server.MustGetUserID(ctx)
-	u.log.WithField("user_id", userID).Info("checking if user admin")
-	user, err := u.svc.DB.GetUserByID(ctx, userID)
-	if err := u.handleDBError(err); err != nil {
-		return userGetFailed
-	}
-	if user.Role != umtypes.RoleAdmin {
-		return &server.AccessDeniedError{Err: errors.New(adminRequired)}
-	}
-
-	return nil
-}
