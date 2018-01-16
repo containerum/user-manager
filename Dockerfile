@@ -22,10 +22,13 @@ COPY --from=alpine /zoneinfo.zip /
 COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 ENV GIN_MODE=release \
     CH_USER_LOG_LEVEL=4 \
+    CH_USER_DB="postgres" \
     CH_USER_PG_URL="postgres://user:password@postgres:5432/user_manager?sslmode=disable" \
+    CH_USER_MAIL="http" \
     CH_USER_MAIL_URL="http://ch-mail-templater:8080/" \
     CH_USER_RECAPTCHA="http" \
     CH_USER_RECAPTCHA_KEY="recaptcha_key" \
+    CH_USER_OAUTH_CLIENTS="http" \
     CH_USER_GITHUB_APP_ID="github_app" \
     CH_USER_GITHUB_SECRET="github_secret" \
     CH_USER_GOOGLE_APP_ID="google_app" \
@@ -33,6 +36,8 @@ ENV GIN_MODE=release \
     CH_USER_FACEBOOK_APP_ID="facebook_app" \
     CH_USER_FACEBOOK_SECRET="facebook_secret" \
     CH_USER_AUTH_GRPC_ADDR="ch-auth:8000" \
+    CH_USER_WEB_API="http" \
     CH_USER_WEB_API_URL="http://web-api:8080" \
-    CH_USER_LISTEN_ADDR=":8111"
+    CH_USER_LISTEN_ADDR=":8111" \
+    CH_USER_USER_MANAGER="impl"
 ENTRYPOINT ["/user-manager"]
