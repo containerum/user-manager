@@ -24,6 +24,7 @@ ENV GIN_MODE=release \
     CH_USER_LOG_LEVEL=4 \
     CH_USER_PG_URL="postgres://user:password@postgres:5432/user_manager?sslmode=disable" \
     CH_USER_MAIL_URL="http://ch-mail-templater:8080/" \
+    CH_USER_RECAPTCHA="http" \
     CH_USER_RECAPTCHA_KEY="recaptcha_key" \
     CH_USER_GITHUB_APP_ID="github_app" \
     CH_USER_GITHUB_SECRET="github_secret" \

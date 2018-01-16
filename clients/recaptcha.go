@@ -53,3 +53,22 @@ func (c *httpReCaptchaClient) Check(ctx context.Context, remoteIP, clientRespons
 	}).Post("/siteverify")
 	return
 }
+
+type dummyReCaptchaClient struct {
+	log *logrus.Entry
+}
+
+func NewDummyReCaptchaClient() ReCaptchaClient {
+	return &dummyReCaptchaClient{
+		log: logrus.WithField("component", "dummy_recaptcha_client"),
+	}
+}
+
+func (c *dummyReCaptchaClient) Check(ctx context.Context, remoteIP, clientResponse string) (r *ReCaptchaResponse, err error) {
+	c.log.Infoln("Checking ReCaptcha from", remoteIP)
+	return &ReCaptchaResponse{
+		Success:     true,
+		ChallengeTS: time.Now(),
+		Hostname:    "dummy",
+	}, nil
+}
