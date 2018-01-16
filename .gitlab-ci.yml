@@ -36,8 +36,6 @@ deploy-to-kubernetes-develop:
   only:
     - develop
 
-
-
 docker-build-test:
   <<: *create_tag
   services:
