@@ -29,7 +29,7 @@ type UserManager interface {
 	CreateUser(ctx context.Context, request umtypes.UserCreateRequest) (*umtypes.UserCreateResponse, error)
 	ActivateUser(ctx context.Context, request umtypes.ActivateRequest) (*auth.CreateTokenResponse, error)
 	BlacklistUser(ctx context.Context, request umtypes.UserToBlacklistRequest) error
-	UpdateUser(ctx context.Context, newData umtypes.ProfileData) (*umtypes.UserInfoGetResponse, error)
+	UpdateUser(ctx context.Context, newData map[string]interface{}) (*umtypes.UserInfoGetResponse, error)
 	PartiallyDeleteUser(ctx context.Context) error
 	CompletelyDeleteUser(ctx context.Context, userID string) error
 
