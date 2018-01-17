@@ -107,7 +107,7 @@ func linksGetHandler(ctx *gin.Context) {
 }
 
 func userInfoGetHandler(ctx *gin.Context) {
-	resp, err := srv.GetUserInfo(ctx)
+	resp, err := srv.GetUserInfo(ctx.Request.Context())
 	if err != nil {
 		ctx.AbortWithStatusJSON(errorWithHTTPStatus(err))
 		return
