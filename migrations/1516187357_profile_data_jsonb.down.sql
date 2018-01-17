@@ -1,0 +1,4 @@
+ALTER TABLE profiles
+  ALTER COLUMN "data" DROP DEFAULT,
+  ALTER COLUMN "data" SET DATA TYPE text,
+  ALTER COLUMN "data" SET DEFAULT '{}';

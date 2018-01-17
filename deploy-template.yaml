@@ -38,6 +38,8 @@ spec:
           value: '${CH_USER_MAIL_URL}'
         - name: CH_USER_RECAPTCHA_KEY
           value: '${CH_USER_RECAPTCHA_KEY}'
+        - name: CH_USER_RECAPTCHA
+          value: '${CH_USER_RECAPTCHA}'
         - name: CH_USER_GITHUB_APP_ID
           value: '${CH_USER_GITHUB_APP_ID}'
         - name: CH_USER_GITHUB_SECRET
