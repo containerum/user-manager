@@ -8,8 +8,10 @@ import (
 	"git.containerum.net/ch/json-types/errors"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
+	"gopkg.in/go-playground/validator.v8"
 )
+
+var validate *validator.Validate
 
 func userCreateHandler(ctx *gin.Context) {
 	var request umtypes.UserCreateRequest
@@ -117,8 +119,17 @@ func userInfoGetHandler(ctx *gin.Context) {
 }
 
 func userInfoUpdateHandler(ctx *gin.Context) {
-	var newData umtypes.ProfileData
-	if err := ctx.ShouldBindWith(&newData, binding.JSON); err != nil {
+	config := &validator.Config{TagName: "validate"}
+	validate = validator.New(config)
+
+	var newData map[string]interface{}
+	if err := ctx.ShouldBindJSON(&newData); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		return
+	}
+
+	if err := validate.Field(newData["email"], "required,email"); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
@@ -152,7 +163,7 @@ func userListGetHandler(ctx *gin.Context) {
 }
 
 func partialDeleteHandler(ctx *gin.Context) {
-	err := srv.PartiallyDeleteUser(ctx)
+	err := srv.PartiallyDeleteUser(ctx.Request.Context())
 	if err != nil {
 		ctx.AbortWithStatusJSON(errorWithHTTPStatus(err))
 		return

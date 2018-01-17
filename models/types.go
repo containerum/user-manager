@@ -33,7 +33,7 @@ type Profile struct {
 
 	User *User
 
-	Data umtypes.ProfileData
+	Data map[string]interface{}
 }
 
 type Accounts struct {

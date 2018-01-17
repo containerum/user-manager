@@ -23,7 +23,7 @@
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = ["errors","mail-templater","user-manager"]
-  revision = "1270b37b68be4486a7df811ddd903769a1075895"
+  revision = "80546be536cac054822bc2bf0e56dab5925c2f5d"
 
 [[projects]]
   branch = "master"
@@ -304,6 +304,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2a4e8d6c0680a74b300d68d9457e215cf2d15cffc7036f938034126a898f8b43"
+  inputs-digest = "77677c3c2b9e5b1045627513dd19b60fee0851c5e939d083880d4a7fa56f84ba"
   solver-name = "gps-cdcl"
   solver-version = 1

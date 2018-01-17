@@ -4,17 +4,6 @@ import (
 	"time"
 )
 
-type ProfileData struct {
-	Email          string `json:"email,omitempty" binding:"omitempty,email"`
-	Address        string `json:"address,omitempty"`
-	Phone          string `json:"phone,omitempty"`
-	FirstName      string `json:"first_name,omitempty"`
-	LastName       string `json:"last_name,omitempty"`
-	IsOrganization bool   `json:"is_organization,omitempty"`
-	TaxCode        string `json:"tax_code,omitempty"`
-	Company        string `json:"company,omitempty"`
-}
-
 type LinkType string
 
 const (
@@ -91,7 +80,7 @@ type ResendLinkRequest struct {
 
 type UserInfoByIDGetResponse struct {
 	Login string      `json:"login"`
-	Data  ProfileData `json:"data"`
+	Data  map[string]interface{} `json:"data"`
 }
 
 type BlacklistedUserEntry struct {
@@ -109,7 +98,7 @@ type LinksGetResponse struct {
 
 type UserInfoGetResponse struct {
 	Login     string      `json:"login"`
-	Data      ProfileData `json:"data"`
+	Data      map[string]interface{} `json:"data"`
 	ID        string      `json:"id"`
 	IsActive  bool        `json:"is_active"`
 	CreatedAt time.Time   `json:"created_at"`
@@ -124,7 +113,7 @@ type UserListEntry struct {
 	CreatedAt     time.Time   `json:"created_at"`
 	DeletedAt     time.Time   `json:"deleted_at"`
 	BlacklistedAt time.Time   `json:"blacklisted_at"`
-	Data          ProfileData `json:"data"`
+	Data          map[string]interface{} `json:"data"`
 	IsActive      bool        `json:"is_active"`
 	IsInBlacklist bool        `json:"is_in_blacklist"`
 	IsDeleted     bool        `json:"is_deleted"`

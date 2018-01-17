@@ -88,8 +88,11 @@ func (db *pgDB) GetProfileByUser(ctx context.Context, user *User) (*Profile, err
 
 func (db *pgDB) UpdateProfile(ctx context.Context, profile *Profile) error {
 	db.log.Infof("Update profile %#v", profile)
-	profileData, _ := jsoniter.MarshalToString(profile.Data)
-	_, err := db.eLog.ExecContext(ctx, "UPDATE profiles SET referral = $2, access = $3, data = $4 WHERE id = $1",
+	profileData, err := jsoniter.MarshalToString(profile.Data)
+	if err!=nil {
+		return err
+	}
+	_, err = db.eLog.ExecContext(ctx, "UPDATE profiles SET referral = $2, access = $3, data = $4 WHERE id = $1",
 		profile.ID, profile.Referral, profile.Access, profileData)
 	return err
 }

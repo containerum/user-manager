@@ -173,7 +173,7 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserToBl
 	return nil
 }
 
-func (u *serverImpl) UpdateUser(ctx context.Context, newData umtypes.ProfileData) (*umtypes.UserInfoGetResponse, error) {
+func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interface{}) (*umtypes.UserInfoGetResponse, error) {
 	userID := server.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("updating user profile data")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
