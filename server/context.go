@@ -4,13 +4,13 @@ import (
 	"context"
 )
 
-var (
-	FingerPrintContextKey = new(struct{})
-	ClientIPContextKey    = new(struct{})
-	UserAgentContextKey   = new(struct{})
-	SessionIDContextKey   = new(struct{})
-	UserIDContextKey      = new(struct{})
-	TokenIDContextKey     = new(struct{})
+const (
+	FingerPrintContextKey = iota
+	ClientIPContextKey
+	UserAgentContextKey
+	SessionIDContextKey
+	UserIDContextKey
+	TokenIDContextKey
 )
 
 func MustGetFingerprint(ctx context.Context) string {
