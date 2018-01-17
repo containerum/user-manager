@@ -152,7 +152,7 @@ func userListGetHandler(ctx *gin.Context) {
 }
 
 func partialDeleteHandler(ctx *gin.Context) {
-	err := srv.PartiallyDeleteUser(ctx)
+	err := srv.PartiallyDeleteUser(ctx.Request.Context())
 	if err != nil {
 		ctx.AbortWithStatusJSON(errorWithHTTPStatus(err))
 		return
