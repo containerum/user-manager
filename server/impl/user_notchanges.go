@@ -93,7 +93,7 @@ func (u *serverImpl) GetUserInfoByID(ctx context.Context, userID string) (*umtyp
 
 func (u *serverImpl) GetBlacklistedUsers(ctx context.Context, params umtypes.UserListQuery) (*umtypes.BlacklistGetResponse, error) {
 	u.log.WithField("per_page", params.PerPage).WithField("page", params.Page).Info("get blacklisted users")
-	blacklisted, err := u.svc.DB.GetBlacklistedUsers(ctx, params.PerPage, params.Page)
+	blacklisted, err := u.svc.DB.GetBlacklistedUsers(ctx, params.PerPage, (params.Page-1)*params.PerPage)
 	if err := u.handleDBError(err); err != nil {
 		return nil, blacklistUsersGetFailed
 	}
@@ -109,7 +109,7 @@ func (u *serverImpl) GetBlacklistedUsers(ctx context.Context, params umtypes.Use
 
 func (u *serverImpl) GetUsers(ctx context.Context, params umtypes.UserListQuery, filters ...string) (*umtypes.UserListGetResponse, error) {
 	u.log.WithField("per_page", params.PerPage).WithField("page", params.Page).Info("get users")
-	profiles, err := u.svc.DB.GetAllProfiles(ctx, params.PerPage, params.Page)
+	profiles, err := u.svc.DB.GetAllProfiles(ctx, params.PerPage, (params.Page-1)*params.PerPage)
 	if err := u.handleDBError(err); err != nil {
 		return nil, profileGetFailed
 	}

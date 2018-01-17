@@ -62,11 +62,11 @@ func (db *pgDB) UpdateUser(ctx context.Context, user *User) error {
 	return err
 }
 
-func (db *pgDB) GetBlacklistedUsers(ctx context.Context, perPage, page int) ([]User, error) {
+func (db *pgDB) GetBlacklistedUsers(ctx context.Context, limit, offset int) ([]User, error) {
 	db.log.Infoln("Get blacklisted users")
 	resp := make([]User, 0)
 	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE is_in_blacklist LIMIT $1 OFFSET $2",
-		perPage, page)
+		limit, offset)
 	if err != nil {
 		return nil, err
 	}
