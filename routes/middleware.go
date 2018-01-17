@@ -40,7 +40,7 @@ func prepareContext(ctx *gin.Context) {
 	for hn, ck := range hdrToKey {
 		if hv := ctx.GetHeader(hn); hv != "" {
 			rctx := context.WithValue(ctx.Request.Context(), ck, hv)
-			ctx.Request.WithContext(rctx)
+			ctx.Request = ctx.Request.WithContext(rctx)
 		}
 	}
 }
