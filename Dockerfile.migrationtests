@@ -1,4 +1,4 @@
-FROM ubuntu:slim
+FROM debian:slim
 ADD https://github.com/mattes/migrate/releases/download/v3.0.1/migrate.linux-amd64.tar.gz /tmp
 RUN tar -xzf /tmp/migrate.linux-amd64.tar.gz -C /bin
 # assuming build context is migration directory
