@@ -24,10 +24,10 @@ type httpMailClient struct {
 	log  *logrus.Entry
 }
 
-func NewHTTPMailClient(serverUrl string) MailClient {
+func NewHTTPMailClient(serverURL string) MailClient {
 	log := logrus.WithField("component", "mail_client")
 	client := resty.New().
-		SetHostURL(serverUrl).
+		SetHostURL(serverURL).
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
 		SetDebug(true).
 		SetError(errors.Error{})

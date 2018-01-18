@@ -83,8 +83,12 @@ func (u *serverImpl) linkSend(ctx context.Context, link *models.Link) {
 }
 
 func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp *auth.CreateTokenResponse, err error) {
-	// TODO: get access data from resource manager
-	access := &auth.ResourcesAccess{}
+	access, err := u.svc.ResourceServiceClient.GetUserAccess(ctx, user)
+	if err != nil {
+		u.log.WithError(err).Error("resource access get failed")
+		err = resourceAccessGetFailed
+		return
+	}
 
 	resp, err = u.svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
 		UserAgent:   server.MustGetUserAgent(ctx),
@@ -96,9 +100,9 @@ func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp 
 		Access:      access,
 		PartTokenId: nil,
 	})
-	u.log.WithError(err).Error("token create failed")
 	if err != nil {
-		err = oneTimeTokenCreateFailed
+		u.log.WithError(err).Error("token create failed")
+		err = tokenCreateFailed
 	}
 	return
 }

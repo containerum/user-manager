@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"os/signal"
 
+	"git.containerum.net/ch/user-manager/clients"
+	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/routes"
 	"git.containerum.net/ch/user-manager/server"
 	"github.com/gin-gonic/contrib/ginrus"
@@ -25,6 +27,11 @@ func exitOnErr(err error) {
 	}
 }
 
+func getService(service interface{}, err error) interface{} {
+	exitOnErr(err)
+	return service
+}
+
 func main() {
 	viper.SetEnvPrefix("ch_user")
 	viper.AutomaticEnv()
@@ -36,29 +43,13 @@ func main() {
 	app.Use(gin.RecoveryWithWriter(logrus.StandardLogger().WithField("component", "gin_recovery").WriterLevel(logrus.ErrorLevel)))
 	app.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
 
-	db, err := getDB()
-	exitOnErr(err)
-
-	mailClient, err := getMailClient()
-	exitOnErr(err)
-
-	reCaptchaClient, err := getReCaptchaClient()
-	exitOnErr(err)
-
-	exitOnErr(oauthClientsSetup())
-
-	authClient, err := getAuthClient()
-	exitOnErr(err)
-
-	webAPIClient, err := getWebAPIClient()
-	exitOnErr(err)
-
 	userManager, err := getUserManager(server.Services{
-		MailClient:      mailClient,
-		DB:              db,
-		AuthClient:      authClient,
-		ReCaptchaClient: reCaptchaClient,
-		WebAPIClient:    webAPIClient,
+		MailClient:            getService(getMailClient()).(clients.MailClient),
+		DB:                    getService(getDB()).(models.DB),
+		AuthClient:            getService(getAuthClient()).(clients.AuthClientCloser),
+		ReCaptchaClient:       getService(getReCaptchaClient()).(clients.ReCaptchaClient),
+		WebAPIClient:          getService(getWebAPIClient()).(clients.WebAPIClient),
+		ResourceServiceClient: getService(getResourceServiceClient()).(clients.ResourceServiceClient),
 	})
 	exitOnErr(err)
 	defer userManager.Close()
