@@ -80,9 +80,9 @@ lint-check:
 migrations-test:
   <<: *create_tag
   variables:
-    - POSTGRES_USER: migtest
-    - POSTGRES_PASSWORD: migtest
-    - POSTGRES_DB: migtest
+    POSTGRES_USER: migtest
+    POSTGRES_PASSWORD: migtest
+    POSTGRES_DB: migtest
   services:
     - docker:dind
     - postgres:10-alpine
