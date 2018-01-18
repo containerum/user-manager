@@ -19,37 +19,38 @@ const linkQueryColumnsWithUser = "links.link, links.type, links.created_at, link
 const linkQueryColumns = "link, type, created_at, expired_at, is_active, sent_at"
 
 func (db *pgDB) CreateLink(ctx context.Context, linkType umtypes.LinkType, lifeTime time.Duration, user *User) (*Link, error) {
-	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+linkQueryColumns+" FROM links "+
-		"WHERE user_id = $1 AND type = $2 AND is_active AND expired_at > NOW()", user.ID, linkType)
+	now := time.Now().UTC()
+
+	db.log.WithFields(logrus.Fields{
+		"user":          user.Login,
+		"creation_time": now.Format(time.ANSIC),
+	}).Infoln("Create new link")
+
+	ret := &Link{User: user}
+
+	ret = &Link{
+		Link:      strings.ToUpper(fmt.Sprintf("%x", (sha256.Sum256([]byte(user.ID + string(linkType) + lifeTime.String() + now.String()))))),
+		User:      user,
+		Type:      linkType,
+		CreatedAt: now,
+		ExpiredAt: now.Add(lifeTime),
+		IsActive:  true,
+	}
+	rows, err := db.qLog.QueryxContext(ctx, "INSERT INTO links (link, type, created_at, expired_at, is_active, user_id) VALUES "+
+		"($1, $2, $3, $4, $5, $6) ON CONFLICT (type, user_id) DO UPDATE SET link = $1, is_active = true, created_at = $3, expired_at = $4 RETURNING "+linkQueryColumns, ret.Link, ret.Type, ret.CreatedAt, ret.ExpiredAt, ret.IsActive, ret.User.ID)
+	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
 
-	ret := &Link{User: user}
 	if !rows.Next() {
-		now := time.Now().UTC()
-
-		db.log.WithFields(logrus.Fields{
-			"user":          user.Login,
-			"creation_time": now.Format(time.ANSIC),
-		}).Infoln("Create new link")
-
-		ret = &Link{
-			Link:      strings.ToUpper(fmt.Sprintf("%x", (sha256.Sum256([]byte(user.ID + string(linkType) + lifeTime.String() + now.String()))))),
-			User:      user,
-			Type:      linkType,
-			CreatedAt: now,
-			ExpiredAt: now.Add(lifeTime),
-			IsActive:  true,
-		}
-		_, err = db.eLog.ExecContext(ctx, "INSERT INTO links (link, type, created_at, expired_at, is_active, user_id) VALUES "+
-			"($1, $2, $3, $4, $5, $6)", ret.Link, ret.Type, ret.CreatedAt, ret.ExpiredAt, ret.IsActive, ret.User.ID)
-	} else {
-		db.log.Infoln("Get existing link", linkType, "for", user.Login)
-
-		err = rows.Scan(&ret.Link, &ret.Type, &ret.CreatedAt, &ret.ExpiredAt, &ret.IsActive, &ret.SentAt)
+		return nil, rows.Err()
 	}
+
+	if err = rows.Scan(&ret.Link, &ret.Type, &ret.CreatedAt, &ret.ExpiredAt, &ret.IsActive, &ret.SentAt); err != nil {
+		return nil, err
+	}
+
 	return ret, err
 }
 
