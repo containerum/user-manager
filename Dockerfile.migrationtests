@@ -1,0 +1,8 @@
+FROM alpine:latest
+ADD https://github.com/mattes/migrate/releases/download/v3.0.1/migrate.linux-amd64.tar.gz /tmp
+RUN tar -xzf /tmp/migrate.linux-amd64.tar.gz
+ADD $MIGRATIONS_DIR migrations
+CMD echo "Running up migrations..." && \
+    migrate.linux-amd64 -verbose -path=./migrations -database=$DB_URL up && \
+    echo "Running down migrations..." && \
+    migrate.linux-amd64 -verbose -path=./migrations -database=$DB_URL down
