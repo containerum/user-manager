@@ -107,3 +107,13 @@ func getUserManager(services server.Services) (server.UserManager, error) {
 		return nil, errors.New("invalid user manager impl")
 	}
 }
+
+func getResourceServiceClient() (clients.ResourceServiceClient, error) {
+	viper.SetDefault("resource_service", "http")
+	switch viper.GetString("resource_service") {
+	case "http":
+		return clients.NewHTTPResourceServiceClient(viper.GetString("resource_service_url")), nil
+	default:
+		return nil, errors.New("invalid resource service client")
+	}
+}

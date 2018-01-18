@@ -38,6 +38,8 @@ ENV GIN_MODE=release \
     CH_USER_AUTH_GRPC_ADDR="ch-auth:8000" \
     CH_USER_WEB_API="http" \
     CH_USER_WEB_API_URL="http://web-api:8080" \
+    CH_USER_RESOURCE_SERVICE="http" \
+    CH_USER_RESOURCE_SERVICE_URL="http://resource-service:1213" \
     CH_USER_LISTEN_ADDR=":8111" \
     CH_USER_USER_MANAGER="impl"
 ENTRYPOINT ["/user-manager"]

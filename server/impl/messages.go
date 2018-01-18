@@ -56,5 +56,8 @@ var (
 	blacklistUserFailed     = &server.InternalError{Err: errors.New("user blacklisting failed")}
 	blacklistUsersGetFailed = &server.InternalError{Err: errors.New("get blacklisted users from db failed")}
 
+	tokenCreateFailed = &server.InternalError{Err: errors.New("token create failed")}
 	tokenDeleteFailed = &server.InternalError{Err: errors.New("token delete failed")}
+
+	resourceAccessGetFailed = &server.InternalError{Err: errors.New("resource access get failed")}
 )

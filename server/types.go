@@ -46,11 +46,12 @@ type UserManager interface {
 }
 
 type Services struct {
-	MailClient      clients.MailClient
-	DB              models.DB
-	AuthClient      clients.AuthClientCloser
-	ReCaptchaClient clients.ReCaptchaClient
-	WebAPIClient    clients.WebAPIClient
+	MailClient            clients.MailClient
+	DB                    models.DB
+	AuthClient            clients.AuthClientCloser
+	ReCaptchaClient       clients.ReCaptchaClient
+	WebAPIClient          clients.WebAPIClient
+	ResourceServiceClient clients.ResourceServiceClient
 }
 
 type InternalError struct {
