@@ -95,7 +95,7 @@ migrations-test:
     - 'docker run --rm -d -p 5432:5432 --name=$POSTGRES_CONTAINER --net=$POSTGRES_NET
       -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_DB
       postgres:10-alpine'
-    - 'docker run --rm -d -p --net=$POSTGRES_NET postgres:10-alpine
+    - 'docker run --rm -d --net=$POSTGRES_NET postgres:10-alpine
       sh -c "while ! echo exit | nc $POSTGRES_CONTAINER 5432; do sleep 10; done"' # a working method to wait postgres start
     - docker build --pull -f Dockerfile.migrationtests -t ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG} .
     - 'docker run --rm --net=$POSTGRES_NET
