@@ -1,0 +1,13 @@
+{
+  "linters": {
+    "gas_nosec": {
+      "command": "gas -nosec -fmt=csv",
+      "pattern": "^(?P<path>.*?\\.go),(?P<line>\\d+),(?P<message>[^,]+,[^,]+,[^,]+)",
+      "isFast": true
+    }
+  },
+  "disable": ["gas"],
+  "enable": ["gas_nosec"],
+  "fast": true,
+  "vendor": true
+}
