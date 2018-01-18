@@ -84,13 +84,13 @@ migrations-test:
     POSTGRES_PASSWORD: migtest
     POSTGRES_DB: migtest
     POSTGRES_PORT: 5432
-    POSTGRES_CONAINER: ${CI_PROJECT_NAME}-test-postgres
     MIGRATIONS_DIR: ./migrations
   services:
     - docker:dind
   image: docker:latest
   stage: test
   script:
+    - export POSTGRES_CONTAINER=${CI_PROJECT_NAME}-test-postgres
     - 'docker run --rm -p $POSTGRES_PORT:5432
       -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_DB
       --name $POSTGRES_CONTAINER
