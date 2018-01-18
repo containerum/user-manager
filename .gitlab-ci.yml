@@ -83,13 +83,14 @@ migrations-test:
     POSTGRES_USER: migtest
     POSTGRES_PASSWORD: migtest
     POSTGRES_DB: migtest
+    MIGRATIONS_DIR: ./migrations
   services:
     - docker:dind
     - postgres:10-alpine
   image: docker:latest
   stage: test
   script:
-    - docker build --pull -f Dockerfile.migrationtests -t ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG} migrations
+    - docker build --pull -f Dockerfile.migrationtests -t ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG} .
     - 'docker run --rm -e DB_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$POSTGRES_DB?sslmode=disable"
       ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG} '
     - docker rmi -f ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}
