@@ -83,14 +83,23 @@ migrations-test:
     POSTGRES_USER: migtest
     POSTGRES_PASSWORD: migtest
     POSTGRES_DB: migtest
+    POSTGRES_PORT: 5432
+    POSTGRES_CONAINER: ${CI_PROJECT_NAME}-test-postgres
     MIGRATIONS_DIR: ./migrations
   services:
     - docker:dind
-    - postgres:10-alpine
   image: docker:latest
   stage: test
   script:
+    - 'docker run --rm -p $POSTGRES_PORT:5432
+      -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_DB
+      --name $POSTGRES_CONTAINER
+      -d postgres:10-alpine'
+    - while ! echo exit | nc localhost $POSTGRES_PORT; do sleep 10; done # a working method to wait postgres start
     - docker build --pull -f Dockerfile.migrationtests -t ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG} .
-    - 'docker run --rm -e DB_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$POSTGRES_DB?sslmode=disable"
-      ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG} '
+    - 'docker run --rm --net=host
+      -e DB_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$localhost:$POSTGRES_PORT/$POSTGRES_DB?sslmode=disable"
+      -e MIGRATIONS_DIR
+      ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}'
     - docker rmi -f ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}
+    - docker rm -f $POSTGRES_CONTAINER
