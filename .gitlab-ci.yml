@@ -89,6 +89,7 @@ migrations-test:
   image: debian:stable-slim
   stage: test
   script:
+    - apt-get install wget -y
     - wget https://github.com/mattes/migrate/releases/download/v3.0.1/migrate.linux-amd64.tar.gz -O /tmp/migrate.tar.gz
     - tar -xzf /tmp/migrate.tar.gz -C /bin
     - echo "Running up migrations..." && migrate.linux-amd64 -verbose -path=./$MIGRATIONS_DIR -database=$DB_URL up
