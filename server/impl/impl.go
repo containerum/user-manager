@@ -96,7 +96,7 @@ func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp 
 		Fingerprint: server.MustGetFingerprint(ctx),
 		UserId:      &common.UUID{Value: user.ID},
 		UserIp:      server.MustGetClientIP(ctx),
-		UserRole:    auth.Role(user.Role),
+		UserRole:    user.Role,
 		RwAccess:    true,
 		Access:      access,
 		PartTokenId: nil,

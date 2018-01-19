@@ -9,15 +9,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// compile-time assertion to check if our type implements IssuerValidator interface
-var _ IssuerValidator = &JWTIssuerValidator{}
-
 type extendedClaims struct {
 	jwt.StandardClaims
 	ExtensionFields
 	Kind Kind `json:"kind"`
 }
 
+// JWTIssuerValidatorConfig is config for JSON Web Tokens issuer and validator
 type JWTIssuerValidatorConfig struct {
 	SigningMethod        jwt.SigningMethod
 	Issuer               string
@@ -27,20 +25,21 @@ type JWTIssuerValidatorConfig struct {
 	ValidationKey        interface{}
 }
 
-type JWTIssuerValidator struct {
+type jwtIssuerValidator struct {
 	config JWTIssuerValidatorConfig
 	logger *logrus.Entry
 }
 
-func NewJWTIssuerValidator(config JWTIssuerValidatorConfig) *JWTIssuerValidator {
-	logrus.WithField("config", config).Info("Initialized JWTIssuerValidator")
-	return &JWTIssuerValidator{
+// NewJWTIssuerValidator sets up validator for self-contained JSON Web Tokens
+func NewJWTIssuerValidator(config JWTIssuerValidatorConfig) IssuerValidator {
+	logrus.WithField("config", config).Info("Initialized jwtIssuerValidator")
+	return &jwtIssuerValidator{
 		config: config,
-		logger: logrus.WithField("component", "JWTIssuerValidator"),
+		logger: logrus.WithField("component", "jwtIssuerValidator"),
 	}
 }
 
-func (j *JWTIssuerValidator) issueToken(id *common.UUID, kind Kind, lifeTime time.Duration, extendedFields ExtensionFields) (token *IssuedToken, err error) {
+func (j *jwtIssuerValidator) issueToken(id *common.UUID, kind Kind, lifeTime time.Duration, extendedFields ExtensionFields) (token *IssuedToken, err error) {
 	claims := extendedClaims{
 		StandardClaims: jwt.StandardClaims{
 			Id:        id.Value,
@@ -62,12 +61,12 @@ func (j *JWTIssuerValidator) issueToken(id *common.UUID, kind Kind, lifeTime tim
 
 	return &IssuedToken{
 		Value:    value,
-		Id:       id,
+		ID:       id,
 		LifeTime: lifeTime,
 	}, err
 }
 
-func (j *JWTIssuerValidator) IssueTokens(extensionFields ExtensionFields) (accessToken, refreshToken *IssuedToken, err error) {
+func (j *jwtIssuerValidator) IssueTokens(extensionFields ExtensionFields) (accessToken, refreshToken *IssuedToken, err error) {
 	id := utils.NewUUID()
 	refreshToken, err = j.issueToken(id, KindRefresh, j.config.RefreshTokenLifeTime, extensionFields)
 	if err != nil {
@@ -78,7 +77,7 @@ func (j *JWTIssuerValidator) IssueTokens(extensionFields ExtensionFields) (acces
 	return
 }
 
-func (j *JWTIssuerValidator) ValidateToken(token string) (result *ValidationResult, err error) {
+func (j *jwtIssuerValidator) ValidateToken(token string) (result *ValidationResult, err error) {
 	j.logger.Debugf("Validating token %s", token)
 	tokenObj, err := jwt.ParseWithClaims(token, new(extendedClaims), func(token *jwt.Token) (interface{}, error) {
 		return j.config.ValidationKey, nil
@@ -89,7 +88,7 @@ func (j *JWTIssuerValidator) ValidateToken(token string) (result *ValidationResu
 
 	validationResult := &ValidationResult{
 		Valid: tokenObj.Valid,
-		Id: &common.UUID{
+		ID: &common.UUID{
 			Value: tokenObj.Claims.(*extendedClaims).Id,
 		},
 		Kind: tokenObj.Claims.(*extendedClaims).Kind,

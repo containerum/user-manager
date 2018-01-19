@@ -50,7 +50,7 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 		Login:        request.UserName,
 		PasswordHash: passwordHash,
 		Salt:         salt,
-		Role:         umtypes.RoleUser,
+		Role:         "user",
 		IsActive:     false,
 		IsDeleted:    false,
 	}

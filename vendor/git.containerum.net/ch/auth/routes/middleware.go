@@ -49,7 +49,7 @@ func newStorageInjectionMiddleware(storage auth.AuthServer) vestigo.Middleware {
 }
 
 // name -> function validating value
-type validators map[string](func(value string) error)
+type validators map[string]func(value string) error
 
 func newHeaderValidationMiddleware(validators validators) vestigo.Middleware {
 	return func(next http.HandlerFunc) http.HandlerFunc {

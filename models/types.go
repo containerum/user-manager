@@ -14,14 +14,14 @@ import (
 
 // User describes user model. It should be used only inside this project.
 type User struct {
-	ID            string           `db:"id"`
-	Login         string           `db:"login"`
-	PasswordHash  string           `db:"password_hash"` // base64
-	Salt          string           `db:"salt"`          // base64
-	Role          umtypes.UserRole `db:"role"`
-	IsActive      bool             `db:"is_active"`
-	IsDeleted     bool             `db:"is_deleted"`
-	IsInBlacklist bool             `db:"is_in_blacklist"`
+	ID            string `db:"id"`
+	Login         string `db:"login"`
+	PasswordHash  string `db:"password_hash"` // base64
+	Salt          string `db:"salt"`          // base64
+	Role          string `db:"role"`
+	IsActive      bool   `db:"is_active"`
+	IsDeleted     bool   `db:"is_deleted"`
+	IsInBlacklist bool   `db:"is_in_blacklist"`
 }
 
 // Profile describes user`s profile model. It should be used only inside this project.

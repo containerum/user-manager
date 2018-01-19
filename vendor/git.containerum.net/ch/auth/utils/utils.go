@@ -23,6 +23,7 @@ func ShortUserAgent(userAgent string) string {
 	return base64.StdEncoding.EncodeToString([]byte(toEncode))
 }
 
+// NewUUID generates a new UUID
 func NewUUID() *common.UUID {
 	b := make([]byte, 16)
 	_, err := rand.Read(b)
@@ -36,10 +37,12 @@ func NewUUID() *common.UUID {
 	}
 }
 
+// UUIDEquals checks if provided UUIDs are equal
 func UUIDEquals(a, b *common.UUID) bool {
 	return a == b || a != nil && b != nil && a.Value == b.Value
 }
 
+// UUIDFromString returns UUID object parsed from string
 func UUIDFromString(value string) *common.UUID {
 	return &common.UUID{
 		Value: value,
