@@ -94,7 +94,7 @@ migrations-test:
     - env | grep -i postgres
     - env | grep POSTGRES_PORT_5432_TCP_ADDR
     - docker build --pull -f Dockerfile.migrationtests -t ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG} .
-    - 'docker run --rm 
-      -e DB_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_CONTAINER:5432/$POSTGRES_PORT_5432_TCP_ADDRsslmode=disable"
+    - 'docker run --rm
+      -e DB_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_CONTAINER:5432/$POSTGRES_PORT_5432_TCP_ADDR?sslmode=disable"
       -e MIGRATIONS_DIR
       ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}'
