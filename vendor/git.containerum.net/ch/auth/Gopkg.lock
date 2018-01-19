@@ -5,7 +5,7 @@
   branch = "master"
   name = "git.containerum.net/ch/grpc-proto-files"
   packages = ["auth","common"]
-  revision = "a37cf53c18640c19d94263e11ddd4735fa79c9fe"
+  revision = "6a2a13ef872ed316b4a60dcc180395ea86b2c811"
 
 [[projects]]
   name = "github.com/Shopify/sarama"

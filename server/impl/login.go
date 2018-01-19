@@ -133,7 +133,7 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILogi
 
 	tokens, err := u.createTokens(ctx, &models.User{
 		ID:   resp["user"].(map[string]interface{})["id"].(string),
-		Role: umtypes.RoleUser,
+		Role: "user",
 	})
 	if err != nil {
 		return nil, err

@@ -17,7 +17,7 @@ var serverAddress string
 var (
 	userAgent   string
 	fingerprint string
-	userIp      string
+	userIP      string
 )
 
 func init() {
@@ -25,7 +25,7 @@ func init() {
 	flag.StringVar(&userAgent, "ua", "Mozilla/5.0 (X11; Linux x86_64; rv:56.0) Gecko/20100101 Firefox/56.0",
 		"User agent")
 	flag.StringVar(&fingerprint, "ufp", "101924019824", "User fingerprint")
-	flag.StringVar(&userIp, "uip", "127.0.0.1", "User IP")
+	flag.StringVar(&userIP, "uip", "127.0.0.1", "User IP")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, `Usage: %s [options] <cmd> [cmdparams]
 cmd:
@@ -68,7 +68,7 @@ func main() {
 			UserAgent:   userAgent,
 			Fingerprint: fingerprint,
 			UserId:      utils.NewUUID(),
-			UserRole:    auth.Role_USER,
+			UserRole:    "user",
 			RwAccess:    true,
 			Access:      &auth.ResourcesAccess{},
 			PartTokenId: nil,
@@ -82,7 +82,7 @@ func main() {
 			AccessToken: accessToken,
 			UserAgent:   userAgent,
 			FingerPrint: fingerprint,
-			UserIp:      userIp,
+			UserIp:      userIP,
 		})
 		chkErr(err)
 		log.Printf("Got response %+v", resp)
