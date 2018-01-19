@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 )
 
+// AuthClientCloser is an extension of AuthClient interface with Closer interface to close connection
 type AuthClientCloser interface {
 	auth.AuthClient
 	io.Closer
@@ -20,6 +21,7 @@ type grpcAuthClient struct {
 	clientConn *grpc.ClientConn
 }
 
+// NewGRPCAuthClient returns client for auth service works using grpc protocol
 func NewGRPCAuthClient(serverAddr string) (AuthClientCloser, error) {
 	authConn, err := grpc.Dial(serverAddr, grpc.WithInsecure(), grpc.WithUnaryInterceptor(
 		grpc_middleware.ChainUnaryClient(

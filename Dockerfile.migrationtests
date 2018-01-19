@@ -1,0 +1,9 @@
+FROM debian:stable-slim
+ADD https://github.com/mattes/migrate/releases/download/v3.0.1/migrate.linux-amd64.tar.gz /tmp
+RUN tar -xzf /tmp/migrate.linux-amd64.tar.gz -C /bin
+# assuming build context is migration directory
+COPY . .
+CMD echo "Running up migrations..." && \
+    migrate.linux-amd64 -verbose -path=./$MIGRATIONS_DIR -database=$DB_URL up && \
+    echo "Running down migrations..." && \
+    migrate.linux-amd64 -verbose -path=./$MIGRATIONS_DIR -database=$DB_URL down

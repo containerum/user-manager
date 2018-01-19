@@ -1,5 +1,6 @@
 stages:
   - build
+  - test
   - deploy
 
 .create_tag: &create_tag
@@ -43,9 +44,64 @@ docker-build-test:
   image: docker:latest
   stage: build
   tags:
-    - prebuild
+    - test
   script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD"
     - docker build --pull -t ${CI_REGISTRY_IMAGE}:${TAG} .
   except:
     - develop
+
+unit-tests:
+  <<: *create_tag
+  services:
+    - docker:dind
+  image: docker:latest
+  stage: test
+  tags:
+    - test
+  script:
+    - docker build --pull -f Dockerfile.unittests -t ${CI_REGISTRY_IMAGE}-unittests:${TAG} .
+    - docker run --rm ${CI_REGISTRY_IMAGE}-unittests:${TAG}
+    - docker rmi -f ${CI_REGISTRY_IMAGE}-unittests:${TAG}
+
+lint-check:
+  <<: *create_tag
+  services:
+    - docker:dind
+  image: docker:latest
+  stage: test
+  tags:
+    - test
+  script:
+    - docker build --pull -f Dockerfile.gometalinter -t ${CI_REGISTRY_IMAGE}-lint:${TAG} .
+    - docker run --rm ${CI_REGISTRY_IMAGE}-lint:${TAG}
+    - docker rmi -f ${CI_REGISTRY_IMAGE}-lint:${TAG}
+
+migrations-test:
+  <<: *create_tag
+  variables:
+    POSTGRES_USER: migtest
+    POSTGRES_PASSWORD: migtest
+    POSTGRES_DB: migtest
+    MIGRATIONS_DIR: ./migrations
+  services:
+    - docker:dind
+  image: docker:latest
+  stage: test
+  script:
+    - export POSTGRES_CONTAINER=${CI_PROJECT_NAME}-test-postgres
+    - export POSTGRES_NET=${CI_PROJECT_NAME}-postgres-net
+    - docker network create $POSTGRES_NET
+    - 'docker run --rm -d -p 5432:5432 --name=$POSTGRES_CONTAINER --net=$POSTGRES_NET
+      -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_DB
+      postgres:10-alpine'
+    - 'docker run --rm -d --net=$POSTGRES_NET postgres:10-alpine
+      sh -c "while ! echo exit | nc $POSTGRES_CONTAINER 5432; do sleep 10; done"' # a working method to wait postgres start
+    - docker build --pull -f Dockerfile.migrationtests -t ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG} .
+    - 'docker run --rm --net=$POSTGRES_NET
+      -e DB_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_CONTAINER:5432/$POSTGRES_DB?sslmode=disable"
+      -e MIGRATIONS_DIR
+      ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}'
+    - docker rmi -f ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}
+    - docker stop $POSTGRES_CONTAINER
+    - docker network rm $POSTGRES_NET

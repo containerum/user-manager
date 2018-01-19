@@ -18,11 +18,13 @@ import (
 	google "google.golang.org/api/oauth2/v2"
 )
 
+// OAuthUserInfo describes information about user needed to login via 3rd-party resource
 type OAuthUserInfo struct {
 	UserID string
 	Email  string
 }
 
+// OAuthClient is an interface to 3rd-party resource for fetching information needed for login
 type OAuthClient interface {
 	GetUserInfo(ctx context.Context, authCode string) (info *OAuthUserInfo, err error)
 	GetResource() umtypes.OAuthResource
@@ -30,11 +32,14 @@ type OAuthClient interface {
 
 var oAuthClients = make(map[umtypes.OAuthResource]OAuthClient)
 
+// OAuthClientByResource returns oauth client for service by it`s name.
+// Client for resource must be registered using RegisterOAuthClient
 func OAuthClientByResource(resource umtypes.OAuthResource) (client OAuthClient, exists bool) {
 	client, exists = oAuthClients[resource]
 	return
 }
 
+// RegisterOAuthClient registers an oauth client for resource.
 func RegisterOAuthClient(client OAuthClient) {
 	oAuthClients[client.GetResource()] = client
 }
@@ -55,12 +60,13 @@ func (c *oAuthClientConfig) exchange(ctx context.Context, authCode string) (*htt
 	return tc, nil
 }
 
-type GithubOAuthClient struct {
+type githubOAuthClient struct {
 	oAuthClientConfig
 }
 
-func NewGithubOAuthClient(appID, appSecret string) *GithubOAuthClient {
-	return &GithubOAuthClient{
+// NewGithubOAuthClient returns oauth client for http://github.com
+func NewGithubOAuthClient(appID, appSecret string) OAuthClient {
+	return &githubOAuthClient{
 		oAuthClientConfig: oAuthClientConfig{
 			log: logrus.WithField("component", "github_oauth"),
 			Config: &oauth2.Config{
@@ -73,11 +79,11 @@ func NewGithubOAuthClient(appID, appSecret string) *GithubOAuthClient {
 	}
 }
 
-func (gh *GithubOAuthClient) GetResource() umtypes.OAuthResource {
+func (gh *githubOAuthClient) GetResource() umtypes.OAuthResource {
 	return umtypes.GitHubOAuth
 }
 
-func (gh *GithubOAuthClient) GetUserInfo(ctx context.Context, authCode string) (info *OAuthUserInfo, err error) {
+func (gh *githubOAuthClient) GetUserInfo(ctx context.Context, authCode string) (info *OAuthUserInfo, err error) {
 	gh.log.Infoln("Get GitHub user info")
 	tc, err := gh.exchange(ctx, authCode)
 	if err != nil {
@@ -102,12 +108,13 @@ func (gh *GithubOAuthClient) GetUserInfo(ctx context.Context, authCode string) (
 	}, nil
 }
 
-type GoogleOAuthClient struct {
+type googleOAuthClient struct {
 	oAuthClientConfig
 }
 
-func NewGoogleOAuthClient(appID, appSecret string) *GoogleOAuthClient {
-	return &GoogleOAuthClient{
+// NewGoogleOAuthClient returns oauth client for http://google.com
+func NewGoogleOAuthClient(appID, appSecret string) OAuthClient {
+	return &googleOAuthClient{
 		oAuthClientConfig: oAuthClientConfig{
 			log: logrus.WithField("component", "google_oauth"),
 			Config: &oauth2.Config{
@@ -120,11 +127,11 @@ func NewGoogleOAuthClient(appID, appSecret string) *GoogleOAuthClient {
 	}
 }
 
-func (gc *GoogleOAuthClient) GetResource() umtypes.OAuthResource {
+func (gc *googleOAuthClient) GetResource() umtypes.OAuthResource {
 	return umtypes.GoogleOAuth
 }
 
-func (gc *GoogleOAuthClient) GetUserInfo(ctx context.Context, authCode string) (info *OAuthUserInfo, err error) {
+func (gc *googleOAuthClient) GetUserInfo(ctx context.Context, authCode string) (info *OAuthUserInfo, err error) {
 	gc.log.Infoln("Get Google user info")
 	tc, err := gc.exchange(ctx, authCode)
 	if err != nil {
@@ -149,12 +156,13 @@ func (gc *GoogleOAuthClient) GetUserInfo(ctx context.Context, authCode string) (
 	}, nil
 }
 
-type FacebookOAuthClient struct {
+type facebookOAuthClient struct {
 	oAuthClientConfig
 }
 
-func NewFacebookOAuthClient(appID, appSecret string) *FacebookOAuthClient {
-	return &FacebookOAuthClient{
+// NewFacebookOAuthClient returns oauth client for http://facebook.com
+func NewFacebookOAuthClient(appID, appSecret string) OAuthClient {
+	return &facebookOAuthClient{
 		oAuthClientConfig: oAuthClientConfig{
 			log: logrus.WithField("component", "facebook_oauth"),
 			Config: &oauth2.Config{
@@ -167,11 +175,11 @@ func NewFacebookOAuthClient(appID, appSecret string) *FacebookOAuthClient {
 	}
 }
 
-func (fb *FacebookOAuthClient) GetResource() umtypes.OAuthResource {
+func (fb *facebookOAuthClient) GetResource() umtypes.OAuthResource {
 	return umtypes.FacebookOAuth
 }
 
-func (fb *FacebookOAuthClient) GetUserInfo(ctx context.Context, authCode string) (info *OAuthUserInfo, err error) {
+func (fb *facebookOAuthClient) GetUserInfo(ctx context.Context, authCode string) (info *OAuthUserInfo, err error) {
 	fb.log.Infoln("Get Facebook user info")
 
 	tc, err := fb.exchange(ctx, authCode)

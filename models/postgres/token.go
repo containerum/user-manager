@@ -5,7 +5,7 @@ import (
 
 	"context"
 
-	. "git.containerum.net/ch/user-manager/models"
+	"git.containerum.net/ch/user-manager/models"
 	chutils "git.containerum.net/ch/user-manager/utils"
 )
 
@@ -13,7 +13,7 @@ const tokenQueryColumnsWithUser = "tokens.token, tokens.created_at, tokens.is_ac
 	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist"
 const tokenQueryColumns = "token, created_at, is_active, session_id"
 
-func (db *pgDB) GetTokenObject(ctx context.Context, token string) (*Token, error) {
+func (db *pgDB) GetTokenObject(ctx context.Context, token string) (*models.Token, error) {
 	db.log.Infoln("Get token object", token)
 	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+tokenQueryColumnsWithUser+" FROM tokens "+
 		"JOIN users ON tokens.user_id = users.id WHERE tokens.token = $1 AND tokens.is_active", token)
@@ -24,16 +24,16 @@ func (db *pgDB) GetTokenObject(ctx context.Context, token string) (*Token, error
 		return nil, rows.Err()
 	}
 	defer rows.Close()
-	ret := Token{User: &User{}}
+	ret := models.Token{User: &models.User{}}
 	err = rows.Scan(&ret.Token, &ret.CreatedAt, &ret.IsActive, &ret.SessionID,
 		&ret.User.ID, &ret.User.Login, &ret.User.PasswordHash, &ret.User.Salt, &ret.User.Role,
 		&ret.User.IsActive, &ret.User.IsDeleted, &ret.User.IsInBlacklist)
 	return &ret, err
 }
 
-func (db *pgDB) CreateToken(ctx context.Context, user *User, sessionID string) (*Token, error) {
+func (db *pgDB) CreateToken(ctx context.Context, user *models.User, sessionID string) (*models.Token, error) {
 	db.log.Infoln("Generate one-time token for", user.Login)
-	ret := &Token{
+	ret := &models.Token{
 		Token:     chutils.GenSalt(user.ID, user.Login),
 		User:      user,
 		IsActive:  true,
@@ -45,7 +45,7 @@ func (db *pgDB) CreateToken(ctx context.Context, user *User, sessionID string) (
 	return ret, err
 }
 
-func (db *pgDB) GetTokenBySessionID(ctx context.Context, sessionID string) (*Token, error) {
+func (db *pgDB) GetTokenBySessionID(ctx context.Context, sessionID string) (*models.Token, error) {
 	db.log.Infoln("Get token by session id ", sessionID)
 	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+tokenQueryColumnsWithUser+" FROM tokens "+
 		"JOIN users ON tokens.user_id = users.id WHERE tokens.session_id = $1 and tokens.is_active", sessionID)
@@ -56,7 +56,7 @@ func (db *pgDB) GetTokenBySessionID(ctx context.Context, sessionID string) (*Tok
 		return nil, rows.Err()
 	}
 	defer rows.Close()
-	ret := Token{User: &User{}}
+	ret := models.Token{User: &models.User{}}
 	err = rows.Scan(&ret.Token, &ret.CreatedAt, &ret.IsActive, &ret.SessionID,
 		&ret.User.ID, &ret.User.Login, &ret.User.PasswordHash, &ret.User.Salt, &ret.User.Role,
 		&ret.User.IsActive, &ret.User.IsDeleted, &ret.User.IsInBlacklist)
@@ -70,7 +70,7 @@ func (db *pgDB) DeleteToken(ctx context.Context, token string) error {
 	return err
 }
 
-func (db *pgDB) UpdateToken(ctx context.Context, token *Token) error {
+func (db *pgDB) UpdateToken(ctx context.Context, token *models.Token) error {
 	db.log.Infoln("Update token", token.Token)
 	_, err := db.eLog.ExecContext(ctx, "UPDATE tokens SET is_active = $2, session_id = $3 WHERE token = $1",
 		token.Token, token.IsActive, token.SessionID)

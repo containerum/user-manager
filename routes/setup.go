@@ -8,6 +8,7 @@ import (
 
 var srv server.UserManager
 
+// SetupRoutes sets up http router needed to handle requests from clients.
 func SetupRoutes(app *gin.Engine, server server.UserManager) {
 	srv = server
 

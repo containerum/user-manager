@@ -22,6 +22,7 @@ type serverImpl struct {
 	log *logrus.Entry
 }
 
+// NewUserManagerImpl returns a main UserManager implementation
 func NewUserManagerImpl(services server.Services) server.UserManager {
 	return &serverImpl{
 		svc: services,
