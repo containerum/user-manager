@@ -1,0 +1,15 @@
+exclude: '^$'
+fail_fast: false
+repos:
+-   repo: git://github.com/pre-commit/pre-commit-hooks
+    sha: v0.7.1
+    hooks:
+      -   id: check-merge-conflict
+      -   id: end-of-file-fixer
+      -   id: trailing-whitespace
+-   repo: git@git.containerum.net:/ch/utils
+    sha: master
+    hooks:
+      -  id: goimports
+      -  id: gometalinter
+
