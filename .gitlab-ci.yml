@@ -85,14 +85,11 @@ migrations-test:
     POSTGRES_DB: migtest
     MIGRATIONS_DIR: ./migrations
   services:
-    - docker:dind
     - postgres:latest
-  image: docker:latest
+  image: debian:stable-slim
   stage: test
   script:
-    - docker build --pull -f Dockerfile.migrationtests -t ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG} .
-    - 'docker run --rm 
-      -e DB_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$POSTGRES_B?sslmode=disable"
-      -e MIGRATIONS_DIR
-      ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}'
-    - docker rmi -f ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}
+    - wget https://github.com/mattes/migrate/releases/download/v3.0.1/migrate.linux-amd64.tar.gz -O /tmp/migrate.tar.gz
+    - tar -xzf /tmp/migrate.tar.gz -C /bin
+    - echo "Running up migrations..." && migrate.linux-amd64 -verbose -path=./$MIGRATIONS_DIR -database=$DB_URL up
+    - echo "Running down migrations..." && migrate.linux-amd64 -verbose -path=./$MIGRATIONS_DIR -database=$DB_URL down
