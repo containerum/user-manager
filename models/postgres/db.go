@@ -10,10 +10,10 @@ import (
 	"git.containerum.net/ch/user-manager/models"
 	chutils "git.containerum.net/ch/utils"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // postgresql database driver
 	"github.com/mattes/migrate"
 	migdrv "github.com/mattes/migrate/database/postgres"
-	_ "github.com/mattes/migrate/source/file"
+	_ "github.com/mattes/migrate/source/file" // needed to load migrations scripts from files
 	"github.com/sirupsen/logrus"
 )
 
@@ -24,12 +24,19 @@ type pgDB struct {
 	eLog sqlx.ExecerContext
 }
 
+// DBConnect initializes connection to postgresql database.
+// github.com/jmoiron/sqlx used to to get work with database.
+// Function tries to ping database and apply migrations using github.com/mattes/migrate.
+// If migrations applying failed database goes to dirty state and requires manual conflict resolution.
 func DBConnect(pgConnStr string) (models.DB, error) {
 	log := logrus.WithField("component", "db")
 	log.Infoln("Connecting to ", pgConnStr)
 	conn, err := sqlx.Open("postgres", pgConnStr)
 	if err != nil {
 		log.WithError(err).Errorln("Postgres connection failed")
+		return nil, err
+	}
+	if pingErr := conn.Ping(); pingErr != nil {
 		return nil, err
 	}
 

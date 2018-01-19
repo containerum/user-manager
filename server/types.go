@@ -12,7 +12,7 @@ import (
 	"git.containerum.net/ch/user-manager/models"
 )
 
-// "Business logic" here
+// UserManager is an interface for server "business logic"
 type UserManager interface {
 	BasicLogin(ctx context.Context, request umtypes.BasicLoginRequest) (*auth.CreateTokenResponse, error)
 	OneTimeTokenLogin(ctx context.Context, request umtypes.OneTimeTokenLoginRequest) (*auth.CreateTokenResponse, error)
@@ -45,6 +45,7 @@ type UserManager interface {
 	io.Closer
 }
 
+// Services is a collection of resources needed for server functionality.
 type Services struct {
 	MailClient            clients.MailClient
 	DB                    models.DB
@@ -54,6 +55,7 @@ type Services struct {
 	ResourceServiceClient clients.ResourceServiceClient
 }
 
+// InternalError describes server errors which should not be exposed to client explicitly.
 type InternalError struct {
 	Err *errors.Error
 }
@@ -62,6 +64,7 @@ func (e *InternalError) Error() string {
 	return e.Err.Error()
 }
 
+// AccessDeniedError describes error if client has no access to resource, method, etc.
 type AccessDeniedError struct {
 	Err *errors.Error
 }
@@ -70,6 +73,7 @@ func (e *AccessDeniedError) Error() string {
 	return e.Err.Error()
 }
 
+// NotFoundError describes error returned if requested resource was not found
 type NotFoundError struct {
 	Err *errors.Error
 }
@@ -78,6 +82,7 @@ func (e *NotFoundError) Error() string {
 	return e.Err.Error()
 }
 
+// BadRequestError describes error returned if request was malformed.
 type BadRequestError struct {
 	Err *errors.Error
 }
@@ -86,6 +91,7 @@ func (e *BadRequestError) Error() string {
 	return e.Err.Error()
 }
 
+// AlreadyExistsError describes error returned if client attempts to create resource or register with username which already exists.
 type AlreadyExistsError struct {
 	Err *errors.Error
 }
@@ -94,6 +100,7 @@ func (e *AlreadyExistsError) Error() string {
 	return e.Err.Error()
 }
 
+// WebAPIError describes error returned from web-api service.
 type WebAPIError struct {
 	Err        *errors.Error
 	StatusCode int

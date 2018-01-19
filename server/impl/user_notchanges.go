@@ -117,35 +117,7 @@ func (u *serverImpl) GetUsers(ctx context.Context, params umtypes.UserListQuery,
 		return nil, &server.NotFoundError{Err: errors.New(profilesNotFound)}
 	}
 
-	var filterFuncs []func(p models.Profile) bool
-	for _, filter := range filters {
-		switch filter {
-		case "active":
-			filterFuncs = append(filterFuncs, func(p models.Profile) bool {
-				return p.User.IsActive
-			})
-		case "inactive":
-			filterFuncs = append(filterFuncs, func(p models.Profile) bool {
-				return !p.User.IsActive
-			})
-		case "in_blacklist":
-			filterFuncs = append(filterFuncs, func(p models.Profile) bool {
-				return p.User.IsInBlacklist
-			})
-		case "deleted":
-			filterFuncs = append(filterFuncs, func(p models.Profile) bool {
-				return p.User.IsDeleted
-			})
-		}
-	}
-
-	satisfiesFilter := func(p models.Profile) bool {
-		ret := true
-		for _, v := range filterFuncs {
-			ret = ret && v(p)
-		}
-		return ret
-	}
+	satisfiesFilter := server.CreateFilterFunc(filters...)
 
 	resp := umtypes.UserListGetResponse{
 		Users: []umtypes.UserListEntry{},

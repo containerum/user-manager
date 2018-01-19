@@ -12,6 +12,7 @@ import (
 	"github.com/lib/pq"
 )
 
+// User describes user model. It should be used only inside this project.
 type User struct {
 	ID            string           `db:"id"`
 	Login         string           `db:"login"`
@@ -23,6 +24,7 @@ type User struct {
 	IsInBlacklist bool             `db:"is_in_blacklist"`
 }
 
+// Profile describes user`s profile model. It should be used only inside this project.
 type Profile struct {
 	ID          string
 	Referral    string
@@ -36,6 +38,7 @@ type Profile struct {
 	Data map[string]interface{}
 }
 
+// Accounts describes user`s bound accounts. It should be used only inside this project.
 type Accounts struct {
 	ID       string
 	Github   string
@@ -45,6 +48,7 @@ type Accounts struct {
 	User *User
 }
 
+// Link describes link (for activation, password change, etc.) model. It should be used only inside this project.
 type Link struct {
 	Link      string
 	Type      umtypes.LinkType
@@ -56,6 +60,7 @@ type Link struct {
 	User *User
 }
 
+// Token describes one-time token model (used for login), It should be used only inside this project.
 type Token struct {
 	Token     string
 	CreatedAt time.Time
@@ -65,17 +70,21 @@ type Token struct {
 	User *User
 }
 
+// DomainBlacklistEntry describes one blacklisted email domain.
+// Registration with email for this domain must be rejected. It should be used only inside this project.
 type DomainBlacklistEntry struct {
 	Domain    string
 	CreatedAt time.Time
 }
 
+// Errors which may occur in transactional operations
 var (
 	ErrTransactionBegin    = errors.New("transaction begin error")
 	ErrTransactionRollback = errors.New("transaction rollback error")
 	ErrTransactionCommit   = errors.New("transaction commit error")
 )
 
+// DB is an interface for persistent data storage (also sometimes called DAO).
 type DB interface {
 	GetUserByLogin(ctx context.Context, login string) (*User, error)
 	GetUserByID(ctx context.Context, id string) (*User, error)

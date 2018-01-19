@@ -35,31 +35,31 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		user.PasswordHash = utils.GetKey(user.Login, request.NewPassword, user.Salt)
-		if err := tx.UpdateUser(ctx, user); err != nil {
-			return err
+		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
+			return updErr
 		}
 
-		_, err := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
+		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
 			UserId: &common.UUID{Value: user.ID},
 		})
-		if err != nil {
+		if authErr != nil {
 			return tokenDeleteFailed
 		}
 
-		tokens, err = u.createTokens(ctx, user)
-		return err
+		tokens, authErr = u.createTokens(ctx, user)
+		return authErr
 	})
 	err = u.handleDBError(err)
 
 	go func() {
-		err := u.svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
+		mailErr := u.svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
 			ID:        user.ID,
 			Name:      user.Login,
 			Email:     user.Login,
 			Variables: map[string]interface{}{},
 		})
-		if err != nil {
-			u.log.WithError(err).Error("password change email send failed")
+		if mailErr != nil {
+			u.log.WithError(mailErr).Error("password change email send failed")
 		}
 	}()
 
@@ -118,24 +118,24 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		link.User.PasswordHash = utils.GetKey(link.User.Login, request.NewPassword, link.User.Salt)
-		if err := tx.UpdateUser(ctx, link.User); err != nil {
+		if updErr := tx.UpdateUser(ctx, link.User); updErr != nil {
 			return userUpdateFailed
 		}
 		link.IsActive = false
 
-		_, err := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
+		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
 			UserId: &common.UUID{Value: link.User.ID},
 		})
-		if err != nil {
+		if authErr != nil {
 			return oneTimeTokenDeleteFailed
 		}
 
-		if err := tx.UpdateLink(ctx, link); err != nil {
+		if updErr := tx.UpdateLink(ctx, link); updErr != nil {
 			return linkUpdateFailed
 		}
 
-		tokens, err = u.createTokens(ctx, link.User)
-		return err
+		tokens, authErr = u.createTokens(ctx, link.User)
+		return authErr
 	})
 	if err := u.handleDBError(err); err != nil {
 		return nil, err

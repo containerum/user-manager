@@ -19,15 +19,15 @@ import (
 
 func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.BasicLoginRequest) (resp *auth.CreateTokenResponse, err error) {
 	u.log.Infof("Basic login: %#v", request)
-	if err := u.checkReCaptcha(ctx, request.ReCaptcha); err != nil {
-		return nil, err
+	if rcErr := u.checkReCaptcha(ctx, request.ReCaptcha); rcErr != nil {
+		return nil, rcErr
 	}
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Username)
-	if err := u.handleDBError(err); err != nil {
+	if dbErr := u.handleDBError(err); dbErr != nil {
 		return resp, userGetFailed
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
-		return resp, err
+	if checksErr := u.loginUserChecks(ctx, user); checksErr != nil {
+		return resp, checksErr
 	}
 	if !utils.CheckPassword(request.Username, request.Password, user.Salt, user.PasswordHash) {
 		return resp, &server.AccessDeniedError{Err: errors.New(invalidPassword)}
@@ -71,7 +71,7 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneT
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		token.IsActive = false
 		token.SessionID = server.MustGetSessionID(ctx)
-		if err := tx.UpdateToken(ctx, token); err != nil {
+		if updErr := tx.UpdateToken(ctx, token); updErr != nil {
 			return oneTimeTokenUpdateFailed
 		}
 

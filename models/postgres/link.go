@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	umtypes "git.containerum.net/ch/json-types/user-manager"
-	. "git.containerum.net/ch/user-manager/models"
+	"git.containerum.net/ch/user-manager/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,7 +18,7 @@ const linkQueryColumnsWithUser = "links.link, links.type, links.created_at, link
 	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist"
 const linkQueryColumns = "link, type, created_at, expired_at, is_active, sent_at"
 
-func (db *pgDB) CreateLink(ctx context.Context, linkType umtypes.LinkType, lifeTime time.Duration, user *User) (*Link, error) {
+func (db *pgDB) CreateLink(ctx context.Context, linkType umtypes.LinkType, lifeTime time.Duration, user *models.User) (*models.Link, error) {
 	now := time.Now().UTC()
 
 	db.log.WithFields(logrus.Fields{
@@ -26,9 +26,9 @@ func (db *pgDB) CreateLink(ctx context.Context, linkType umtypes.LinkType, lifeT
 		"creation_time": now.Format(time.ANSIC),
 	}).Infoln("Create new link")
 
-	ret := &Link{User: user}
+	ret := &models.Link{User: user}
 
-	ret = &Link{
+	ret = &models.Link{
 		Link:      strings.ToUpper(fmt.Sprintf("%x", (sha256.Sum256([]byte(user.ID + string(linkType) + lifeTime.String() + now.String()))))),
 		User:      user,
 		Type:      linkType,
@@ -54,7 +54,7 @@ func (db *pgDB) CreateLink(ctx context.Context, linkType umtypes.LinkType, lifeT
 	return ret, err
 }
 
-func (db *pgDB) GetLinkForUser(ctx context.Context, linkType umtypes.LinkType, user *User) (*Link, error) {
+func (db *pgDB) GetLinkForUser(ctx context.Context, linkType umtypes.LinkType, user *models.User) (*models.Link, error) {
 	db.log.Infoln("Get link", linkType, "for", user.Login)
 	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+linkQueryColumns+" FROM links "+
 		"WHERE user_id = $1 AND type = $2 AND is_active AND expired_at > NOW()", user.ID, linkType)
@@ -65,13 +65,13 @@ func (db *pgDB) GetLinkForUser(ctx context.Context, linkType umtypes.LinkType, u
 	if !rows.Next() {
 		return nil, rows.Err()
 	}
-	link := Link{User: user}
+	link := models.Link{User: user}
 	err = rows.Scan(&link.Link, &link.Type, &link.CreatedAt, &link.ExpiredAt, &link.IsActive, &link.SentAt)
 
 	return &link, err
 }
 
-func (db *pgDB) GetLinkFromString(ctx context.Context, strLink string) (*Link, error) {
+func (db *pgDB) GetLinkFromString(ctx context.Context, strLink string) (*models.Link, error) {
 	db.log.Infoln("Get link", strLink)
 	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+linkQueryColumnsWithUser+" FROM links "+
 		"JOIN users ON links.user_id = users.id "+
@@ -83,7 +83,7 @@ func (db *pgDB) GetLinkFromString(ctx context.Context, strLink string) (*Link, e
 		return nil, rows.Err()
 	}
 	defer rows.Close()
-	link := Link{User: &User{}}
+	link := models.Link{User: &models.User{}}
 	err = rows.Scan(&link.Link, &link.Type, &link.CreatedAt, &link.ExpiredAt, &link.IsActive, &link.SentAt,
 		&link.User.ID, &link.User.Login, &link.User.PasswordHash, &link.User.Salt, &link.User.Role,
 		&link.User.IsActive, &link.User.IsDeleted, &link.User.IsInBlacklist)
@@ -91,16 +91,16 @@ func (db *pgDB) GetLinkFromString(ctx context.Context, strLink string) (*Link, e
 	return &link, err
 }
 
-func (db *pgDB) UpdateLink(ctx context.Context, link *Link) error {
+func (db *pgDB) UpdateLink(ctx context.Context, link *models.Link) error {
 	db.log.Infof("Update link %#v", link)
 	_, err := db.eLog.ExecContext(ctx, "UPDATE links set type = $2, expired_at = $3, is_active = $4, sent_at = $5 "+
 		"WHERE link = $1", link.Link, link.Type, link.ExpiredAt, link.IsActive, link.SentAt)
 	return err
 }
 
-func (db *pgDB) GetUserLinks(ctx context.Context, user *User) ([]Link, error) {
+func (db *pgDB) GetUserLinks(ctx context.Context, user *models.User) ([]models.Link, error) {
 	db.log.Infoln("Get links for", user.Login)
-	var ret []Link
+	var ret []models.Link
 	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+linkQueryColumns+" FROM links "+
 		"WHERE user_id = $1 AND is_active AND expired_at > NOW()", user.ID)
 	if err != nil {
@@ -108,7 +108,7 @@ func (db *pgDB) GetUserLinks(ctx context.Context, user *User) ([]Link, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		link := Link{User: user}
+		link := models.Link{User: user}
 		err := rows.Scan(&link.Link, &link.Type, &link.CreatedAt, &link.ExpiredAt, &link.IsActive, &link.SentAt)
 		if err != nil {
 			return nil, err

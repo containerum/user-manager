@@ -14,6 +14,7 @@ import (
 
 const reCaptchaAPI = "https://www.google.com/recaptcha/api"
 
+// ReCaptchaClient is an interface to Google`s ReCaptcha service
 type ReCaptchaClient interface {
 	Check(ctx context.Context, remoteIP, clientResponse string) (r *ReCaptchaResponse, err error)
 }
@@ -24,6 +25,8 @@ type httpReCaptchaClient struct {
 	privateKey string
 }
 
+// ReCaptchaResponse describes response from ReCaptcha service.
+// It`s enough to check only "Success" field. Other fields is for logging purposes.
 type ReCaptchaResponse struct {
 	Success     bool      `json:"success"`
 	ChallengeTS time.Time `json:"challenge_ts"`
@@ -31,6 +34,7 @@ type ReCaptchaResponse struct {
 	ErrorCodes  []int     `json:"error-codes"`
 }
 
+// NewHTTPReCaptchaClient returns client for ReCaptcha service working via HTTP
 func NewHTTPReCaptchaClient(privateKey string) ReCaptchaClient {
 	log := logrus.WithField("component", "recaptcha")
 	client := resty.New().SetLogger(log.WriterLevel(logrus.DebugLevel)).SetHostURL(reCaptchaAPI).SetDebug(true)
@@ -58,6 +62,8 @@ type dummyReCaptchaClient struct {
 	log *logrus.Entry
 }
 
+// NewDummyReCaptchaClient returns a dummy client.
+// It returns success on any request and log actions. Useful for testing purposes.
 func NewDummyReCaptchaClient() ReCaptchaClient {
 	return &dummyReCaptchaClient{
 		log: logrus.WithField("component", "dummy_recaptcha_client"),

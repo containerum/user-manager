@@ -11,6 +11,7 @@ import (
 	"gopkg.in/resty.v1"
 )
 
+// WebAPIClient is an interface for web-api service from old architecture.
 type WebAPIClient interface {
 	Login(ctx context.Context, request *umtypes.WebAPILoginRequest) (ret map[string]interface{}, statusCode int, err error)
 }
@@ -20,10 +21,11 @@ type httpWebAPIClient struct {
 	client *resty.Client
 }
 
-func NewHTTPWebAPIClient(serverUrl string) WebAPIClient {
+// NewHTTPWebAPIClient returns client for web-api service working via restful api
+func NewHTTPWebAPIClient(serverURL string) WebAPIClient {
 	log := logrus.WithField("component", "web_api_client")
 	client := resty.New().
-		SetHostURL(serverUrl).
+		SetHostURL(serverURL).
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
 		SetDebug(true).
 		SetHeader("Content-Type", "application/json").

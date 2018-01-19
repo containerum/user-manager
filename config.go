@@ -28,6 +28,11 @@ func setupLogger() error {
 	return nil
 }
 
+const (
+	serviceClientHTTP  = "http"
+	serviceClientDummy = "dummy"
+)
+
 func getListenAddr() string {
 	viper.SetDefault("listen_addr", ":8111")
 	return viper.GetString("listen_addr")
@@ -44,9 +49,9 @@ func getDB() (models.DB, error) {
 }
 
 func getMailClient() (clients.MailClient, error) {
-	viper.SetDefault("mail", "http")
+	viper.SetDefault("mail", serviceClientHTTP)
 	switch viper.GetString("mail") {
-	case "http":
+	case serviceClientHTTP:
 		return clients.NewHTTPMailClient(viper.GetString("mail_url")), nil
 	default:
 		return nil, errors.New("invalid mail client")
@@ -54,11 +59,11 @@ func getMailClient() (clients.MailClient, error) {
 }
 
 func getReCaptchaClient() (clients.ReCaptchaClient, error) {
-	viper.SetDefault("recaptcha", "http")
+	viper.SetDefault("recaptcha", serviceClientHTTP)
 	switch viper.GetString("recaptcha") {
-	case "http":
+	case serviceClientHTTP:
 		return clients.NewHTTPReCaptchaClient(viper.GetString("recaptcha_key")), nil
-	case "dummy":
+	case "serviceClientDummy":
 		return clients.NewDummyReCaptchaClient(), nil
 	default:
 		return nil, errors.New("invalid reCaptcha client")
@@ -66,9 +71,9 @@ func getReCaptchaClient() (clients.ReCaptchaClient, error) {
 }
 
 func oauthClientsSetup() error {
-	viper.SetDefault("oauth_clients", "http")
+	viper.SetDefault("oauth_clients", serviceClientHTTP)
 	switch viper.GetString("oauth_clients") {
-	case "http":
+	case serviceClientHTTP:
 		clients.RegisterOAuthClient(clients.NewGithubOAuthClient(viper.GetString("github_app_id"), viper.GetString("github_secret")))
 		clients.RegisterOAuthClient(clients.NewGoogleOAuthClient(viper.GetString("google_app_id"), viper.GetString("google_secret")))
 		clients.RegisterOAuthClient(clients.NewFacebookOAuthClient(viper.GetString("facebook_app_id"), viper.GetString("facebook_secret")))
@@ -79,9 +84,9 @@ func oauthClientsSetup() error {
 }
 
 func getWebAPIClient() (clients.WebAPIClient, error) {
-	viper.SetDefault("web_api", "http")
+	viper.SetDefault("web_api", serviceClientHTTP)
 	switch viper.GetString("web_api") {
-	case "http":
+	case serviceClientHTTP:
 		return clients.NewHTTPWebAPIClient(viper.GetString("web_api_url")), nil
 	default:
 		return nil, errors.New("invalid web_api client")
@@ -109,9 +114,9 @@ func getUserManager(services server.Services) (server.UserManager, error) {
 }
 
 func getResourceServiceClient() (clients.ResourceServiceClient, error) {
-	viper.SetDefault("resource_service", "http")
+	viper.SetDefault("resource_service", serviceClientHTTP)
 	switch viper.GetString("resource_service") {
-	case "http":
+	case serviceClientHTTP:
 		return clients.NewHTTPResourceServiceClient(viper.GetString("resource_service_url")), nil
 	default:
 		return nil, errors.New("invalid resource service client")

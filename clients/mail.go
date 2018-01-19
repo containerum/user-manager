@@ -10,6 +10,7 @@ import (
 	"gopkg.in/resty.v1"
 )
 
+// MailClient is an interface to mail-templater service
 type MailClient interface {
 	SendConfirmationMail(ctx context.Context, recipient *mttypes.Recipient) error
 	SendActivationMail(ctx context.Context, recipient *mttypes.Recipient) error
@@ -24,6 +25,7 @@ type httpMailClient struct {
 	log  *logrus.Entry
 }
 
+// NewHTTPMailClient returns client for mail-templater service working via restful api
 func NewHTTPMailClient(serverURL string) MailClient {
 	log := logrus.WithField("component", "mail_client")
 	client := resty.New().

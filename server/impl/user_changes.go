@@ -6,8 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"math/rand"
-	"strconv"
+	"crypto/rand"
+
+	"math"
+	"math/big"
 
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
@@ -54,19 +56,18 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 	}
 
 	var link *models.Link
-	var tokens *auth.CreateTokenResponse
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-		if err := tx.CreateUser(ctx, newUser); err != nil {
+		if createErr := tx.CreateUser(ctx, newUser); createErr != nil {
 			return userCreateFailed
 		}
 
-		if err := tx.CreateProfile(ctx, &models.Profile{
+		if createErr := tx.CreateProfile(ctx, &models.Profile{
 			User:      newUser,
 			Referral:  request.Referral,
 			Access:    "rw",
 			CreatedAt: time.Now().UTC(),
-		}); err != nil {
+		}); createErr != nil {
 			return profileCreateFailed
 		}
 
@@ -74,9 +75,7 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 		if err != nil {
 			return linkCreateFailed
 		}
-
-		tokens, err = u.createTokens(ctx, user)
-		return err
+		return nil
 	})
 	if err := u.handleDBError(err); err != nil {
 		return nil, err
@@ -108,11 +107,11 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.ActivateR
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		link.User.IsActive = true
-		if err := tx.UpdateUser(ctx, link.User); err != nil {
+		if updErr := tx.UpdateUser(ctx, link.User); updErr != nil {
 			return userUpdateFailed
 		}
 		link.IsActive = false
-		if err := tx.UpdateLink(ctx, link); err != nil {
+		if updErr := tx.UpdateLink(ctx, link); updErr != nil {
 			return linkUpdateFailed
 		}
 
@@ -220,16 +219,16 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		user.IsDeleted = true
-		if err := tx.UpdateUser(ctx, user); err != nil {
+		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
 			return userUpdateFailed
 		}
 
 		// TODO: send request to billing manager
 
-		_, err := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
+		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
 			UserId: &common.UUID{Value: user.ID},
 		})
-		if err != nil {
+		if authErr != nil {
 			return tokenDeleteFailed
 		}
 		return nil
@@ -267,7 +266,11 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-		user.Login = user.Login + strconv.Itoa(rand.Int())
+		add, rngErr := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+		if rngErr != nil {
+			return rngErr
+		}
+		user.Login = user.Login + add.String()
 		// TODO: send request to billing manager
 		return tx.UpdateUser(ctx, user)
 	})

@@ -11,7 +11,9 @@ import (
 	"gopkg.in/resty.v1"
 )
 
+// ResourceServiceClient is an interface to resource-service.
 type ResourceServiceClient interface {
+	// GetUserAccess returns information about user access to resources (namespace, volumes) needed for token creation.
 	GetUserAccess(ctx context.Context, user *models.User) (*auth.ResourcesAccess, error)
 }
 
@@ -20,6 +22,7 @@ type httpResourceServiceClient struct {
 	log  *logrus.Entry
 }
 
+// NewHTTPResourceServiceClient returns client for resource-service working via restful api
 func NewHTTPResourceServiceClient(serverURL string) ResourceServiceClient {
 	log := logrus.WithField("component", "resource_service_client")
 	client := resty.New().

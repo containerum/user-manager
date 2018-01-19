@@ -17,7 +17,7 @@ const (
 	resourceNotSupported    = "resource %s not supported now"
 	activationNeeded        = "Activate your account please. Check your email"
 	invalidPassword         = "invalid password provided"
-	linkNotForPassword      = "link %s is not for password changing"
+	linkNotForPassword      = "link %s is not for password changing" // nolint: gas
 	linkNotForConfirm       = "link %s is not for activation"
 	userBanned              = "user banned"
 	tokenNotOwnedByUser     = "token %s not owned by user %s"
