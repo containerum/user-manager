@@ -92,7 +92,7 @@ migrations-test:
   script:
     - export POSTGRES_CONTAINER=${CI_PROJECT_NAME}-test-postgres
     - docker build --pull -f Dockerfile.migrationtests -t ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG} .
-    - 'docker run --rm 
+    - 'docker run --rm --link=postgres:postgres
       -e DB_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres:5432/$POSTGRES_DB?sslmode=disable"
       -e MIGRATIONS_DIR
       ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}'
