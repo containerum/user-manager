@@ -93,12 +93,8 @@ migrations-test:
   script:
     - env | grep -i postgres
     - env | grep POSTGRES_PORT_5432_TCP_ADDR
-    - export POSTGRES_CONTAINER=${CI_PROJECT_NAME}-test-postgres
-    - export POSTGRES_NET=${CI_PROJECT_NAME}-postgres-net
-    - docker network create $POSTGRES_NET
     - docker build --pull -f Dockerfile.migrationtests -t ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG} .
     - 'docker run --rm 
-      -e DB_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_CONTAINER:5432/$POSTGRES_DB?sslmode=disable"
+      -e DB_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_CONTAINER:5432/$POSTGRES_PORT_5432_TCP_ADDRsslmode=disable"
       -e MIGRATIONS_DIR
       ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}'
-    - docker rmi -f ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}
