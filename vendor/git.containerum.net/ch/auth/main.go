@@ -3,14 +3,17 @@ package main
 import (
 	"fmt"
 
+	"os"
+
+	"os/signal"
+
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"os"
 )
 
 func logExit(err error) {
 	if err != nil {
-		logrus.Error(err)
+		logrus.WithError(err).Fatalf("Setup error")
 		os.Exit(1)
 	}
 }
@@ -21,12 +24,12 @@ func main() {
 
 	if err := logLevelSetup(); err != nil {
 		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
 
 	if err := logModeSetup(); err != nil {
 		fmt.Println(err)
-		return
+		os.Exit(1)
 	}
 
 	viper.SetDefault("http_listenaddr", ":8080")
@@ -40,8 +43,15 @@ func main() {
 	storage, err := getStorage()
 	logExit(err)
 
-	RunServers(
+	servers := []Server{
 		NewHTTPServer(viper.GetString("http_listenaddr"), httpTracer, storage),
 		NewGRPCServer(viper.GetString("grpc_listenaddr"), grpcTracer, storage),
-	)
+	}
+
+	RunServers(servers...)
+
+	quit := make(chan os.Signal)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	StopServers(servers...)
 }

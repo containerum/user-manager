@@ -21,13 +21,6 @@ type Link struct {
 	SentAt    time.Time `json:"sent_at,omitempty"`
 }
 
-type UserRole int
-
-const (
-	RoleUser UserRole = iota
-	RoleAdmin
-)
-
 type BasicLoginRequest struct {
 	Username  string `json:"username" binding:"required,email"`
 	Password  string `json:"password" binding:"required"`
@@ -79,7 +72,7 @@ type ResendLinkRequest struct {
 }
 
 type UserInfoByIDGetResponse struct {
-	Login string      `json:"login"`
+	Login string                 `json:"login"`
 	Data  map[string]interface{} `json:"data"`
 }
 
@@ -97,26 +90,26 @@ type LinksGetResponse struct {
 }
 
 type UserInfoGetResponse struct {
-	Login     string      `json:"login"`
+	Login     string                 `json:"login"`
 	Data      map[string]interface{} `json:"data"`
-	ID        string      `json:"id"`
-	IsActive  bool        `json:"is_active"`
-	CreatedAt time.Time   `json:"created_at"`
+	ID        string                 `json:"id"`
+	IsActive  bool                   `json:"is_active"`
+	CreatedAt time.Time              `json:"created_at"`
 }
 
 type UserListEntry struct {
-	ID            string      `json:"id"`
-	Login         string      `json:"login"`
-	Referral      string      `json:"referral"`
-	Role          UserRole    `json:"role"`
-	Access        string      `json:"access"`
-	CreatedAt     time.Time   `json:"created_at"`
-	DeletedAt     time.Time   `json:"deleted_at"`
-	BlacklistedAt time.Time   `json:"blacklisted_at"`
+	ID            string                 `json:"id"`
+	Login         string                 `json:"login"`
+	Referral      string                 `json:"referral"`
+	Role          string                 `json:"role"`
+	Access        string                 `json:"access"`
+	CreatedAt     time.Time              `json:"created_at"`
+	DeletedAt     time.Time              `json:"deleted_at"`
+	BlacklistedAt time.Time              `json:"blacklisted_at"`
 	Data          map[string]interface{} `json:"data"`
-	IsActive      bool        `json:"is_active"`
-	IsInBlacklist bool        `json:"is_in_blacklist"`
-	IsDeleted     bool        `json:"is_deleted"`
+	IsActive      bool                   `json:"is_active"`
+	IsInBlacklist bool                   `json:"is_in_blacklist"`
+	IsDeleted     bool                   `json:"is_deleted"`
 }
 
 type UserListGetResponse struct {

@@ -15,13 +15,14 @@ import (
 const (
 	HeaderUserAgent   = "X-User-Agent"
 	HeaderFingerprint = "X-User-Fingerprint"
-	HeaderUserId      = "X-User-ID"
-	HeaderUserIp      = "X-User-IP"
+	HeaderUserID      = "X-User-ID"
+	HeaderUserIP      = "X-User-IP"
 	HeaderUserRole    = "X-User-Role"
-	HeaderPartTokenId = "X-User-Part-Token"
-	HeaderTokenId     = "X-User-Token-ID"
+	HeaderPartTokenID = "X-User-Part-Token" // nolint: gas
+	HeaderTokenID     = "X-User-Token-ID"
 )
 
+// SetupRoutes sets up router and services needed for server operation
 func SetupRoutes(router *vestigo.Router, tracer opentracing.Tracer, storage auth.AuthServer) {
 	// Create token
 	router.Post("/token", createTokenHandler,
@@ -49,7 +50,7 @@ func SetupRoutes(router *vestigo.Router, tracer opentracing.Tracer, storage auth
 		newHeaderValidationMiddleware(standardHeaderValidators))
 
 	// Delete token by ID
-	router.Delete("/token/:token_id", deleteTokenByIdHandler,
+	router.Delete("/token/:token_id", deleteTokenByIDHandler,
 		newOpenTracingMiddleware(tracer, "Delete token by ID"),
 		newStorageInjectionMiddleware(storage),
 		newParameterValidationMiddleware(validators{"token_id": uuidValidator}),
@@ -62,7 +63,7 @@ func SetupRoutes(router *vestigo.Router, tracer opentracing.Tracer, storage auth
 		newOpenTracingMiddleware(tracer, "Delete user tokens"))
 }
 
-const authServerContextKey = "authServer"
+var authServerContextKey = struct{}{}
 
 func authServerFromRequestContext(r *http.Request) auth.AuthServer {
 	return r.Context().Value(authServerContextKey).(auth.AuthServer)
@@ -72,10 +73,10 @@ func createTokenHandler(w http.ResponseWriter, r *http.Request) {
 	req := &auth.CreateTokenRequest{
 		UserAgent:   r.Header.Get(HeaderUserAgent),
 		Fingerprint: r.Header.Get(HeaderFingerprint),
-		UserId:      utils.UUIDFromString(r.Header.Get(HeaderUserId)),
-		UserIp:      r.Header.Get(HeaderUserIp),
-		UserRole:    auth.Role(auth.Role_value[r.Header.Get(HeaderUserRole)]),
-		PartTokenId: utils.UUIDFromString(r.Header.Get(HeaderPartTokenId)),
+		UserId:      utils.UUIDFromString(r.Header.Get(HeaderUserID)),
+		UserIp:      r.Header.Get(HeaderUserIP),
+		UserRole:    r.Header.Get(HeaderUserRole),
+		PartTokenId: utils.UUIDFromString(r.Header.Get(HeaderPartTokenID)),
 	}
 	body, _ := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
@@ -87,9 +88,9 @@ func createTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, err = json.Marshal(resp)
+	body, _ = json.Marshal(resp)
 
-	_, err = w.Write(body)
+	w.Write(body)
 }
 
 func checkTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -97,7 +98,7 @@ func checkTokenHandler(w http.ResponseWriter, r *http.Request) {
 		AccessToken: vestigo.Param(r, "access_token"),
 		UserAgent:   r.Header.Get(HeaderUserAgent),
 		FingerPrint: r.Header.Get(HeaderFingerprint),
-		UserIp:      r.Header.Get(HeaderUserIp),
+		UserIp:      r.Header.Get(HeaderUserIP),
 	}
 
 	defer r.Body.Close()
@@ -114,14 +115,14 @@ func checkTokenHandler(w http.ResponseWriter, r *http.Request) {
 		Access: resp.Access,
 	}
 
-	w.Header().Add(HeaderUserId, resp.UserId.Value)
-	w.Header().Add(HeaderUserRole, resp.UserRole.String())
-	w.Header().Add(HeaderTokenId, resp.TokenId.Value)
-	w.Header().Add(HeaderPartTokenId, resp.PartTokenId.Value)
+	w.Header().Add(HeaderUserID, resp.UserId.Value)
+	w.Header().Add(HeaderUserRole, resp.UserRole)
+	w.Header().Add(HeaderTokenID, resp.TokenId.Value)
+	w.Header().Add(HeaderPartTokenID, resp.PartTokenId.Value)
 
-	body, err := json.Marshal(checkTokenResponseBody)
+	body, _ := json.Marshal(checkTokenResponseBody)
 
-	_, err = w.Write(body)
+	w.Write(body)
 }
 
 func extendTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -138,14 +139,14 @@ func extendTokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, err := json.Marshal(resp)
+	body, _ := json.Marshal(resp)
 
-	_, err = w.Write(body)
+	w.Write(body)
 }
 
 func getUserTokensHandler(w http.ResponseWriter, r *http.Request) {
 	req := &auth.GetUserTokensRequest{
-		UserId: utils.UUIDFromString(r.Header.Get(HeaderUserId)),
+		UserId: utils.UUIDFromString(r.Header.Get(HeaderUserID)),
 	}
 
 	defer r.Body.Close()
@@ -156,15 +157,15 @@ func getUserTokensHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, err := json.Marshal(resp)
+	body, _ := json.Marshal(resp)
 
-	_, err = w.Write(body)
+	w.Write(body)
 }
 
-func deleteTokenByIdHandler(w http.ResponseWriter, r *http.Request) {
+func deleteTokenByIDHandler(w http.ResponseWriter, r *http.Request) {
 	req := &auth.DeleteTokenRequest{
 		TokenId: utils.UUIDFromString(vestigo.Param(r, "token_id")),
-		UserId:  utils.UUIDFromString(r.Header.Get(HeaderUserId)),
+		UserId:  utils.UUIDFromString(r.Header.Get(HeaderUserID)),
 	}
 
 	defer r.Body.Close()

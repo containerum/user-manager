@@ -73,8 +73,6 @@ spec:
           value: '${CH_AUTH_ZIPKIN_COLLECTOR}'
         - name: CH_AUTH_LOG_LEVEL
           value: '${CH_AUTH_LOG_LEVEL}'
-      nodeSelector:
-        role: master
       imagePullSecrets:
       - name: regsecret
       volumes:

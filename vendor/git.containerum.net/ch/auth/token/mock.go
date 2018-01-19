@@ -9,43 +9,42 @@ import (
 	"git.containerum.net/ch/grpc-proto-files/common"
 )
 
-var _ IssuerValidator = &MockIssuerValidator{}
-
 type mockTokenRecord struct {
 	IssuedAt time.Time
 }
 
-type MockIssuerValidator struct {
+type mockIssuerValidator struct {
 	returnedLifeTime time.Duration
 	issuedTokens     map[string]mockTokenRecord
 }
 
-func NewMockIssuerValidator(returnedLifeTime time.Duration) *MockIssuerValidator {
-	return &MockIssuerValidator{
+// NewMockIssuerValidator sets up a mock object used for testing purposes
+func NewMockIssuerValidator(returnedLifeTime time.Duration) IssuerValidator {
+	return &mockIssuerValidator{
 		returnedLifeTime: returnedLifeTime,
 		issuedTokens:     make(map[string]mockTokenRecord),
 	}
 }
 
-func (m *MockIssuerValidator) IssueTokens(extensionFields ExtensionFields) (accessToken, refreshToken *IssuedToken, err error) {
-	tokenId := utils.NewUUID()
+func (m *mockIssuerValidator) IssueTokens(extensionFields ExtensionFields) (accessToken, refreshToken *IssuedToken, err error) {
+	tokenID := utils.NewUUID()
 	accessToken = &IssuedToken{
-		Value:    "a" + tokenId.Value,
+		Value:    "a" + tokenID.Value,
 		LifeTime: m.returnedLifeTime,
-		Id:       tokenId,
+		ID:       tokenID,
 	}
-	m.issuedTokens[tokenId.Value] = mockTokenRecord{
+	m.issuedTokens[tokenID.Value] = mockTokenRecord{
 		IssuedAt: time.Now(),
 	}
 	refreshToken = &IssuedToken{
-		Value:    "r" + tokenId.Value,
+		Value:    "r" + tokenID.Value,
 		LifeTime: m.returnedLifeTime,
-		Id:       tokenId,
+		ID:       tokenID,
 	}
 	return
 }
 
-func (m *MockIssuerValidator) ValidateToken(token string) (result *ValidationResult, err error) {
+func (m *mockIssuerValidator) ValidateToken(token string) (result *ValidationResult, err error) {
 	rec, present := m.issuedTokens[token[1:]]
 	var kind Kind
 	switch token[0] {
@@ -59,6 +58,6 @@ func (m *MockIssuerValidator) ValidateToken(token string) (result *ValidationRes
 	return &ValidationResult{
 		Valid: present && time.Now().Before(rec.IssuedAt.Add(m.returnedLifeTime)),
 		Kind:  kind,
-		Id:    &common.UUID{Value: token[1:]},
+		ID:    &common.UUID{Value: token[1:]},
 	}, nil
 }

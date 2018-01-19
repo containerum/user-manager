@@ -28,21 +28,21 @@ var testCreateTokenRequest = &auth.CreateTokenRequest{
 	Fingerprint: "myfingerprint",
 	UserId:      utils.NewUUID(),
 	UserIp:      "127.0.0.1",
-	UserRole:    auth.Role_USER,
+	UserRole:    "user",
 	RwAccess:    true,
 	Access: &auth.ResourcesAccess{
 		Namespace: []*auth.AccessObject{
 			{
 				Label:  "ns1",
 				Id:     "ns1",
-				Access: auth.AccessLevel_OWNER,
+				Access: "owner",
 			},
 		},
 		Volume: []*auth.AccessObject{
 			{
 				Label:  "vol1",
 				Id:     "vol1",
-				Access: auth.AccessLevel_OWNER,
+				Access: "owner",
 			},
 		},
 	},
@@ -92,12 +92,13 @@ func TestBuntDBNormal(t *testing.T) {
 		})
 
 		Convey("Check token extension", func() {
-			issuedTokens, err := storage.CreateToken(context.Background(), testCreateTokenRequest)
-			ter, err := storage.ExtendToken(context.Background(), &auth.ExtendTokenRequest{
+			issuedTokens, createErr := storage.CreateToken(context.Background(), testCreateTokenRequest)
+			So(createErr, ShouldBeNil)
+			ter, storageErr := storage.ExtendToken(context.Background(), &auth.ExtendTokenRequest{
 				RefreshToken: issuedTokens.RefreshToken,
 				Fingerprint:  testCreateTokenRequest.Fingerprint,
 			})
-			So(err, ShouldBeNil)
+			So(storageErr, ShouldBeNil)
 			So(ter.AccessToken, ShouldNotEqual, issuedTokens.AccessToken)
 			So(ter.RefreshToken, ShouldNotEqual, issuedTokens.RefreshToken)
 
@@ -140,47 +141,49 @@ func TestBuntDBNormal(t *testing.T) {
 		})
 
 		Convey("Delete token by id", func() {
-			issuedTokens, err := storage.CreateToken(context.Background(), testCreateTokenRequest)
-			tvr, err := storage.CheckToken(context.Background(), &auth.CheckTokenRequest{
+			issuedTokens, createErr := storage.CreateToken(context.Background(), testCreateTokenRequest)
+			So(createErr, ShouldBeNil)
+			tvr, checkErr := storage.CheckToken(context.Background(), &auth.CheckTokenRequest{
 				AccessToken: issuedTokens.AccessToken,
 				UserAgent:   testCreateTokenRequest.UserAgent,
 				FingerPrint: testCreateTokenRequest.Fingerprint,
 				UserIp:      testCreateTokenRequest.UserIp,
 			})
-			So(err, ShouldBeNil)
+			So(checkErr, ShouldBeNil)
 
-			_, err = storage.DeleteToken(context.Background(), &auth.DeleteTokenRequest{
+			_, deleteErr := storage.DeleteToken(context.Background(), &auth.DeleteTokenRequest{
 				TokenId: tvr.TokenId,
 				UserId:  tvr.UserId,
 			})
-			So(err, ShouldBeNil)
+			So(deleteErr, ShouldBeNil)
 
-			gtr, err := storage.GetUserTokens(context.Background(), &auth.GetUserTokensRequest{
+			gtr, getErr := storage.GetUserTokens(context.Background(), &auth.GetUserTokensRequest{
 				UserId: tvr.UserId,
 			})
-			So(err, ShouldBeNil)
+			So(getErr, ShouldBeNil)
 			So(gtr.Tokens, ShouldHaveLength, 0)
 		})
 
 		Convey("Delete token by user id", func() {
-			issuedTokens, err := storage.CreateToken(context.Background(), testCreateTokenRequest)
-			tvr, err := storage.CheckToken(context.Background(), &auth.CheckTokenRequest{
+			issuedTokens, createErr := storage.CreateToken(context.Background(), testCreateTokenRequest)
+			So(createErr, ShouldBeNil)
+			tvr, checkErr := storage.CheckToken(context.Background(), &auth.CheckTokenRequest{
 				AccessToken: issuedTokens.AccessToken,
 				UserAgent:   testCreateTokenRequest.UserAgent,
 				FingerPrint: testCreateTokenRequest.Fingerprint,
 				UserIp:      testCreateTokenRequest.UserIp,
 			})
-			So(err, ShouldBeNil)
+			So(checkErr, ShouldBeNil)
 
-			_, err = storage.DeleteUserTokens(context.Background(), &auth.DeleteUserTokensRequest{
+			_, deleteErr := storage.DeleteUserTokens(context.Background(), &auth.DeleteUserTokensRequest{
 				UserId: tvr.UserId,
 			})
-			So(err, ShouldBeNil)
+			So(deleteErr, ShouldBeNil)
 
-			gtr, err := storage.GetUserTokens(context.Background(), &auth.GetUserTokensRequest{
+			gtr, getErr := storage.GetUserTokens(context.Background(), &auth.GetUserTokensRequest{
 				UserId: tvr.UserId,
 			})
-			So(err, ShouldBeNil)
+			So(getErr, ShouldBeNil)
 			So(gtr.Tokens, ShouldHaveLength, 0)
 		})
 	})

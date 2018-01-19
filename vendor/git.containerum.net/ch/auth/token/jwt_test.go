@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
 	"github.com/dgrijalva/jwt-go"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -31,7 +30,7 @@ var testValidatorConfig = JWTIssuerValidatorConfig{
 
 var testExtensionFields = ExtensionFields{
 	UserIDHash: "something",
-	Role:       auth.Role_USER.String(),
+	Role:       "user",
 }
 
 func TestJWTFlow(t *testing.T) {
@@ -40,19 +39,19 @@ func TestJWTFlow(t *testing.T) {
 		accessToken, refreshToken, err := jwtiv.IssueTokens(ExtensionFields{})
 		So(err, ShouldBeNil)
 		So(accessToken.LifeTime, ShouldEqual, testValidatorConfig.AccessTokenLifeTime)
-		So(accessToken.Id, ShouldResemble, refreshToken.Id)
+		So(accessToken.ID, ShouldResemble, refreshToken.ID)
 
 		result, err := jwtiv.ValidateToken(accessToken.Value)
 		So(err, ShouldBeNil)
 		So(result.Valid, ShouldBeTrue)
 		So(result.Kind, ShouldEqual, KindAccess)
-		So(accessToken.Id, ShouldResemble, result.Id)
+		So(accessToken.ID, ShouldResemble, result.ID)
 
 		result, err = jwtiv.ValidateToken(refreshToken.Value)
 		So(err, ShouldBeNil)
 		So(result.Valid, ShouldBeTrue)
 		So(result.Kind, ShouldEqual, KindRefresh)
-		So(accessToken.Id, ShouldResemble, result.Id)
+		So(accessToken.ID, ShouldResemble, result.ID)
 	})
 }
 

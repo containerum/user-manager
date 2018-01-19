@@ -21,17 +21,15 @@ import (
 func appendError(errs []string, err error) []string {
 	if err != nil {
 		return append(errs, err.Error())
-	} else {
-		return errs
 	}
+	return errs
 }
 
 func setError(errs []string) error {
 	if len(errs) == 0 {
 		return nil
-	} else {
-		return errors.New(strings.Join(errs, "\n"))
 	}
+	return errors.New(strings.Join(errs, ";"))
 }
 
 func getJWTConfig() (cfg token.JWTIssuerValidatorConfig, err error) {
@@ -84,8 +82,7 @@ func getJWTConfig() (cfg token.JWTIssuerValidatorConfig, err error) {
 		cfg.ValidationKey = validationKeyBuf
 	}
 
-	err = setError(errs)
-	return
+	return cfg, setError(errs)
 }
 
 func getTokenIssuerValidator() (iv token.IssuerValidator, err error) {
@@ -176,9 +173,9 @@ func getTracer(hostPort, service string) (tracer opentracing.Tracer, err error) 
 	viper.SetDefault("tracer", "zipkin")
 	switch viper.GetString("tracer") {
 	case "zipkin":
-		collector, err := getZipkinCollector()
-		if err != nil {
-			return nil, err
+		collector, collErr := getZipkinCollector()
+		if collErr != nil {
+			return nil, collErr
 		}
 		tracer, err = zipkintracer.NewTracer(zipkintracer.NewRecorder(collector,
 			viper.GetBool("zipkin_recorder_debug"), hostPort, service))

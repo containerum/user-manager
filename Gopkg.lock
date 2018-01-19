@@ -8,22 +8,22 @@
   version = "v0.17.0"
 
 [[projects]]
-  branch = "master"
+  branch = "develop"
   name = "git.containerum.net/ch/auth"
   packages = ["storages","token","utils"]
-  revision = "4fdcae25aca964edf777064743f17b07f89f459a"
+  revision = "cadc1a73775c7dd2d4400bdb29ac681f96ff8773"
 
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/grpc-proto-files"
   packages = ["auth","common"]
-  revision = "a37cf53c18640c19d94263e11ddd4735fa79c9fe"
+  revision = "6a2a13ef872ed316b4a60dcc180395ea86b2c811"
 
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = ["errors","mail-templater","user-manager"]
-  revision = "80546be536cac054822bc2bf0e56dab5925c2f5d"
+  revision = "215a312131a350775e3e52b5a21e5959efacd75b"
 
 [[projects]]
   branch = "master"
