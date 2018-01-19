@@ -2,11 +2,12 @@ package postgres
 
 import (
 	"crypto/sha256"
-	"encoding/hex"
 	"strings"
 	"time"
 
 	"context"
+
+	"fmt"
 
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	. "git.containerum.net/ch/user-manager/models"
@@ -19,20 +20,37 @@ const linkQueryColumns = "link, type, created_at, expired_at, is_active, sent_at
 
 func (db *pgDB) CreateLink(ctx context.Context, linkType umtypes.LinkType, lifeTime time.Duration, user *User) (*Link, error) {
 	now := time.Now().UTC()
-	ret := &Link{
-		Link:      strings.ToUpper(hex.EncodeToString(sha256.New().Sum([]byte(user.ID + string(linkType) + lifeTime.String())))),
+
+	db.log.WithFields(logrus.Fields{
+		"user":          user.Login,
+		"creation_time": now.Format(time.ANSIC),
+	}).Infoln("Create new link")
+
+	ret := &Link{User: user}
+
+	ret = &Link{
+		Link:      strings.ToUpper(fmt.Sprintf("%x", (sha256.Sum256([]byte(user.ID + string(linkType) + lifeTime.String() + now.String()))))),
 		User:      user,
 		Type:      linkType,
 		CreatedAt: now,
 		ExpiredAt: now.Add(lifeTime),
 		IsActive:  true,
 	}
-	db.log.WithFields(logrus.Fields{
-		"user":          user.Login,
-		"creation_time": now.Format(time.ANSIC),
-	}).Infoln("Create activation link")
-	_, err := db.eLog.ExecContext(ctx, "INSERT INTO links (link, type, created_at, expired_at, is_active, user_id) VALUES "+
-		"($1, $2, $3, $4, $5, $6)", ret.Link, ret.Type, ret.CreatedAt, ret.ExpiredAt, ret.IsActive, ret.User.ID)
+	rows, err := db.qLog.QueryxContext(ctx, "INSERT INTO links (link, type, created_at, expired_at, is_active, user_id) VALUES "+
+		"($1, $2, $3, $4, $5, $6) ON CONFLICT (type, user_id) DO UPDATE SET link = $1, is_active = true, created_at = $3, expired_at = $4 RETURNING "+linkQueryColumns, ret.Link, ret.Type, ret.CreatedAt, ret.ExpiredAt, ret.IsActive, ret.User.ID)
+	defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	if !rows.Next() {
+		return nil, rows.Err()
+	}
+
+	if err = rows.Scan(&ret.Link, &ret.Type, &ret.CreatedAt, &ret.ExpiredAt, &ret.IsActive, &ret.SentAt); err != nil {
+		return nil, err
+	}
+
 	return ret, err
 }
 
