@@ -84,13 +84,21 @@ migrations-test:
     POSTGRES_PASSWORD: migtest
     POSTGRES_DB: migtest
     MIGRATIONS_DIR: ./migrations
+    DOCKER_HOST: tcp://docker:2375
   services:
+    - docker:dind
     - postgres:latest
-  image: debian:stable-slim
+  image: docker:latest
   stage: test
   script:
-    - apt-get install wget -y
-    - wget https://github.com/mattes/migrate/releases/download/v3.0.1/migrate.linux-amd64.tar.gz -O /tmp/migrate.tar.gz
-    - tar -xzf /tmp/migrate.tar.gz -C /bin
-    - echo "Running up migrations..." && migrate.linux-amd64 -verbose -path=./$MIGRATIONS_DIR -database=$DB_URL up
-    - echo "Running down migrations..." && migrate.linux-amd64 -verbose -path=./$MIGRATIONS_DIR -database=$DB_URL down
+    - env | grep -i postgres
+    - env | grep POSTGRES_PORT_5432_TCP_ADDR
+    - export POSTGRES_CONTAINER=${CI_PROJECT_NAME}-test-postgres
+    - export POSTGRES_NET=${CI_PROJECT_NAME}-postgres-net
+    - docker network create $POSTGRES_NET
+    - docker build --pull -f Dockerfile.migrationtests -t ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG} .
+    - 'docker run --rm 
+      -e DB_URL="postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_CONTAINER:5432/$POSTGRES_DB?sslmode=disable"
+      -e MIGRATIONS_DIR
+      ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}'
+    - docker rmi -f ${CI_REGISTRY_IMAGE}-psql-migrations-test:${TAG}
