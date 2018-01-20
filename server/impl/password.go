@@ -43,7 +43,7 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 			UserId: &common.UUID{Value: user.ID},
 		})
 		if authErr != nil {
-			return tokenDeleteFailed
+			return authErr
 		}
 
 		tokens, authErr = u.createTokens(ctx, user)
@@ -127,7 +127,7 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 			UserId: &common.UUID{Value: link.User.ID},
 		})
 		if authErr != nil {
-			return oneTimeTokenDeleteFailed
+			return authErr
 		}
 
 		if updErr := tx.UpdateLink(ctx, link); updErr != nil {

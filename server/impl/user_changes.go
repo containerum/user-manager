@@ -228,10 +228,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
 			UserId: &common.UUID{Value: user.ID},
 		})
-		if authErr != nil {
-			return tokenDeleteFailed
-		}
-		return nil
+		return authErr
 	})
 	if err := u.handleDBError(err); err != nil {
 		return err

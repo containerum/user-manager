@@ -5,7 +5,6 @@ import (
 
 	"time"
 
-	"git.containerum.net/ch/auth/storages"
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
 	"git.containerum.net/ch/json-types/errors"
@@ -160,14 +159,8 @@ func (u *serverImpl) Logout(ctx context.Context) error {
 		UserId:  &common.UUID{Value: userID},
 		TokenId: &common.UUID{Value: tokenID},
 	})
-	switch {
-	case err == nil:
-	case err.Error() == storages.ErrInvalidToken.Error():
-		return &server.BadRequestError{Err: errors.New(err.Error())}
-	case err.Error() == storages.ErrTokenNotOwnedBySender.Error():
-		return &server.AccessDeniedError{Err: errors.New(err.Error())}
-	default:
-		return oneTimeTokenDeleteFailed
+	if err != nil {
+		return err
 	}
 
 	oneTimeToken, err := u.svc.DB.GetTokenBySessionID(ctx, sessionID)
