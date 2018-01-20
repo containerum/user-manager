@@ -5,6 +5,7 @@ import (
 
 	"git.containerum.net/ch/json-types/errors"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	"git.containerum.net/ch/utils"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
@@ -47,6 +48,7 @@ func (mc *httpMailClient) sendOneTemplate(ctx context.Context, tmplName string, 
 	req.Message.Recipients = append(req.Message.Recipients, *recipient)
 	resp, err := mc.rest.R().
 		SetContext(ctx).
+		SetHeaders(utils.RequestHeadersMap(ctx)). // forward request headers to other our service
 		SetBody(req).
 		SetResult(mttypes.SendResponse{}).
 		Post("/templates/" + tmplName)

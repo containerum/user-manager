@@ -5,10 +5,12 @@ import (
 
 	"context"
 
+	"git.containerum.net/ch/grpc-proto-files/utils"
 	"git.containerum.net/ch/json-types/errors"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/server"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/status"
 )
 
 var hdrToKey = map[string]interface{}{
@@ -60,6 +62,12 @@ func errorWithHTTPStatus(err error) (int, *errors.Error) {
 	case *server.WebAPIError:
 		return err.(*server.WebAPIError).StatusCode, err.(*server.WebAPIError).Err
 	default:
+		if grpcStatus, ok := status.FromError(err); ok {
+			if httpStatus, hasStatus := grpcutils.GRPCToHTTPCode[grpcStatus.Code()]; hasStatus {
+				return httpStatus, errors.New(grpcStatus.Message())
+			}
+			return http.StatusInternalServerError, errors.New(grpcStatus.Err().Error())
+		}
 		return http.StatusInternalServerError, errors.New(err.Error())
 	}
 }

@@ -8,16 +8,10 @@
   version = "v0.17.0"
 
 [[projects]]
-  branch = "develop"
-  name = "git.containerum.net/ch/auth"
-  packages = ["storages","token","utils"]
-  revision = "cadc1a73775c7dd2d4400bdb29ac681f96ff8773"
-
-[[projects]]
   branch = "master"
   name = "git.containerum.net/ch/grpc-proto-files"
-  packages = ["auth","common"]
-  revision = "6a2a13ef872ed316b4a60dcc180395ea86b2c811"
+  packages = ["auth","common","utils"]
+  revision = "e1b1aaa600426e40dc1fc470c9f887f7f16fddef"
 
 [[projects]]
   branch = "master"
@@ -29,13 +23,7 @@
   branch = "master"
   name = "git.containerum.net/ch/utils"
   packages = ["."]
-  revision = "097a44de8a3f02eb1ae1a5577e67ceb5dbe99e6c"
-
-[[projects]]
-  name = "github.com/dgrijalva/jwt-go"
-  packages = ["."]
-  revision = "dbeaa9332f19a944acb5736b4456cfcc02140e29"
-  version = "v3.1.0"
+  revision = "b8c4a2e899fa6e966b20af39c3af0fbe499aeb17"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -140,12 +128,6 @@
   revision = "06020f85339e21b2478f756a78e295255ffa4d6a"
 
 [[projects]]
-  name = "github.com/mssola/user_agent"
-  packages = ["."]
-  revision = "85b2f5798558a46fc23443c596e781712f4b7792"
-  version = "v0.4.1"
-
-[[projects]]
   name = "github.com/pelletier/go-toml"
   packages = ["."]
   revision = "16398bac157da96aa88f98a2df640c7f32af1da2"
@@ -186,42 +168,6 @@
   packages = ["."]
   revision = "25b30aa063fc18e48662b86996252eabdcf2f0c7"
   version = "v1.0.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/tidwall/btree"
-  packages = ["."]
-  revision = "9876f1454cf0993a53d74c27196993e345f50dd1"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/tidwall/buntdb"
-  packages = ["."]
-  revision = "b67b1b8c1658cb01502801c14e33c61e6c4cbb95"
-
-[[projects]]
-  name = "github.com/tidwall/gjson"
-  packages = ["."]
-  revision = "080cd2281672e2db949148e6f07cc2e9630fb480"
-  version = "v1.0.4"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/tidwall/grect"
-  packages = ["."]
-  revision = "ba9a043346eba55344e40d66a5e74cfda3a9d293"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/tidwall/match"
-  packages = ["."]
-  revision = "1731857f09b1f38450e2c12409748407822dc6be"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/tidwall/rtree"
-  packages = ["."]
-  revision = "d4a8a3d30d5729f85edfba1745241f3a621d0359"
 
 [[projects]]
   branch = "master"
@@ -304,6 +250,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "77677c3c2b9e5b1045627513dd19b60fee0851c5e939d083880d4a7fa56f84ba"
+  inputs-digest = "6e35eddc0bba90e279f515373f8158f9049ede0f6b80878505428ad9aa0d5e45"
   solver-name = "gps-cdcl"
   solver-version = 1

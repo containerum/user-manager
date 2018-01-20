@@ -15,6 +15,7 @@ import (
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/server"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc/status"
 )
 
 type serverImpl struct {
@@ -101,10 +102,6 @@ func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp 
 		Access:      access,
 		PartTokenId: nil,
 	})
-	if err != nil {
-		u.log.WithError(err).Error("token create failed")
-		err = tokenCreateFailed
-	}
 	return
 }
 
@@ -136,6 +133,9 @@ func (u *serverImpl) checkReCaptcha(ctx context.Context, clientResponse string) 
 }
 
 func (u *serverImpl) handleDBError(err error) error {
+	if _, ok := status.FromError(err); ok { // forward grpc errors up
+		return err
+	}
 	switch err.(type) {
 	case *errors.Error:
 		return err

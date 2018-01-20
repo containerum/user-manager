@@ -3,6 +3,7 @@ package routes
 import (
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/server"
+	"git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,6 +14,7 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 	srv = server
 
 	app.Use(prepareContext)
+	app.Use(utils.SaveHeaders)
 
 	requireIdentityHeaders := requireHeaders(umtypes.UserIDHeader, umtypes.UserRoleHeader, umtypes.SessionIDHeader)
 
