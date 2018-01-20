@@ -3,7 +3,7 @@ package routes
 import (
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/server"
-	"git.containerum.net/ch/user-manager/utils"
+	"git.containerum.net/ch/utils"
 	"github.com/gin-gonic/gin"
 )
 

@@ -25,6 +25,7 @@ func RequestHeadersMap(ctx context.Context) map[string]string {
 			ret[textproto.CanonicalMIMEHeaderKey(k)] = v[0] // this is how MIMEHeader.Get() works actually
 		}
 	}
+	return ret
 }
 
 // RequestHeaders extracts saved headers from context.

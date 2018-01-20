@@ -5,27 +5,27 @@
 
 - [uuid.proto](#uuid.proto)
     - [UUID](#.UUID)
-
-
-
-
+  
+  
+  
+  
 
 - [auth_types.proto](#auth_types.proto)
     - [AccessObject](#.AccessObject)
     - [ResourcesAccess](#.ResourcesAccess)
     - [StoredToken](#.StoredToken)
     - [StoredTokenForUser](#.StoredTokenForUser)
-
-
-
-
+  
+  
+  
+  
 
 - [empty.proto](#empty.proto)
     - [Empty](#google.protobuf.Empty)
-
-
-
-
+  
+  
+  
+  
 
 - [auth.proto](#auth.proto)
     - [CheckTokenRequest](#.CheckTokenRequest)
@@ -39,11 +39,11 @@
     - [GetUserTokensRequest](#.GetUserTokensRequest)
     - [GetUserTokensResponse](#.GetUserTokensResponse)
     - [UpdateAccessRequest](#.UpdateAccessRequest)
-
-
-
+  
+  
+  
     - [Auth](#.Auth)
-
+  
 
 - [Scalar Value Types](#scalar-value-types)
 
@@ -70,13 +70,13 @@ Represents UUID in standart format
 
 
 
+ 
 
+ 
 
+ 
 
-
-
-
-
+ 
 
 
 
@@ -162,13 +162,13 @@ Represents UUID in standart format
 
 
 
+ 
 
+ 
 
+ 
 
-
-
-
-
+ 
 
 
 
@@ -196,13 +196,13 @@ The JSON representation for `Empty` is empty JSON object `{}`.
 
 
 
+ 
 
+ 
 
+ 
 
-
-
-
-
+ 
 
 
 
@@ -395,11 +395,11 @@ The JSON representation for `Empty` is empty JSON object `{}`.
 
 
 
+ 
 
+ 
 
-
-
-
+ 
 
 
 <a name=".Auth"/>
@@ -417,7 +417,7 @@ The Auth API project is an OAuth authentication server that is used to authentic
 | DeleteToken | [DeleteTokenRequest](#DeleteTokenRequest) | [google.protobuf.Empty](#DeleteTokenRequest) |  |
 | DeleteUserTokens | [DeleteUserTokensRequest](#DeleteUserTokensRequest) | [google.protobuf.Empty](#DeleteUserTokensRequest) |  |
 
-
+ 
 
 
 
@@ -440,3 +440,4 @@ The Auth API project is an OAuth authentication server that is used to authentic
 | <a name="bool" /> bool |  | bool | boolean | boolean |
 | <a name="string" /> string | A string must always contain UTF-8 encoded or 7-bit ASCII text. | string | String | str/unicode |
 | <a name="bytes" /> bytes | May contain any arbitrary sequence of bytes. | string | ByteString | str |
+

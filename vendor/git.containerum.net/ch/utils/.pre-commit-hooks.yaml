@@ -1,0 +1,14 @@
+- id: goimports
+  name: 'goimports'
+  language: system
+  entry: goimports -w
+  files: '\.go$'
+  exclude: '^vendor.*$'
+  description: "Run goimports to format code and sort imports"
+
+- id: gometalinter
+  name: 'gometalinter'
+  language: system
+  pass_filenames: false
+  entry: gometalinter ./...
+  description: "Run gometalinter to check code style"

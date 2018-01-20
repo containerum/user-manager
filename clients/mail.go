@@ -5,7 +5,7 @@ import (
 
 	"git.containerum.net/ch/json-types/errors"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	"git.containerum.net/ch/user-manager/utils"
+	"git.containerum.net/ch/utils"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
