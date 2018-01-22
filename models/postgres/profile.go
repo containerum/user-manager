@@ -18,8 +18,8 @@ func (db *pgDB) CreateProfile(ctx context.Context, profile *models.Profile) erro
 	if err != nil {
 		return err
 	}
-	rows, err := db.qLog.QueryxContext(ctx, "INSERT INTO profiles (referral, access, user_id, data) VALUES "+
-		"($1, $2, $3, $4) RETURNING id, created_at", profile.Referral, profile.Access, profile.User.ID, profileData)
+	rows, err := db.qLog.QueryxContext(ctx, "INSERT INTO profiles (referral, access, user_id, data, created_at) VALUES "+
+		"($1, $2, $3, $4, $5) RETURNING id, created_at", profile.Referral, profile.Access, profile.User.ID, profileData, profile.CreatedAt)
 	if err != nil {
 		return err
 	}

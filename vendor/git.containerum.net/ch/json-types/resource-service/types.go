@@ -7,65 +7,57 @@ import (
 )
 
 type User struct {
-	ID        string      `json:"user_id,omitempty"`
-	Login     string      `json:"login,omitempty"`
-	Country   int         `json:"country,omitempty"`
-	Balance   dec.Decimal `json:"balance,omitempty"`
-	BillingID string      `json:"billing_id,omitempty"`
-	CreatedAt time.Time   `json:"created_at,omitempty"`
+	ID        string      `json:"user_id"`
+	Login     string      `json:"login"`
+	Country   int         `json:"country"`
+	Balance   dec.Decimal `json:"balance"`
+	BillingID string      `json:"billing_id"`
+	CreatedAt time.Time   `json:"created_at"`
 }
 
 type Tariff struct {
-	ID        string      `json:"id,omitempty"`
-	Label     string      `json:"label,omitempty"`
-	Type      string      `json:"type,omitempty"`
-	Price     dec.Decimal `json:"price,omitempty"`
-	IsActive  bool        `json:"is_active,omitempty"`
-	IsPublic  bool        `json:"is_public,omitempty"`
-	BillingID string      `json:"billing_id,omitempty"`
+	ID        string      `json:"id"`
+	Label     string      `json:"label"`
+	Type      string      `json:"type"`
+	Price     dec.Decimal `json:"price"`
+	IsActive  bool        `json:"is_active"`
+	IsPublic  bool        `json:"is_public"`
+	BillingID string      `json:"billing_id"`
 }
 
 type NamespaceTariff struct {
-	ID          string    `json:"id,omitempty"`
-	TariffID    string    `json:"tariff_id,omitempty"`
-	Description string    `json:"description,omitempty"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
+	ID          string    `json:"id"`
+	TariffID    string    `json:"tariff_id"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
 
-	CpuLimit         int         `json:"cpu_limit,omitempty"`
-	MemoryLimit      int         `json:"memory_limit,omitempty"`
-	Traffic          int         `json:"traffic,omitempty"`
-	TrafficPrice     dec.Decimal `json:"traffic_price,omitempty"`
-	ExternalServices int         `json:"external_services,omitempty"`
-	InternalServices int         `json:"internal_services,omitempty"`
+	CpuLimit         int         `json:"cpu_limit"`
+	MemoryLimit      int         `json:"memory_limit"`
+	Traffic          int         `json:"traffic"`
+	TrafficPrice     dec.Decimal `json:"traffic_price"`
+	ExternalServices int         `json:"external_services"`
+	InternalServices int         `json:"internal_services"`
 
 	VV *VolumeTariff `json:"VV,omitempty"`
 
-	IsActive bool        `json:"is_active,omitempty"`
-	IsPublic bool        `json:"is_public,omitempty"`
-	Price    dec.Decimal `json:"price,omitempty"`
+	IsActive bool        `json:"is_active"`
+	IsPublic bool        `json:"is_public"`
+	Price    dec.Decimal `json:"price"`
 }
 
 type VolumeTariff struct {
-	ID          string    `json:"id,omitempty"`
-	TariffID    string    `json:"tariff_id,omitempty"`
-	Description string    `json:"description,omitempty"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
+	ID          string    `json:"id"`
+	TariffID    string    `json:"tariff_id"`
+	Description string    `json:"description"`
+	CreatedAt   time.Time `json:"created_at"`
 
-	StorageLimit  int  `json:"storage_limit,omitempty"`
-	ReplicasLimit int  `json:"replicas_limit,omitempty"`
-	IsPersistent  bool `json:"is_persistent,omitempty"`
+	StorageLimit  int  `json:"storage_limit"`
+	ReplicasLimit int  `json:"replicas_limit"`
+	IsPersistent  bool `json:"is_persistent"`
 
-	IsActive bool        `json:"is_active,omitempty"`
-	IsPublic bool        `json:"is_public,omitempty"`
-	Price    dec.Decimal `json:"price,omitempty"`
-}
-
-type Resource struct {
-	ResourceID string `json:"resource_id,omitempty"`
-	UserID     string `json:"user_id,omitempty"`
-	TariffID   string `json:"tariff_id,omitempty"`
-	BillingID  string `json:"billing_id,omitempty"`
-	Status     string `json:"status,omitempty"`
+	IsActive bool        `json:"is_active"`
+	IsPublic bool        `json:"is_public"`
+	Price    dec.Decimal `json:"price"`
 }
 
 type AccessLevel string // constants AOwner, etc.
@@ -79,53 +71,51 @@ const (
 )
 
 type AccessRecord struct {
-	UserID           string      `json:"user_id,omitempty"`
-	Access           AccessLevel `json:"access_level,omitempty"`
-	Limited          bool        `json:"limited,omitempty"`
-	NewAccess        AccessLevel `json:"new_access_level,omitempty"`
+	UserID           string      `json:"user_id"`
+	Access           AccessLevel `json:"access_level"`
+	Limited          bool        `json:"limited"`
+	NewAccess        AccessLevel `json:"new_access_level"`
 	AccessChangeTime time.Time   `json:"access_level_change_time,omitempty"`
 }
 
-type Volume struct {
-	ID               string      `json:"id,omitempty"`
-	CreateTime       time.Time   `json:"create_time,omitempty"`
-	Deleted          bool        `json:"deleted,omitempty"`
-	DeleteTime       time.Time   `json:"delete_time,omitempty"`
-	UserID           string      `json:"user_id,omitempty"`
-	TariffID         string      `json:"tariff_id,omitempty"`
-	Label            string      `json:"label,omitempty"`
-	Access           AccessLevel `json:"access,omitempty"`
-	AccessChangeTime time.Time   `json:"access_change_time,omitempty"`
-	Limited          bool        `json:"limited,omitempty"`
-	NewAccess        AccessLevel `json:"new_access,omitempty"`
-
-	Storage    int  `json:"storage,omitempty"`
-	Replicas   int  `json:"replicas,omitempty"`
-	Persistent bool `json:"persistent,omitempty"`
+type Resource struct {
+	ID         string    `json:"id"`
+	CreateTime time.Time `json:"create_time"`
+	Deleted    bool      `json:"deleted,omitempty"`
+	DeleteTime time.Time `json:"delete_time,omitempty"`
+	TariffID   string    `json:"tariff_id"`
+	Label      string    `json:"label,omitempty"`
+	AccessRecord
 
 	Users []AccessRecord `json:"users,omitempty"`
 }
 
-type Namespace struct {
-	ID               string      `json:"id,omitempty"`
-	CreateTime       time.Time   `json:"create_time,omitempty"`
-	Deleted          bool        `json:"deleted,omitempty"`
-	DeleteTime       time.Time   `json:"delete_time,omitempty"`
-	UserID           string      `json:"user_id,omitempty"`
-	TariffID         string      `json:"tariff_id,omitempty"`
-	Label            string      `json:"label,omitempty"`
-	Access           AccessLevel `json:"access,omitempty"`
-	AccessChangeTime time.Time   `json:"access_change_time,omitempty"`
-	Limited          bool        `json:"limited,omitempty"`
-	NewAccess        AccessLevel `json:"new_access,omitempty"`
+type Volume struct {
+	Resource
 
-	RAM           int `json:"ram,omitempty"`
-	CPU           int `json:"cpu,omitempty"`
+	Storage    int  `json:"storage"`
+	Replicas   int  `json:"replicas"`
+	Persistent bool `json:"persistent"`
+	IsActive   bool `json:"active"`
+}
+
+type Namespace struct {
+	Resource
+
+	RAM           int `json:"ram"`
+	CPU           int `json:"cpu"`
 	MaxExtService int `json:"max_ext_service,omitempty"`
 	MaxIntService int `json:"max_int_service,omitempty"`
 	MaxTraffic    int `json:"max_traffic,omitempty"`
 
 	Volumes []Volume `json:"volumes,omitempty"`
+}
 
-	Users []AccessRecord `json:"users,omitempty"`
+type ListAllResourcesParams struct {
+	Page    int       `form:"page" binding:"gt=0"`
+	PerPage int       `form:"per_page" binding:"gt=0"`
+	Order   string    `form:"order" binding:"eq=ASC|eq=DESC"`
+	After   time.Time `form:"after" binding:"omitempty,lt"`
+	Deleted bool      `form:"deleted" binding:"omitempty"`
+	Limited bool      `form:"limited" binding:"omitempty"`
 }

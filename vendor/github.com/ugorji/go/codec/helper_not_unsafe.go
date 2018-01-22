@@ -35,28 +35,9 @@ func bytesView(v string) []byte {
 
 func definitelyNil(v interface{}) bool {
 	// this is a best-effort option.
-	// We just return false, so we don't unneessarily incur the cost of reflection this early.
+	// We just return false, so we don't unnecessarily incur the cost of reflection this early.
 	return false
-	// rv := reflect.ValueOf(v)
-	// switch rv.Kind() {
-	// case reflect.Invalid:
-	// 	return true
-	// case reflect.Ptr, reflect.Interface, reflect.Chan, reflect.Slice, reflect.Map, reflect.Func:
-	// 	return rv.IsNil()
-	// default:
-	// 	return false
-	// }
 }
-
-// // keepAlive4BytesView maintains a reference to the input parameter for bytesView.
-// //
-// // Usage: call this at point where done with the bytes view.
-// func keepAlive4BytesView(v string) {}
-
-// // keepAlive4BytesView maintains a reference to the input parameter for stringView.
-// //
-// // Usage: call this at point where done with the string view.
-// func keepAlive4StringView(v []byte) {}
 
 func rv2i(rv reflect.Value) interface{} {
 	return rv.Interface()
@@ -75,6 +56,36 @@ func i2rtid(i interface{}) uintptr {
 }
 
 // --------------------------
+
+func isEmptyValue(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) bool {
+	switch v.Kind() {
+	case reflect.Invalid:
+		return true
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		if deref {
+			if v.IsNil() {
+				return true
+			}
+			return isEmptyValue(v.Elem(), tinfos, deref, checkStruct)
+		}
+		return v.IsNil()
+	case reflect.Struct:
+		return isEmptyStruct(v, tinfos, deref, checkStruct)
+	}
+	return false
+}
+
+// --------------------------
 // type ptrToRvMap struct{}
 
 // func (*ptrToRvMap) init() {}
@@ -83,19 +94,19 @@ func i2rtid(i interface{}) uintptr {
 // }
 
 // --------------------------
-type atomicTypeInfoSlice struct {
+type atomicTypeInfoSlice struct { // expected to be 2 words
 	v atomic.Value
 }
 
-func (x *atomicTypeInfoSlice) load() *[]rtid2ti {
+func (x *atomicTypeInfoSlice) load() []rtid2ti {
 	i := x.v.Load()
 	if i == nil {
 		return nil
 	}
-	return i.(*[]rtid2ti)
+	return i.([]rtid2ti)
 }
 
-func (x *atomicTypeInfoSlice) store(p *[]rtid2ti) {
+func (x *atomicTypeInfoSlice) store(p []rtid2ti) {
 	x.v.Store(p)
 }
 
@@ -237,3 +248,25 @@ func (e *Encoder) kUint64(f *codecFnInfo, rv reflect.Value) {
 func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(rv.Uint())
 }
+
+// // keepAlive4BytesView maintains a reference to the input parameter for bytesView.
+// //
+// // Usage: call this at point where done with the bytes view.
+// func keepAlive4BytesView(v string) {}
+
+// // keepAlive4BytesView maintains a reference to the input parameter for stringView.
+// //
+// // Usage: call this at point where done with the string view.
+// func keepAlive4StringView(v []byte) {}
+
+// func definitelyNil(v interface{}) bool {
+// 	rv := reflect.ValueOf(v)
+// 	switch rv.Kind() {
+// 	case reflect.Invalid:
+// 		return true
+// 	case reflect.Ptr, reflect.Interface, reflect.Chan, reflect.Slice, reflect.Map, reflect.Func:
+// 		return rv.IsNil()
+// 	default:
+// 		return false
+// 	}
+// }

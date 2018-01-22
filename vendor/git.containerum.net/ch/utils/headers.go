@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var headersKey = new(int)
+const headersKey = "headers"
 
 // SaveHeaders is a gin middleware which saves headers to request context
 func SaveHeaders(ctx *gin.Context) {

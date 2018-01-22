@@ -2085,9 +2085,9 @@ type TimeSeries struct {
 	MetricKind string `json:"metricKind,omitempty"`
 
 	// Points: The data points of this time series. When listing time
-	// series, the order of the points is specified by the list method.When
-	// creating a time series, this field must contain exactly one point and
-	// the point's type must be the same as the value type of the associated
+	// series, points are returned in reverse time order.When creating a
+	// time series, this field must contain exactly one point and the
+	// point's type must be the same as the value type of the associated
 	// metric. If the associated metric's descriptor must be auto-created,
 	// then the value type of the descriptor is determined by the point's
 	// type, which must be BOOL, INT64, DOUBLE, or DISTRIBUTION.
@@ -4734,6 +4734,7 @@ func (c *ProjectsTimeSeriesListCall) AggregationAlignmentPeriod(aggregationAlign
 //   "REDUCE_STDDEV"
 //   "REDUCE_COUNT"
 //   "REDUCE_COUNT_TRUE"
+//   "REDUCE_COUNT_FALSE"
 //   "REDUCE_FRACTION_TRUE"
 //   "REDUCE_PERCENTILE_99"
 //   "REDUCE_PERCENTILE_95"
@@ -4787,11 +4788,13 @@ func (c *ProjectsTimeSeriesListCall) AggregationGroupByFields(aggregationGroupBy
 //   "ALIGN_SUM"
 //   "ALIGN_STDDEV"
 //   "ALIGN_COUNT_TRUE"
+//   "ALIGN_COUNT_FALSE"
 //   "ALIGN_FRACTION_TRUE"
 //   "ALIGN_PERCENTILE_99"
 //   "ALIGN_PERCENTILE_95"
 //   "ALIGN_PERCENTILE_50"
 //   "ALIGN_PERCENTILE_05"
+//   "ALIGN_PERCENT_CHANGE"
 func (c *ProjectsTimeSeriesListCall) AggregationPerSeriesAligner(aggregationPerSeriesAligner string) *ProjectsTimeSeriesListCall {
 	c.urlParams_.Set("aggregation.perSeriesAligner", aggregationPerSeriesAligner)
 	return c
@@ -4824,9 +4827,9 @@ func (c *ProjectsTimeSeriesListCall) IntervalStartTime(intervalStartTime string)
 	return c
 }
 
-// OrderBy sets the optional parameter "orderBy": Specifies the order in
-// which the points of the time series should be returned. By default,
-// results are not ordered. Currently, this field must be left blank.
+// OrderBy sets the optional parameter "orderBy": Unsupported: must be
+// left blank. The points in each time series are returned in reverse
+// time order.
 func (c *ProjectsTimeSeriesListCall) OrderBy(orderBy string) *ProjectsTimeSeriesListCall {
 	c.urlParams_.Set("orderBy", orderBy)
 	return c
@@ -4981,6 +4984,7 @@ func (c *ProjectsTimeSeriesListCall) Do(opts ...googleapi.CallOption) (*ListTime
 	//         "REDUCE_STDDEV",
 	//         "REDUCE_COUNT",
 	//         "REDUCE_COUNT_TRUE",
+	//         "REDUCE_COUNT_FALSE",
 	//         "REDUCE_FRACTION_TRUE",
 	//         "REDUCE_PERCENTILE_99",
 	//         "REDUCE_PERCENTILE_95",
@@ -5011,11 +5015,13 @@ func (c *ProjectsTimeSeriesListCall) Do(opts ...googleapi.CallOption) (*ListTime
 	//         "ALIGN_SUM",
 	//         "ALIGN_STDDEV",
 	//         "ALIGN_COUNT_TRUE",
+	//         "ALIGN_COUNT_FALSE",
 	//         "ALIGN_FRACTION_TRUE",
 	//         "ALIGN_PERCENTILE_99",
 	//         "ALIGN_PERCENTILE_95",
 	//         "ALIGN_PERCENTILE_50",
-	//         "ALIGN_PERCENTILE_05"
+	//         "ALIGN_PERCENTILE_05",
+	//         "ALIGN_PERCENT_CHANGE"
 	//       ],
 	//       "location": "query",
 	//       "type": "string"
@@ -5045,7 +5051,7 @@ func (c *ProjectsTimeSeriesListCall) Do(opts ...googleapi.CallOption) (*ListTime
 	//       "type": "string"
 	//     },
 	//     "orderBy": {
-	//       "description": "Specifies the order in which the points of the time series should be returned. By default, results are not ordered. Currently, this field must be left blank.",
+	//       "description": "Unsupported: must be left blank. The points in each time series are returned in reverse time order.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },

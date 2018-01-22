@@ -63,6 +63,15 @@ type UserCreateResponse struct {
 	IsActive bool   `json:"is_active"`
 }
 
+type UserCreateWebAPIRequest struct {
+	ID        string                 `json:"id"`
+	UserName  string                 `json:"username" binding:"required,email"`
+	Password  string                 `json:"password" binding:"required"`
+	Data      map[string]interface{} `json:"data"`
+	CreatedAt string                 `json:"created_at"`
+	IsActive  bool                   `json:"is_active"`
+}
+
 type ActivateRequest struct {
 	Link string `json:"link" binding:"required"`
 }

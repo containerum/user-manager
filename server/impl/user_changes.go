@@ -276,3 +276,64 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 	}
 	return nil
 }
+
+func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserCreateWebAPIRequest) error {
+	u.log.WithField("login", request.UserName).Info("creating user from old api")
+
+	domain := strings.Split(request.UserName, "@")[1]
+	blacklisted, err := u.svc.DB.IsDomainBlacklisted(ctx, domain)
+	if err := u.handleDBError(err); err != nil {
+		return blacklistDomainCheckFailed
+	}
+	if blacklisted {
+		return &server.AccessDeniedError{Err: errors.Format(domainInBlacklist, domain)}
+	}
+
+	user, err := u.svc.DB.GetUserByLogin(ctx, request.UserName)
+	if err := u.handleDBError(err); err != nil {
+		return userGetFailed
+	}
+	if user != nil {
+		return &server.AlreadyExistsError{Err: errors.Format(userAlreadyExists, request.UserName)}
+	}
+
+	salt := utils.GenSalt(request.UserName, request.UserName, request.UserName) // compatibility with old client db
+	passwordHash := utils.GetKey(request.UserName, request.Password, salt)
+	newUser := &models.User{
+		Login:        request.UserName,
+		PasswordHash: passwordHash,
+		Salt:         salt,
+		Role:         "user",
+		IsActive:     true,
+		IsDeleted:    false,
+	}
+
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+		if createErr := tx.CreateUser(ctx, newUser); createErr != nil {
+			return userCreateFailed
+		}
+
+		var createdAt time.Time
+		createdAt, err := time.Parse("2006-01-02 15:04:05", request.CreatedAt)
+		if err != nil {
+			u.log.WithError(err).Warnf("Error parsing time")
+			createdAt = time.Now().UTC()
+		}
+
+		if createErr := tx.CreateProfile(ctx, &models.Profile{
+			User:      newUser,
+			Access:    "rw",
+			CreatedAt: createdAt,
+			Data:      request.Data,
+		}); createErr != nil {
+			return profileCreateFailed
+		}
+
+		return nil
+	})
+	if err := u.handleDBError(err); err != nil {
+		return err
+	}
+
+	return nil
+}
