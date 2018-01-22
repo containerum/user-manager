@@ -23,7 +23,7 @@
   branch = "master"
   name = "git.containerum.net/ch/utils"
   packages = ["."]
-  revision = "bc8d7afe515b33af65a8d411be53fea84887673a"
+  revision = "b23104c59f46f039f213842f9b58ec91744a4312"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
