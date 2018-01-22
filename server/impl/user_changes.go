@@ -84,9 +84,9 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 	go u.linkSend(ctx, link)
 
 	return &umtypes.UserCreateResponse{
-		ID:       user.ID,
-		Login:    user.Login,
-		IsActive: user.IsActive,
+		ID:       newUser.ID,
+		Login:    newUser.Login,
+		IsActive: newUser.IsActive,
 	}, nil
 }
 
@@ -277,24 +277,24 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 	return nil
 }
 
-func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserCreateWebAPIRequest) error {
+func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserCreateWebAPIRequest) (*umtypes.UserCreateResponse, error) {
 	u.log.WithField("login", request.UserName).Info("creating user from old api")
 
 	domain := strings.Split(request.UserName, "@")[1]
 	blacklisted, err := u.svc.DB.IsDomainBlacklisted(ctx, domain)
 	if err := u.handleDBError(err); err != nil {
-		return blacklistDomainCheckFailed
+		return nil, blacklistDomainCheckFailed
 	}
 	if blacklisted {
-		return &server.AccessDeniedError{Err: errors.Format(domainInBlacklist, domain)}
+		return nil, &server.AccessDeniedError{Err: errors.Format(domainInBlacklist, domain)}
 	}
 
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.UserName)
 	if err := u.handleDBError(err); err != nil {
-		return userGetFailed
+		return nil, userGetFailed
 	}
 	if user != nil {
-		return &server.AlreadyExistsError{Err: errors.Format(userAlreadyExists, request.UserName)}
+		return nil, &server.AlreadyExistsError{Err: errors.Format(userAlreadyExists, request.UserName)}
 	}
 
 	salt := utils.GenSalt(request.UserName, request.UserName, request.UserName) // compatibility with old client db
@@ -332,8 +332,12 @@ func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserC
 		return nil
 	})
 	if err := u.handleDBError(err); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &umtypes.UserCreateResponse{
+		ID:       newUser.ID,
+		Login:    newUser.Login,
+		IsActive: newUser.IsActive,
+	}, nil
 }

@@ -8,12 +8,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-const headersKey = "headers"
+var headersKey = new(struct{})
 
 // SaveHeaders is a gin middleware which saves headers to request context
 func SaveHeaders(ctx *gin.Context) {
 	rctx := context.WithValue(ctx.Request.Context(), headersKey, ctx.Request.Header)
-	ctx.Request.WithContext(rctx)
+	ctx.Request = ctx.Request.WithContext(rctx)
 }
 
 // RequestHeadersMap extracts saved headers from context as map[string]string (useful for resty).

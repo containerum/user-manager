@@ -148,7 +148,7 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILogi
 		CreatedAt: resp["user"].(map[string]interface{})["created_at"].(string),
 		IsActive:  resp["user"].(map[string]interface{})["is_active"].(bool)}
 
-	if err = u.CreateUserWebAPI(ctx, newUser); err != nil {
+	if _, err = u.CreateUserWebAPI(ctx, newUser); err != nil {
 		u.log.WithError(err).Warnf("Unable to add user in new db")
 	}
 
