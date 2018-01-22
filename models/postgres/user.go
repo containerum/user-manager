@@ -40,9 +40,9 @@ func (db *pgDB) GetUserByID(ctx context.Context, id string) (*models.User, error
 
 func (db *pgDB) CreateUser(ctx context.Context, user *models.User) error {
 	db.log.Infoln("Create user", user.Login)
-	rows, err := db.qLog.QueryxContext(ctx, "INSERT INTO users (login, password_hash, salt, role) "+
-		"VALUES ($1, $2, $3, $4) RETURNING id",
-		user.Login, user.PasswordHash, user.Salt, user.Role)
+	rows, err := db.qLog.QueryxContext(ctx, "INSERT INTO users (login, password_hash, salt, role, is_active) "+
+		"VALUES ($1, $2, $3, $4, $5) RETURNING id",
+		user.Login, user.PasswordHash, user.Salt, user.Role, user.IsActive)
 	if err != nil {
 		return err
 	}

@@ -6,7 +6,6 @@ import (
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/json-types/errors"
 	"git.containerum.net/ch/user-manager/models"
-	"git.containerum.net/ch/utils"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
@@ -41,9 +40,13 @@ func NewHTTPResourceServiceClient(serverURL string) ResourceServiceClient {
 
 func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *models.User) (*auth.ResourcesAccess, error) {
 	c.log.WithField("user_id", user.ID).Info("Getting user access from resource service")
+	headersMap := make(map[string]string)
+	headersMap["X-User-ID"] = user.ID
+	headersMap["X-User-Role"] = user.Role
+
 	resp, err := c.rest.R().SetContext(ctx).
 		SetResult(auth.ResourcesAccess{}).
-		SetHeaders(utils.RequestHeadersMap(ctx)).
+		SetHeaders(headersMap).
 		Get("/access")
 	if err != nil {
 		return nil, err

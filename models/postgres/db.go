@@ -37,7 +37,7 @@ func DBConnect(pgConnStr string) (models.DB, error) {
 		return nil, err
 	}
 	if pingErr := conn.Ping(); pingErr != nil {
-		return nil, err
+		return nil, pingErr
 	}
 
 	ret := &pgDB{

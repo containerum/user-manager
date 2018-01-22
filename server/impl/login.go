@@ -141,6 +141,17 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILogi
 	resp["access_token"] = tokens.AccessToken
 	resp["refresh_token"] = tokens.RefreshToken
 
+	newUser := umtypes.UserCreateWebAPIRequest{ID: resp["user"].(map[string]interface{})["id"].(string),
+		UserName:  resp["user"].(map[string]interface{})["login"].(string),
+		Password:  request.Password,
+		Data:      resp["user"].(map[string]interface{})["data"].(map[string]interface{}),
+		CreatedAt: resp["user"].(map[string]interface{})["created_at"].(string),
+		IsActive:  resp["user"].(map[string]interface{})["is_active"].(bool)}
+
+	if err = u.CreateUserWebAPI(ctx, newUser); err != nil {
+		u.log.WithError(err).Warnf("Unable to add user in new db")
+	}
+
 	return resp, nil
 
 }

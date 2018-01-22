@@ -70,6 +70,7 @@ type cborEncDriver struct {
 	w encWriter
 	h *CborHandle
 	x [8]byte
+	_ [3]uint64 // padding
 }
 
 func (e *cborEncDriver) EncodeNil() {
@@ -193,10 +194,6 @@ func (e *cborEncDriver) WriteArrayEnd() {
 	}
 }
 
-// func (e *cborEncDriver) EncodeSymbol(v string) {
-// 	e.encStringBytesS(cborBaseString, v)
-// }
-
 func (e *cborEncDriver) EncodeString(c charEncoding, v string) {
 	e.encStringBytesS(cborBaseString, v)
 }
@@ -246,16 +243,17 @@ func (e *cborEncDriver) encStringBytesS(bb byte, v string) {
 // ----------------------
 
 type cborDecDriver struct {
-	d      *Decoder
-	h      *CborHandle
-	r      decReader
-	b      [scratchByteArrayLen]byte
+	d *Decoder
+	h *CborHandle
+	r decReader
+	// b      [scratchByteArrayLen]byte
 	br     bool // bytes reader
 	bdRead bool
 	bd     byte
 	noBuiltInTypes
 	// decNoSeparator
 	decDriverNoopContainerReader
+	_ [3]uint64 // padding
 }
 
 func (d *cborDecDriver) readNextBd() {
@@ -442,7 +440,8 @@ func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte) []byte {
 			break
 		}
 		if major := d.bd >> 5; major != cborMajorBytes && major != cborMajorText {
-			d.d.errorf("expect bytes or string major type in indefinite string/bytes; got: %v, byte: %v", major, d.bd)
+			d.d.errorf("expect bytes/string major type in indefinite string/bytes;"+
+				" got: %v, byte: %v", major, d.bd)
 			return nil
 		}
 		n := d.decLen()
@@ -474,6 +473,9 @@ func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
 		d.bdRead = false
 		if bs == nil {
+			if zerocopy {
+				return d.decAppendIndefiniteBytes(d.d.b[:0])
+			}
 			return d.decAppendIndefiniteBytes(zeroByteSlice)
 		}
 		return d.decAppendIndefiniteBytes(bs[:0])
@@ -489,18 +491,18 @@ func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		if d.br {
 			return d.r.readx(clen)
 		} else if len(bs) == 0 {
-			bs = d.b[:]
+			bs = d.d.b[:]
 		}
 	}
-	return decByteSlice(d.r, clen, d.d.h.MaxInitLen, bs)
+	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
 }
 
 func (d *cborDecDriver) DecodeString() (s string) {
-	return string(d.DecodeBytes(d.b[:], true))
+	return string(d.DecodeBytes(d.d.b[:], true))
 }
 
 func (d *cborDecDriver) DecodeStringAsBytes() (s []byte) {
-	return d.DecodeBytes(d.b[:], true)
+	return d.DecodeBytes(d.d.b[:], true)
 }
 
 func (d *cborDecDriver) DecodeTime() (t time.Time) {
@@ -536,7 +538,8 @@ func (d *cborDecDriver) decodeTime(xtag uint64) (t time.Time) {
 		case d.bd == cborBdFloat64:
 			f1, f2 := math.Modf(d.DecodeFloat64())
 			t = time.Unix(int64(f1), int64(f2*1e9))
-		case d.bd >= cborBaseUint && d.bd < cborBaseNegInt, d.bd >= cborBaseNegInt && d.bd < cborBaseBytes:
+		case d.bd >= cborBaseUint && d.bd < cborBaseNegInt,
+			d.bd >= cborBaseNegInt && d.bd < cborBaseBytes:
 			t = time.Unix(d.DecodeInt64(), 0)
 		default:
 			d.d.errorf("time.Time can only be decoded from a number (or RFC3339 string)")
@@ -680,6 +683,8 @@ type CborHandle struct {
 	// TimeRFC3339 says to encode time.Time using RFC3339 format.
 	// If unset, we encode time.Time using seconds past epoch.
 	TimeRFC3339 bool
+
+	_ [1]uint64 // padding
 }
 
 // Name returns the name of the handle: cbor
@@ -687,7 +692,7 @@ func (h *CborHandle) Name() string { return "cbor" }
 
 // SetInterfaceExt sets an extension
 func (h *CborHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
-	return h.SetExt(rt, tag, &setExtWrapper{i: ext})
+	return h.SetExt(rt, tag, &extWrapper{bytesExtFailer{}, ext})
 }
 
 func (h *CborHandle) newEncDriver(e *Encoder) encDriver {

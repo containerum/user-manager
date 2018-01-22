@@ -1054,6 +1054,23 @@ func (s *ExportAgentRequest) MarshalJSON() ([]byte, error) {
 // ExportAgentResponse: The response message for Agents.ExportAgent.
 type ExportAgentResponse struct {
 	// AgentContent: The exported agent.
+	//
+	// Example for how to export an agent to a zip file via a command
+	// line:
+	//
+	// curl \
+	//
+	// 'https://dialogflow.googleapis.com/v2beta1/projects/<project_name>/age
+	// nt:export'\
+	//   -X POST \
+	//   -H 'Authorization: Bearer '$(gcloud auth print-access-token) \
+	//   -H 'Accept: application/json' \
+	//   -H 'Content-Type: application/json' \
+	//   --compressed \
+	//   --data-binary '{}' \
+	// | grep agentContent | sed -e 's/.*"agentContent": "\([^"]*\)".*/\1/'
+	// \
+	// | base64 --decode > <agent zip file>
 	AgentContent string `json:"agentContent,omitempty"`
 
 	// AgentUri: The URI to a file containing the exported agent. This field
@@ -1090,14 +1107,18 @@ type ImportAgentRequest struct {
 	//
 	// Example for how to import an agent via the command line:
 	//
-	// curl -H "Authorization: Bearer "$(gcloud auth print-access-token) \
-	//      -H "Content-Type: application/json; charset=utf-8" \
-	//      --data "{
-	//   'agentContent': '$(cat <agent zip file> | base64 -w 0)'
-	// }"
-	// \
-	// "https://dialogflow.googleapis.com/v2beta1/projects/<project_name>/a
-	// gent:import"
+	// curl \
+	//
+	// 'https://dialogflow.googleapis.com/v2beta1/projects/<project_name>/age
+	// nt:import\
+	//    -X POST \
+	//    -H 'Authorization: Bearer '$(gcloud auth print-access-token) \
+	//    -H 'Accept: application/json' \
+	//    -H 'Content-Type: application/json' \
+	//    --compressed \
+	//    --data-binary "{
+	//       'agentContent': '$(cat <agent zip file> | base64 -w 0)'
+	//    }"
 	AgentContent string `json:"agentContent,omitempty"`
 
 	// AgentUri: Warning: Importing agents from a URI is not implemented
@@ -1775,23 +1796,29 @@ func (s *IntentMessageCarouselSelectItem) MarshalJSON() ([]byte, error) {
 
 // IntentMessageImage: The image response message.
 type IntentMessageImage struct {
+	// AccessibilityText: Optional. A text description of the image to be
+	// used for accessibility,
+	// e.g., screen readers.
+	AccessibilityText string `json:"accessibilityText,omitempty"`
+
 	// ImageUri: Optional. The public URI to an image file.
 	ImageUri string `json:"imageUri,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "ImageUri") to
-	// unconditionally include in API requests. By default, fields with
+	// ForceSendFields is a list of field names (e.g. "AccessibilityText")
+	// to unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
 	// non-interface field appearing in ForceSendFields will be sent to the
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "ImageUri") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AccessibilityText") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
 	NullFields []string `json:"-"`
 }
 
@@ -2812,15 +2839,21 @@ type QueryResult struct {
 	// - If an event was provided as input, `query_text` is not set.
 	QueryText string `json:"queryText,omitempty"`
 
-	// SpeechRecognitionConfidence: The confidence estimate between 0.0 and
-	// 1.0. A higher number
+	// SpeechRecognitionConfidence: The Speech recognition confidence
+	// between 0.0 and 1.0. A higher number
 	// indicates an estimated greater likelihood that the recognized words
 	// are
 	// correct. The default of 0.0 is a sentinel value indicating that
 	// confidence
-	// was not set. This field is populated if natural speech audio was
-	// provided
-	// as input.
+	// was not set.
+	//
+	// You should not rely on this field as it isn't guaranteed to be
+	// accurate, or
+	// even set. In particular this field isn't set in Webhook calls and
+	// for
+	// StreamingDetectIntent since the streaming endpoint has separate
+	// confidence
+	// estimates per portion of the audio in StreamingRecognitionResult.
 	SpeechRecognitionConfidence float64 `json:"speechRecognitionConfidence,omitempty"`
 
 	// WebhookPayload: If the query was fulfilled by a webhook call, this
@@ -2878,14 +2911,18 @@ type RestoreAgentRequest struct {
 	//
 	// Example for how to restore an agent via the command line:
 	//
-	// curl -H "Authorization: Bearer "$(gcloud auth print-access-token) \
-	//      -H "Content-Type: application/json; charset=utf-8" \
-	//      --data "{
-	//   'agentContent': '$(cat <agent zip file> | base64 -w 0)'
-	// }"
-	// \
-	// "https://dialogflow.googleapis.com/v2beta1/projects/<project_name>/a
-	// gent:restore"
+	// curl \
+	//
+	// 'https://dialogflow.googleapis.com/v2beta1/projects/<project_name>/age
+	// nt:restore\
+	//    -X POST \
+	//    -H 'Authorization: Bearer '$(gcloud auth print-access-token) \
+	//    -H 'Accept: application/json' \
+	//    -H 'Content-Type: application/json' \
+	//    --compressed \
+	//    --data-binary "{
+	//        'agentContent': '$(cat <agent zip file> | base64 -w 0)'
+	//    }" \
 	AgentContent string `json:"agentContent,omitempty"`
 
 	// AgentUri: Warning: Restoring agents from a URI is not implemented

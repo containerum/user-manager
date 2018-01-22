@@ -27,6 +27,8 @@ const (
 	debugProtoKey  = "__proto__"
 	debugHeaderKey = "__header__"
 
+	usageInfoKey = "__usage__"
+
 	facebookApiVersionHeader = "facebook-api-version"
 	facebookDebugHeader      = "x-fb-debug"
 	facebookRevHeader        = "x-fb-rev"
@@ -50,10 +52,10 @@ var (
 	facebookSuccessJsonBytes = []byte("true")
 )
 
-// Facebook API call result.
+// Result is Facebook API call result.
 type Result map[string]interface{}
 
-// Represents facebook API call result with paging information.
+// PagingResult represents facebook API call result with paging information.
 type PagingResult struct {
 	session  *Session
 	paging   pagingData
@@ -61,7 +63,7 @@ type PagingResult struct {
 	next     string
 }
 
-// Represents facebook batch API call result.
+// BatchResult represents facebook batch API call result.
 // See https://developers.facebook.com/docs/graph-api/making-multiple-requests/#multiple_methods.
 type BatchResult struct {
 	StatusCode int         // HTTP status code.
@@ -80,6 +82,20 @@ type DebugInfo struct {
 	FacebookApiVersion string // the actual graph API version provided by facebook-api-version HTTP header.
 	FacebookDebug      string // the X-FB-Debug HTTP header.
 	FacebookRev        string // the x-fb-rev HTTP header.
+}
+
+// UsageInfo is the app usage (rate limit) information returned by facebook when rate limits are possible.
+type UsageInfo struct {
+	App struct {
+		CallCount    int `json:"call_count"`
+		TotalTime    int `json:"total_time"`
+		TotalCPUTime int `json:"total_cputime"`
+	} `json:"app"`
+	Page struct {
+		CallCount    int `json:"call_count"`
+		TotalTime    int `json:"total_time"`
+		TotalCPUTime int `json:"total_cputime"`
+	} `json:"page"`
 }
 
 // DebugMessage is one debug message in "__debug__" of graph API response.
@@ -341,7 +357,7 @@ func (res Result) DecodeField(field string, v interface{}) error {
 	f := res.Get(field)
 
 	if f == nil {
-		return fmt.Errorf("field '%v' doesn't exist in result.", field)
+		return fmt.Errorf("field '%v' doesn't exist in result", field)
 	}
 
 	return decodeField(reflect.ValueOf(f), reflect.ValueOf(v), field)
@@ -433,6 +449,17 @@ func (res Result) DebugInfo() *DebugInfo {
 	return debugInfo
 }
 
+// UsageInfo returns app and page usage info (rate limits)
+func (res Result) UsageInfo() *UsageInfo {
+	if usageInfo, ok := res[usageInfoKey]; ok {
+		if usage, ok := usageInfo.(*UsageInfo); ok {
+			return usage
+		}
+	}
+
+	return nil
+}
+
 func (res Result) decode(v reflect.Value, fullName string) error {
 	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
 		v = v.Elem()
@@ -518,7 +545,7 @@ func (res Result) decode(v reflect.Value, fullName string) error {
 		if !ok {
 			// check whether the field is required. if so, report error.
 			if required {
-				return fmt.Errorf("cannot find field '%v%v%v' in result.", fullName, dot, name)
+				return fmt.Errorf("cannot find field '%v%v%v' in result", fullName, dot, name)
 			}
 
 			continue
@@ -551,11 +578,11 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 	}
 
 	if !field.CanSet() {
-		return fmt.Errorf("field '%v' cannot be decoded. make sure the output value is able to be set.", fullName)
+		return fmt.Errorf("field '%v' cannot be decoded; make sure the output value is able to be set", fullName)
 	}
 
 	if !val.IsValid() {
-		return fmt.Errorf("field '%v' is not a pointer. cannot assign nil to it.", fullName)
+		return fmt.Errorf("field '%v' is not a pointer; fail to assign nil to it", fullName)
 	}
 
 	// if field implements Unmarshaler, let field unmarshals data itself.
@@ -563,7 +590,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		data, err := json.Marshal(val.Interface())
 
 		if err != nil {
-			return fmt.Errorf("fail to marshal value for field '%v'. %v", fullName, err)
+			return fmt.Errorf("fail to marshal value for field '%v' with error %v", fullName, err)
 		}
 
 		return unmarshaler.UnmarshalJSON(data)
@@ -578,7 +605,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		if valType.Kind() == reflect.Bool {
 			field.SetBool(val.Bool())
 		} else {
-			return fmt.Errorf("field '%v' is not a bool in result.", fullName)
+			return fmt.Errorf("field '%v' is not a bool in result", fullName)
 		}
 
 	case reflect.Int8:
@@ -587,7 +614,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Int()
 
 			if n < math.MinInt8 || n > math.MaxInt64 {
-				return fmt.Errorf("field '%v' value exceeds the range of int8.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int8", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -596,7 +623,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Uint()
 
 			if n > math.MaxInt8 {
-				return fmt.Errorf("field '%v' value exceeds the range of int8.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int8", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -605,7 +632,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Float()
 
 			if n < math.MinInt8 || n > math.MaxInt8 {
-				return fmt.Errorf("field '%v' value exceeds the range of int8.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int8", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -613,19 +640,19 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.String:
 			// val is allowed to be used as number only if val is json.Number or field is fb.Int8.
 			if val.Type() != typeOfJSONNumber && fieldType != typeOfInt8 {
-				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+				return fmt.Errorf("field '%v' value is string, not a number", fullName)
 			}
 
 			n, err := strconv.ParseInt(val.String(), 10, 8)
 
 			if err != nil {
-				return fmt.Errorf("field '%v' value is not a valid int8.", fullName)
+				return fmt.Errorf("field '%v' value is not a valid int8", fullName)
 			}
 
 			field.SetInt(n)
 
 		default:
-			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
+			return fmt.Errorf("field '%v' is not an integer in result", fullName)
 		}
 
 	case reflect.Int16:
@@ -634,7 +661,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Int()
 
 			if n < math.MinInt16 || n > math.MaxInt16 {
-				return fmt.Errorf("field '%v' value exceeds the range of int16.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int16", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -643,7 +670,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Uint()
 
 			if n > math.MaxInt16 {
-				return fmt.Errorf("field '%v' value exceeds the range of int16.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int16", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -652,7 +679,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Float()
 
 			if n < math.MinInt16 || n > math.MaxInt16 {
-				return fmt.Errorf("field '%v' value exceeds the range of int16.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int16", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -660,19 +687,19 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.String:
 			// val is allowed to be used as number only if val is json.Number or field is fb.Int16.
 			if val.Type() != typeOfJSONNumber && fieldType != typeOfInt16 {
-				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+				return fmt.Errorf("field '%v' value is string, not a number", fullName)
 			}
 
 			n, err := strconv.ParseInt(val.String(), 10, 16)
 
 			if err != nil {
-				return fmt.Errorf("field '%v' value is not a valid int16.", fullName)
+				return fmt.Errorf("field '%v' value is not a valid int16", fullName)
 			}
 
 			field.SetInt(n)
 
 		default:
-			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
+			return fmt.Errorf("field '%v' is not an integer in result", fullName)
 		}
 
 	case reflect.Int32:
@@ -681,7 +708,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Int()
 
 			if n < math.MinInt32 || n > math.MaxInt32 {
-				return fmt.Errorf("field '%v' value exceeds the range of int32.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int32", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -690,7 +717,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Uint()
 
 			if n > math.MaxInt32 {
-				return fmt.Errorf("field '%v' value exceeds the range of int32.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int32", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -699,7 +726,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Float()
 
 			if n < math.MinInt32 || n > math.MaxInt32 {
-				return fmt.Errorf("field '%v' value exceeds the range of int32.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int32", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -707,19 +734,19 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.String:
 			// val is allowed to be used as number only if val is json.Number or field is fb.Int32.
 			if val.Type() != typeOfJSONNumber && fieldType != typeOfInt32 {
-				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+				return fmt.Errorf("field '%v' value is string, not a number", fullName)
 			}
 
 			n, err := strconv.ParseInt(val.String(), 10, 32)
 
 			if err != nil {
-				return fmt.Errorf("field '%v' value is not a valid int32.", fullName)
+				return fmt.Errorf("field '%v' value is not a valid int32", fullName)
 			}
 
 			field.SetInt(n)
 
 		default:
-			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
+			return fmt.Errorf("field '%v' is not an integer in result", fullName)
 		}
 
 	case reflect.Int64:
@@ -732,7 +759,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Uint()
 
 			if n > math.MaxInt64 {
-				return fmt.Errorf("field '%v' value exceeds the range of int64.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int64", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -741,7 +768,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Float()
 
 			if n < math.MinInt64 || n > math.MaxInt64 {
-				return fmt.Errorf("field '%v' value exceeds the range of int64.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int64", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -749,19 +776,19 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.String:
 			// val is allowed to be used as number only if val is json.Number or field is fb.Int64.
 			if val.Type() != typeOfJSONNumber && fieldType != typeOfInt64 {
-				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+				return fmt.Errorf("field '%v' value is string, not a number", fullName)
 			}
 
 			n, err := strconv.ParseInt(val.String(), 10, 64)
 
 			if err != nil {
-				return fmt.Errorf("field '%v' value is not a valid int64.", fullName)
+				return fmt.Errorf("field '%v' value is not a valid int64", fullName)
 			}
 
 			field.SetInt(n)
 
 		default:
-			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
+			return fmt.Errorf("field '%v' is not an integer in result", fullName)
 		}
 
 	case reflect.Int:
@@ -782,7 +809,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Int()
 
 			if n < min || n > max {
-				return fmt.Errorf("field '%v' value exceeds the range of int.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -791,7 +818,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Uint()
 
 			if n > uint64(max) {
-				return fmt.Errorf("field '%v' value exceeds the range of int.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -800,7 +827,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Float()
 
 			if n < float64(min) || n > float64(max) {
-				return fmt.Errorf("field '%v' value exceeds the range of int.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of int", fullName)
 			}
 
 			field.SetInt(int64(n))
@@ -808,19 +835,19 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.String:
 			// val is allowed to be used as number only if val is json.Number or field is fb.Int.
 			if val.Type() != typeOfJSONNumber && fieldType != typeOfInt {
-				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+				return fmt.Errorf("field '%v' value is string, not a number", fullName)
 			}
 
 			n, err := strconv.ParseInt(val.String(), 10, bits)
 
 			if err != nil {
-				return fmt.Errorf("field '%v' value is not a valid int%v.", fullName, bits)
+				return fmt.Errorf("field '%v' value is not a valid int%v", fullName, bits)
 			}
 
 			field.SetInt(n)
 
 		default:
-			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
+			return fmt.Errorf("field '%v' is not an integer in result", fullName)
 		}
 
 	case reflect.Uint8:
@@ -829,7 +856,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Int()
 
 			if n < 0 || n > math.MaxUint8 {
-				return fmt.Errorf("field '%v' value exceeds the range of uint8.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint8", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -838,7 +865,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Uint()
 
 			if n > math.MaxUint8 {
-				return fmt.Errorf("field '%v' value exceeds the range of uint8.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint8", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -847,7 +874,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Float()
 
 			if n < 0 || n > math.MaxUint8 {
-				return fmt.Errorf("field '%v' value exceeds the range of uint8.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint8", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -855,19 +882,19 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.String:
 			// val is allowed to be used as number only if val is json.Number or field is fb.Uint8.
 			if val.Type() != typeOfJSONNumber && fieldType != typeOfUint8 {
-				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+				return fmt.Errorf("field '%v' value is string, not a number", fullName)
 			}
 
 			n, err := strconv.ParseUint(val.String(), 10, 8)
 
 			if err != nil {
-				return fmt.Errorf("field '%v' value is not a valid uint8.", fullName)
+				return fmt.Errorf("field '%v' value is not a valid uint8", fullName)
 			}
 
 			field.SetUint(n)
 
 		default:
-			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
+			return fmt.Errorf("field '%v' is not an integer in result", fullName)
 		}
 
 	case reflect.Uint16:
@@ -876,7 +903,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Int()
 
 			if n < 0 || n > math.MaxUint16 {
-				return fmt.Errorf("field '%v' value exceeds the range of uint16.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint16", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -885,7 +912,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Uint()
 
 			if n > math.MaxUint16 {
-				return fmt.Errorf("field '%v' value exceeds the range of uint16.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint16", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -894,7 +921,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Float()
 
 			if n < 0 || n > math.MaxUint16 {
-				return fmt.Errorf("field '%v' value exceeds the range of uint16.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint16", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -902,19 +929,19 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.String:
 			// val is allowed to be used as number only if val is json.Number or field is fb.Uint16.
 			if val.Type() != typeOfJSONNumber && fieldType != typeOfUint16 {
-				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+				return fmt.Errorf("field '%v' value is string, not a number", fullName)
 			}
 
 			n, err := strconv.ParseUint(val.String(), 10, 16)
 
 			if err != nil {
-				return fmt.Errorf("field '%v' value is not a valid uint16.", fullName)
+				return fmt.Errorf("field '%v' value is not a valid uint16", fullName)
 			}
 
 			field.SetUint(n)
 
 		default:
-			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
+			return fmt.Errorf("field '%v' is not an integer in result", fullName)
 		}
 
 	case reflect.Uint32:
@@ -923,7 +950,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Int()
 
 			if n < 0 || n > math.MaxUint32 {
-				return fmt.Errorf("field '%v' value exceeds the range of uint32.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint32", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -932,7 +959,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Uint()
 
 			if n > math.MaxUint32 {
-				return fmt.Errorf("field '%v' value exceeds the range of uint32.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint32", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -941,7 +968,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Float()
 
 			if n < 0 || n > math.MaxUint32 {
-				return fmt.Errorf("field '%v' value exceeds the range of uint32.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint32", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -949,19 +976,19 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.String:
 			// val is allowed to be used as number only if val is json.Number or field is fb.Uint32.
 			if val.Type() != typeOfJSONNumber && fieldType != typeOfUint32 {
-				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+				return fmt.Errorf("field '%v' value is string, not a number", fullName)
 			}
 
 			n, err := strconv.ParseUint(val.String(), 10, 32)
 
 			if err != nil {
-				return fmt.Errorf("field '%v' value is not a valid uint32.", fullName)
+				return fmt.Errorf("field '%v' value is not a valid uint32", fullName)
 			}
 
 			field.SetUint(n)
 
 		default:
-			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
+			return fmt.Errorf("field '%v' is not an integer in result", fullName)
 		}
 
 	case reflect.Uint64:
@@ -970,7 +997,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Int()
 
 			if n < 0 {
-				return fmt.Errorf("field '%v' value exceeds the range of uint64.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint64", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -983,7 +1010,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Float()
 
 			if n < 0 || n > math.MaxUint64 {
-				return fmt.Errorf("field '%v' value exceeds the range of uint64.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint64", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -991,19 +1018,19 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.String:
 			// val is allowed to be used as number only if val is json.Number or field is fb.Uint64.
 			if val.Type() != typeOfJSONNumber && fieldType != typeOfUint64 {
-				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+				return fmt.Errorf("field '%v' value is string, not a number", fullName)
 			}
 
 			n, err := strconv.ParseUint(val.String(), 10, 64)
 
 			if err != nil {
-				return fmt.Errorf("field '%v' value is not a valid uint64.", fullName)
+				return fmt.Errorf("field '%v' value is not a valid uint64", fullName)
 			}
 
 			field.SetUint(n)
 
 		default:
-			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
+			return fmt.Errorf("field '%v' is not an integer in result", fullName)
 		}
 
 	case reflect.Uint:
@@ -1022,7 +1049,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Int()
 
 			if n < 0 || uint64(n) > max {
-				return fmt.Errorf("field '%v' value exceeds the range of uint.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -1031,7 +1058,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Uint()
 
 			if n > max {
-				return fmt.Errorf("field '%v' value exceeds the range of uint.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -1040,7 +1067,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Float()
 
 			if n < 0 || n > float64(max) {
-				return fmt.Errorf("field '%v' value exceeds the range of uint.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of uint", fullName)
 			}
 
 			field.SetUint(uint64(n))
@@ -1048,19 +1075,19 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.String:
 			// val is allowed to be used as number only if val is json.Number or field is fb.Uint.
 			if val.Type() != typeOfJSONNumber && fieldType != typeOfUint {
-				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+				return fmt.Errorf("field '%v' value is string, not a number", fullName)
 			}
 
 			n, err := strconv.ParseUint(val.String(), 10, bits)
 
 			if err != nil {
-				return fmt.Errorf("field '%v' value is not a valid uint%v.", fullName, bits)
+				return fmt.Errorf("field '%v' value is not a valid uint%v", fullName, bits)
 			}
 
 			field.SetUint(n)
 
 		default:
-			return fmt.Errorf("field '%v' is not an integer in result.", fullName)
+			return fmt.Errorf("field '%v' is not an integer in result", fullName)
 		}
 
 	case reflect.Float32:
@@ -1077,7 +1104,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 			n := val.Float()
 
 			if math.Abs(n) > math.MaxFloat32 {
-				return fmt.Errorf("field '%v' value exceeds the range of float32.", fullName)
+				return fmt.Errorf("field '%v' value exceeds the range of float32", fullName)
 			}
 
 			field.SetFloat(n)
@@ -1085,19 +1112,19 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.String:
 			// val is allowed to be used as number only if val is json.Number or field is fb.Float32.
 			if val.Type() != typeOfJSONNumber && fieldType != typeOfFloat32 {
-				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+				return fmt.Errorf("field '%v' value is string, not a number", fullName)
 			}
 
 			n, err := strconv.ParseFloat(val.String(), 32)
 
 			if err != nil {
-				return fmt.Errorf("field '%v' is not a valid float32.", fullName)
+				return fmt.Errorf("field '%v' is not a valid float32", fullName)
 			}
 
 			field.SetFloat(n)
 
 		default:
-			return fmt.Errorf("field '%v' is not a float in result.", fullName)
+			return fmt.Errorf("field '%v' is not a float in result", fullName)
 		}
 
 	case reflect.Float64:
@@ -1117,31 +1144,31 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		case reflect.String:
 			// val is allowed to be used as number only if val is json.Number or field is fb.Float64.
 			if val.Type() != typeOfJSONNumber && fieldType != typeOfFloat64 {
-				return fmt.Errorf("field '%v' value is string, not a number.", fullName)
+				return fmt.Errorf("field '%v' value is string, not a number", fullName)
 			}
 
 			n, err := strconv.ParseFloat(val.String(), 64)
 
 			if err != nil {
-				return fmt.Errorf("field '%v' is not a valid float64.", fullName)
+				return fmt.Errorf("field '%v' is not a valid float64", fullName)
 			}
 
 			field.SetFloat(n)
 
 		default:
-			return fmt.Errorf("field '%v' is not a float in result.", fullName)
+			return fmt.Errorf("field '%v' is not a float in result", fullName)
 		}
 
 	case reflect.String:
 		if valType.Kind() != reflect.String {
-			return fmt.Errorf("field '%v' is not a string in result.", fullName)
+			return fmt.Errorf("field '%v' is not a string in result", fullName)
 		}
 
 		field.SetString(val.String())
 
 	case reflect.Struct:
 		if valType.Kind() != reflect.Map || valType.Key().Kind() != reflect.String {
-			return fmt.Errorf("field '%v' is not a json object in result.", fullName)
+			return fmt.Errorf("field '%v' is not a json object in result", fullName)
 		}
 
 		// safe convert val to Result. type assertion doesn't work in this case.
@@ -1154,12 +1181,12 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 
 	case reflect.Map:
 		if valType.Kind() != reflect.Map || valType.Key().Kind() != reflect.String {
-			return fmt.Errorf("field '%v' is not a json object in result.", fullName)
+			return fmt.Errorf("field '%v' is not a json object in result", fullName)
 		}
 
 		// map key must be string
 		if field.Type().Key().Kind() != reflect.String {
-			return fmt.Errorf("field '%v' in struct is a map with non-string key type. it's not allowed.", fullName)
+			return fmt.Errorf("field '%v' in struct must be a map whose key type is string", fullName)
 		}
 
 		var needAddr bool
@@ -1199,14 +1226,14 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 
 	case reflect.Slice, reflect.Array:
 		if valType.Kind() != reflect.Slice && valType.Kind() != reflect.Array {
-			return fmt.Errorf("field '%v' is not a json array in result.", fullName)
+			return fmt.Errorf("field '%v' is not a json array in result", fullName)
 		}
 
 		valLen := val.Len()
 
 		if kind == reflect.Array {
 			if field.Len() < valLen {
-				return fmt.Errorf("cannot copy all field '%v' values to struct. expected len is %v. actual len is %v.",
+				return fmt.Errorf("cannot copy all field '%v' values to struct; expected len is %v but actual is %v",
 					fullName, field.Len(), valLen)
 			}
 		}
@@ -1260,7 +1287,7 @@ func decodeField(val reflect.Value, field reflect.Value, fullName string) error 
 		}
 
 	default:
-		return fmt.Errorf("field '%v' in struct uses unsupported type '%v'.", fullName, kind)
+		return fmt.Errorf("field '%v' in struct uses unsupported type '%v'", fullName, kind)
 	}
 
 	return nil
