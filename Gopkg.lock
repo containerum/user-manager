@@ -17,13 +17,13 @@
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = ["errors","mail-templater","user-manager"]
-  revision = "5948089833987cc93bf1aa3b57744f53ff8b4295"
+  revision = "d4eec268630870a0b8c2be5455c33f68effc2c16"
 
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/utils"
   packages = ["."]
-  revision = "b23104c59f46f039f213842f9b58ec91744a4312"
+  revision = "e0ba65d5bcd00a3f64d61d16a4af2fdfeedd08bb"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -47,19 +47,19 @@
   branch = "master"
   name = "github.com/gin-gonic/gin"
   packages = [".","binding","json","render"]
-  revision = "a712f77d7aaec7eb4766a663924aaa4e54d3fe70"
+  revision = "7a9a290b36bb803a18874aa5c5b108be2d7eb34d"
 
 [[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["jsonpb","proto","ptypes","ptypes/any","ptypes/duration","ptypes/empty","ptypes/struct","ptypes/timestamp"]
-  revision = "1e59b77b52bf8e4b449a57e6f79f21226d571845"
+  revision = "c65a0412e71e8b9b3bfd22925720d23c0f054237"
 
 [[projects]]
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "922ceac0585d40f97d283d921f872fc50480e06e"
+  revision = "7cbc1505685d6ce57a82b50ee4968ee41dec5b2b"
 
 [[projects]]
   branch = "master"
@@ -101,7 +101,7 @@
   branch = "master"
   name = "github.com/lib/pq"
   packages = [".","oid"]
-  revision = "27ea5d92de30060e7121ddd543fe14e9a327e0cc"
+  revision = "61fe37aa2ee24fabcdbe5c4ac1d4ac566f88f345"
 
 [[projects]]
   name = "github.com/magiconair/properties"
@@ -179,7 +179,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["pbkdf2","ssh/terminal"]
-  revision = "39efaea5da11abd5e2b90a435b1f338cdb94619c"
+  revision = "3d37316aaa6bd9929127ac9a527abf408178ea7b"
 
 [[projects]]
   branch = "master"
@@ -209,7 +209,7 @@
   branch = "master"
   name = "google.golang.org/api"
   packages = ["gensupport","googleapi","googleapi/internal/uritemplates","oauth2/v2"]
-  revision = "bc96e9251952e80de14b88579b2e2e7d022ca939"
+  revision = "65b0d8655182691ad23b4fac11e6f7b897d9b634"
 
 [[projects]]
   name = "google.golang.org/appengine"
