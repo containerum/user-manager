@@ -190,7 +190,7 @@ func completeDeleteHandler(ctx *gin.Context) {
 }
 
 func addBoundAccountHandler(ctx *gin.Context) {
-	var request umtypes.BoundAccountAddRequest
+	var request umtypes.OAuthLoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))

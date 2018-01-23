@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (u *serverImpl) AddBoundAccount(ctx context.Context, request umtypes.BoundAccountAddRequest) error {
+func (u *serverImpl) AddBoundAccount(ctx context.Context, request umtypes.OAuthLoginRequest) error {
 	u.log.WithFields(logrus.Fields{
 		"resource":     request.Resource,
 		"access_token": request.AccessToken,

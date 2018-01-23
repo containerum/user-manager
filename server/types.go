@@ -32,7 +32,7 @@ type UserManager interface {
 	UpdateUser(ctx context.Context, newData map[string]interface{}) (*umtypes.UserInfoGetResponse, error)
 	PartiallyDeleteUser(ctx context.Context) error
 	CompletelyDeleteUser(ctx context.Context, userID string) error
-	AddBoundAccount(ctx context.Context, request umtypes.BoundAccountAddRequest) error
+	AddBoundAccount(ctx context.Context, request umtypes.OAuthLoginRequest) error
 	DeleteBoundAccount(ctx context.Context, request umtypes.BoundAccountDeleteRequest) error
 
 	// not changes DB state

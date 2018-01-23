@@ -17,13 +17,13 @@
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = ["errors","mail-templater","user-manager"]
-  revision = "5948089833987cc93bf1aa3b57744f53ff8b4295"
+  revision = "d4eec268630870a0b8c2be5455c33f68effc2c16"
 
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/utils"
   packages = ["."]
-  revision = "b23104c59f46f039f213842f9b58ec91744a4312"
+  revision = "e0ba65d5bcd00a3f64d61d16a4af2fdfeedd08bb"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -179,7 +179,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["pbkdf2","ssh/terminal"]
-  revision = "d94f6bc902c2970500950e88ab1a54a0c26bec48"
+  revision = "3d37316aaa6bd9929127ac9a527abf408178ea7b"
 
 [[projects]]
   branch = "master"
