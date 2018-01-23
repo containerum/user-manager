@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/textproto"
 
+	"git.containerum.net/ch/json-types/errors"
+	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,4 +34,47 @@ func RequestHeadersMap(ctx context.Context) map[string]string {
 // saveHeaders middleware required for operation.
 func RequestHeaders(ctx context.Context) http.Header {
 	return ctx.Value(headersKey).(http.Header)
+}
+
+var hdrToKey = map[string]interface{}{
+	umtypes.UserIDHeader:      UserIDContextKey,
+	umtypes.UserAgentHeader:   UserAgentContextKey,
+	umtypes.FingerprintHeader: FingerPrintContextKey,
+	umtypes.SessionIDHeader:   SessionIDContextKey,
+	umtypes.TokenIDHeader:     TokenIDContextKey,
+	umtypes.ClientIPHeader:    ClientIPContextKey,
+}
+
+// RequireHeaders is a gin middleware to ensure that headers is set
+func RequireHeaders(headers ...string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var notFoundHeaders []string
+		for _, v := range headers {
+			if ctx.GetHeader(v) == "" {
+				notFoundHeaders = append(notFoundHeaders, v)
+			}
+		}
+		if len(notFoundHeaders) > 0 {
+			err := errors.Format("required headers %v was not provided", notFoundHeaders)
+			ctx.Error(err)
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+		}
+	}
+}
+
+// PrepareContext is a gin middleware which adds values from header to context
+func PrepareContext(ctx *gin.Context) {
+	for hn, ck := range hdrToKey {
+		if hv := ctx.GetHeader(hn); hv != "" {
+			rctx := context.WithValue(ctx.Request.Context(), ck, hv)
+			ctx.Request = ctx.Request.WithContext(rctx)
+		}
+	}
+}
+
+// RequireAdminRole is a gin middleware which requires admin role
+func RequireAdminRole(ctx *gin.Context) {
+	if ctx.GetHeader(umtypes.UserRoleHeader) != "admin" {
+		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New("you don`t have permission to do that"))
+	}
 }

@@ -17,13 +17,13 @@
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = ["errors","mail-templater","user-manager"]
-  revision = "d4eec268630870a0b8c2be5455c33f68effc2c16"
+  revision = "766442be4f9d464a1a40fd53bda36cd585505f11"
 
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/utils"
   packages = ["."]
-  revision = "e0ba65d5bcd00a3f64d61d16a4af2fdfeedd08bb"
+  revision = "b00f2eea44849569dda2ba22420da2eee12ec209"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
