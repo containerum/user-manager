@@ -300,6 +300,7 @@ func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserC
 	salt := utils.GenSalt(request.UserName, request.UserName, request.UserName) // compatibility with old client db
 	passwordHash := utils.GetKey(request.UserName, request.Password, salt)
 	newUser := &models.User{
+		ID:           request.ID,
 		Login:        request.UserName,
 		PasswordHash: passwordHash,
 		Salt:         salt,
@@ -309,7 +310,7 @@ func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserC
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-		if createErr := tx.CreateUser(ctx, newUser); createErr != nil {
+		if createErr := tx.CreateUserWebAPI(ctx, newUser); createErr != nil {
 			return userCreateFailed
 		}
 
