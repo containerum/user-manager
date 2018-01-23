@@ -67,7 +67,6 @@ func (db *pgDB) BindAccount(ctx context.Context, user *models.User, service umty
 		return errors.New("unrecognised service " + string(service))
 	}
 	// see migrations/1515872648_accounts_constraint.up.sql
-	return nil
 }
 
 func (db *pgDB) DeleteBoundAccount(ctx context.Context, user *models.User, service umtypes.OAuthResource) error {
