@@ -8,8 +8,8 @@ import (
 	"git.containerum.net/ch/user-manager/models"
 )
 
-const profileQueryColumnsWithUser = "profiles.id, profiles.referral, profiles.access, profiles.created_at, profiles.blacklist_at, profiles.deleted_at, " +
-	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist, profiles.data"
+const profileQueryColumnsWithUserAndAccounts = "profiles.id, profiles.referral, profiles.access, profiles.created_at, profiles.blacklist_at, profiles.deleted_at, " +
+	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist, profiles.data, accounts.github, accounts.google, accounts.facebook"
 const profileQueryColumns = "id, referral, access, created_at, blacklist_at, deleted_at, data"
 
 func (db *pgDB) CreateProfile(ctx context.Context, profile *models.Profile) error {
@@ -34,8 +34,10 @@ func (db *pgDB) CreateProfile(ctx context.Context, profile *models.Profile) erro
 
 func (db *pgDB) GetProfileByID(ctx context.Context, id string) (*models.Profile, error) {
 	db.log.Infoln("Get profile by id", id)
-	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+profileQueryColumnsWithUser+" FROM profiles "+
-		"JOIN users ON profiles.user_id = user.id WHERE profiles.id = $1", id)
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+profileQueryColumnsWithUserAndAccounts+" FROM profiles "+
+		"JOIN users ON profiles.user_id = user.id "+
+		"LEFT JOIN accounts ON accounts.user_id = users.id "+
+		"WHERE profiles.id = $1", id)
 	if err != nil {
 		return nil, err
 	}
@@ -43,13 +45,13 @@ func (db *pgDB) GetProfileByID(ctx context.Context, id string) (*models.Profile,
 	if !rows.Next() {
 		return nil, rows.Err()
 	}
-	profile := models.Profile{User: &models.User{}}
+	profile := models.Profile{User: &models.User{}, Accounts: &models.Accounts{}}
 	var profileData string
 	err = rows.Scan(
 		&profile.ID, &profile.Referral, &profile.Access, &profile.CreatedAt, &profile.BlacklistAt, &profile.DeletedAt,
 		&profile.User.ID, &profile.User.Login, &profile.User.PasswordHash, &profile.User.Salt, &profile.User.Role,
 		&profile.User.IsActive, &profile.User.IsDeleted, &profile.User.IsInBlacklist,
-		&profileData,
+		&profileData, &profile.Accounts.Github, &profile.Accounts.Google, &profile.Accounts.Facebook,
 	)
 	if err != nil {
 		return nil, err
@@ -101,20 +103,22 @@ func (db *pgDB) GetAllProfiles(ctx context.Context, perPage, offset int) ([]mode
 	db.log.Infoln("Get all profiles")
 	profiles := make([]models.Profile, 0) // return empty slice instead of nil if no records found
 
-	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+profileQueryColumnsWithUser+" FROM profiles JOIN users ON profiles.user_id = users.id "+
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+profileQueryColumnsWithUserAndAccounts+" FROM profiles "+
+		"JOIN users ON profiles.user_id = users.id "+
+		"LEFT JOIN accounts ON accounts.user_id = users.id "+
 		"LIMIT $1 OFFSET $2", perPage, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		profile := models.Profile{User: &models.User{}}
+		profile := models.Profile{User: &models.User{}, Accounts: &models.Accounts{}}
 		var profileData string
 		err := rows.Scan(
 			&profile.ID, &profile.Referral, &profile.Access, &profile.CreatedAt, &profile.BlacklistAt, &profile.DeletedAt,
 			&profile.User.ID, &profile.User.Login, &profile.User.PasswordHash, &profile.User.Salt, &profile.User.Role,
 			&profile.User.IsActive, &profile.User.IsDeleted, &profile.User.IsInBlacklist,
-			&profileData,
+			&profileData, &profile.Accounts.Github, &profile.Accounts.Google, &profile.Accounts.Facebook,
 		)
 		if err != nil {
 			return nil, err

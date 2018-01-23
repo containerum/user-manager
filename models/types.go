@@ -7,6 +7,8 @@ import (
 
 	"context"
 
+	"database/sql"
+
 	"git.containerum.net/ch/json-types/errors"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/lib/pq"
@@ -36,14 +38,16 @@ type Profile struct {
 	User *User
 
 	Data map[string]interface{}
+
+	Accounts *Accounts
 }
 
 // Accounts describes user`s bound accounts. It should be used only inside this project.
 type Accounts struct {
-	ID       string
-	Github   string
-	Facebook string
-	Google   string
+	ID       sql.NullString
+	Github   sql.NullString
+	Facebook sql.NullString
+	Google   sql.NullString
 
 	User *User
 }

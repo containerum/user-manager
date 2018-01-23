@@ -119,6 +119,7 @@ type UserListEntry struct {
 	IsActive      bool                   `json:"is_active"`
 	IsInBlacklist bool                   `json:"is_in_blacklist"`
 	IsDeleted     bool                   `json:"is_deleted"`
+	Accounts      map[string]string      `json:"accounts"`
 }
 
 type UserListGetResponse struct {

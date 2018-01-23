@@ -126,6 +126,19 @@ func (u *serverImpl) GetUsers(ctx context.Context, params umtypes.UserListQuery,
 		if !satisfiesFilter(v) {
 			continue
 		}
+
+		accs := make(map[string]string)
+
+		if v.Accounts.Google.String != "" {
+			accs["google"] = v.Accounts.Google.String
+		}
+		if v.Accounts.Facebook.String != "" {
+			accs["facebook"] = v.Accounts.Facebook.String
+		}
+		if v.Accounts.Github.String != "" {
+			accs["github"] = v.Accounts.Github.String
+		}
+
 		resp.Users = append(resp.Users, umtypes.UserListEntry{
 			ID:            v.User.ID,
 			Login:         v.User.Login,
@@ -139,6 +152,7 @@ func (u *serverImpl) GetUsers(ctx context.Context, params umtypes.UserListQuery,
 			IsActive:      v.User.IsActive,
 			IsInBlacklist: v.User.IsInBlacklist,
 			IsDeleted:     v.User.IsDeleted,
+			Accounts:      accs,
 		})
 	}
 
