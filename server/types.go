@@ -32,6 +32,8 @@ type UserManager interface {
 	UpdateUser(ctx context.Context, newData map[string]interface{}) (*umtypes.UserInfoGetResponse, error)
 	PartiallyDeleteUser(ctx context.Context) error
 	CompletelyDeleteUser(ctx context.Context, userID string) error
+	AddBoundAccount(ctx context.Context, request umtypes.BoundAccountAddRequest) error
+	DeleteBoundAccount(ctx context.Context, request umtypes.BoundAccountDeleteRequest) error
 
 	// not changes DB state
 	GetUserLinks(ctx context.Context, userID string) (*umtypes.LinksGetResponse, error)
@@ -39,6 +41,7 @@ type UserManager interface {
 	GetUserInfoByID(ctx context.Context, userID string) (*umtypes.UserInfoByIDGetResponse, error)
 	GetBlacklistedUsers(ctx context.Context, params umtypes.UserListQuery) (*umtypes.BlacklistGetResponse, error)
 	GetUsers(ctx context.Context, params umtypes.UserListQuery, filters ...string) (*umtypes.UserListGetResponse, error)
+	GetBoundAccounts(ctx context.Context) (*umtypes.BoundAccountsResponce, error)
 
 	LinkResend(ctx context.Context, request umtypes.ResendLinkRequest) error
 

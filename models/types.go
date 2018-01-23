@@ -103,6 +103,7 @@ type DB interface {
 	GetUserByBoundAccount(ctx context.Context, service umtypes.OAuthResource, accountID string) (*User, error)
 	GetUserBoundAccounts(ctx context.Context, user *User) (*Accounts, error)
 	BindAccount(ctx context.Context, user *User, service umtypes.OAuthResource, accountID string) error
+	DeleteBoundAccount(ctx context.Context, user *User, service umtypes.OAuthResource) error
 
 	BlacklistDomain(ctx context.Context, domain string) error
 	UnBlacklistDomain(ctx context.Context, domain string) error

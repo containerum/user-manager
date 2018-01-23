@@ -142,3 +142,16 @@ type UserListQuery struct {
 type CompleteDeleteHandlerRequest struct {
 	UserID string `json:"user_id" binding:"required,uuid4"`
 }
+
+type BoundAccountAddRequest struct {
+	Resource    string `json:"resource" binding:"required"`
+	AccessToken string `json:"access_token" binding:"required"`
+}
+
+type BoundAccountsResponce struct {
+	Accounts map[string]string `json:"accounts" binding:"required"`
+}
+
+type BoundAccountDeleteRequest struct {
+	Resource string `json:"resource" binding:"required"`
+}

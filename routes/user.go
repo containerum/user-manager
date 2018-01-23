@@ -188,3 +188,47 @@ func completeDeleteHandler(ctx *gin.Context) {
 
 	ctx.Status(http.StatusAccepted)
 }
+
+func addBoundAccountHandler(ctx *gin.Context) {
+	var request umtypes.BoundAccountAddRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		return
+	}
+
+	err := srv.AddBoundAccount(ctx.Request.Context(), request)
+	if err != nil {
+		ctx.AbortWithStatusJSON(errorWithHTTPStatus(err))
+		return
+	}
+
+	ctx.Status(http.StatusAccepted)
+}
+
+func getBoundAccountsHandler(ctx *gin.Context) {
+	resp, err := srv.GetBoundAccounts(ctx.Request.Context())
+	if err != nil {
+		ctx.AbortWithStatusJSON(errorWithHTTPStatus(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+}
+
+func deleteBoundAccountHandler(ctx *gin.Context) {
+	var request umtypes.BoundAccountDeleteRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		return
+	}
+
+	err := srv.DeleteBoundAccount(ctx.Request.Context(), request)
+	if err != nil {
+		ctx.AbortWithStatusJSON(errorWithHTTPStatus(err))
+		return
+	}
+
+	ctx.Status(http.StatusAccepted)
+}
