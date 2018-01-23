@@ -103,20 +103,22 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 		return nil, userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
-		return nil, err
+		u.log.Info("User is not found by email. Trying searching by ID")
+		err = nil
+		user, err = u.svc.DB.GetUserByID(ctx, info.UserID)
+		if err := u.handleDBError(err); err != nil {
+			return nil, userGetFailed
+		}
+		if err := u.loginUserChecks(ctx, user); err != nil {
+			return nil, err
+		}
 	}
 
-	accounts, err := u.svc.DB.GetUserBoundAccounts(ctx, user)
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+		return tx.BindAccount(ctx, user, request.Resource, info.UserID)
+	})
 	if err := u.handleDBError(err); err != nil {
-		return nil, boundAccountsGetFailed
-	}
-	if accounts == nil {
-		err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-			return tx.BindAccount(ctx, user, request.Resource, info.UserID)
-		})
-		if err := u.handleDBError(err); err != nil {
-			return nil, bindAccountFailed
-		}
+		return nil, bindAccountFailed
 	}
 
 	return u.createTokens(ctx, user)
