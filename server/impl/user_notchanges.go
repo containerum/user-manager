@@ -64,9 +64,10 @@ func (u *serverImpl) GetUserInfo(ctx context.Context) (*umtypes.UserInfoGetRespo
 	return &umtypes.UserInfoGetResponse{
 		Login:     user.Login,
 		Data:      profile.Data,
+		Role:      user.Role,
 		ID:        user.ID,
 		IsActive:  user.IsActive,
-		CreatedAt: profile.CreatedAt,
+		CreatedAt: profile.CreatedAt.Time,
 	}, nil
 }
 
@@ -139,16 +140,29 @@ func (u *serverImpl) GetUsers(ctx context.Context, params umtypes.UserListQuery,
 			accs["github"] = v.Accounts.Github.String
 		}
 
+		var createdAt string
+		if !v.Profile.CreatedAt.Time.IsZero() {
+			createdAt = v.Profile.CreatedAt.Time.String()
+		}
+		var deletedAt string
+		if !v.Profile.DeletedAt.Time.IsZero() {
+			deletedAt = v.Profile.DeletedAt.Time.String()
+		}
+		var blacklistAt string
+		if !v.Profile.BlacklistAt.Time.IsZero() {
+			blacklistAt = v.Profile.BlacklistAt.Time.String()
+		}
+
 		resp.Users = append(resp.Users, umtypes.UserListEntry{
 			ID:            v.User.ID,
 			Login:         v.User.Login,
-			Referral:      v.Referral,
+			Referral:      v.Profile.Referral.String,
 			Role:          v.User.Role,
-			Access:        v.Access,
-			CreatedAt:     v.CreatedAt,
-			DeletedAt:     v.DeletedAt.Time,
-			BlacklistedAt: v.BlacklistAt.Time,
-			Data:          v.Data,
+			Access:        v.Profile.Access.String,
+			CreatedAt:     createdAt,
+			DeletedAt:     deletedAt,
+			BlacklistedAt: blacklistAt,
+			Data:          v.Profile.Data,
 			IsActive:      v.User.IsActive,
 			IsInBlacklist: v.User.IsInBlacklist,
 			IsDeleted:     v.User.IsDeleted,

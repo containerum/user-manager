@@ -14,6 +14,12 @@ import (
 	"github.com/lib/pq"
 )
 
+type UserProfileAccounts struct {
+	User     *User
+	Profile  *Profile
+	Accounts *Accounts
+}
+
 // User describes user model. It should be used only inside this project.
 type User struct {
 	ID            string `db:"id"`
@@ -28,18 +34,16 @@ type User struct {
 
 // Profile describes user`s profile model. It should be used only inside this project.
 type Profile struct {
-	ID          string
-	Referral    string
-	Access      string
-	CreatedAt   time.Time
+	ID          sql.NullString
+	Referral    sql.NullString
+	Access      sql.NullString
+	CreatedAt   pq.NullTime
 	BlacklistAt pq.NullTime
 	DeletedAt   pq.NullTime
 
 	User *User
 
 	Data map[string]interface{}
-
-	Accounts *Accounts
 }
 
 // Accounts describes user`s bound accounts. It should be used only inside this project.
@@ -102,7 +106,7 @@ type DB interface {
 	GetProfileByID(ctx context.Context, id string) (*Profile, error)
 	GetProfileByUser(ctx context.Context, user *User) (*Profile, error)
 	UpdateProfile(ctx context.Context, profile *Profile) error
-	GetAllProfiles(ctx context.Context, perPage, offset int) ([]Profile, error)
+	GetAllProfiles(ctx context.Context, perPage, offset int) ([]UserProfileAccounts, error)
 
 	GetUserByBoundAccount(ctx context.Context, service umtypes.OAuthResource, accountID string) (*User, error)
 	GetUserBoundAccounts(ctx context.Context, user *User) (*Accounts, error)
