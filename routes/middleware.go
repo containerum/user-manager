@@ -77,4 +77,11 @@ func requireAdminRole(ctx *gin.Context) {
 	if ctx.GetHeader(umtypes.UserRoleHeader) != "admin" {
 		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New("only admin can do this"))
 	}
+
+	err := srv.checkAdmin(ctx.Request.Context(), request)
+	if err != nil {
+		ctx.AbortWithStatusJSON(errorWithHTTPStatus(err))
+		return
+	}
+
 }
