@@ -9,7 +9,6 @@ import (
 
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/models"
-	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,14 +18,26 @@ func (db *pgDB) GetUserByBoundAccount(ctx context.Context, service umtypes.OAuth
 		"account_id": accountID,
 	}).Infoln("Get bound account")
 
+	switch service {
+	case umtypes.GitHubOAuth, umtypes.FacebookOAuth, umtypes.GoogleOAuth:
+	default:
+		return nil, errors.New("unrecognised service " + string(service))
+	}
+
 	var ret models.User
-	err := sqlx.GetContext(ctx, db.qLog, &ret, "SELECT users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist "+
-		"FROM accounts JOIN users ON accounts.user_id = users.id WHERE accounts.$1 = $2", service, accountID)
+
+	rows, err := db.qLog.QueryxContext(ctx, fmt.Sprintf(`SELECT users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist
+	FROM accounts JOIN users ON accounts.user_id = users.id WHERE accounts.%v = '%v'`, service, accountID))
+
 	if err != nil {
 		return nil, err
 	}
-
-	return &ret, nil
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, rows.Err()
+	}
+	err = rows.StructScan(&ret)
+	return &ret, err
 }
 
 func (db *pgDB) GetUserBoundAccounts(ctx context.Context, user *models.User) (*models.Accounts, error) {
@@ -81,6 +92,5 @@ func (db *pgDB) DeleteBoundAccount(ctx context.Context, user *models.User, servi
 	_, err := db.eLog.ExecContext(ctx, fmt.Sprintf(`INSERT INTO accounts (user_id, github, facebook, google)
 															VALUES ('%v', '', '', '')
 															ON CONFLICT (user_id) DO UPDATE SET %v = ''`, user.ID, service))
-
 	return err
 }

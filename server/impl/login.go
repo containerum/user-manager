@@ -102,23 +102,24 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	if err := u.handleDBError(err); err != nil {
 		return nil, userGetFailed
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
-		u.log.Info("User is not found by email. Trying searching by ID")
-		err = nil
-		user, err = u.svc.DB.GetUserByID(ctx, info.UserID)
-		if err := u.handleDBError(err); err != nil {
+	if err = u.loginUserChecks(ctx, user); err != nil {
+		u.log.Info("User is not found by email. Checking bound accounts")
+
+		user, err = u.svc.DB.GetUserByBoundAccount(ctx, request.Resource, info.UserID)
+		if err = u.handleDBError(err); err != nil {
 			return nil, userGetFailed
 		}
 		if err := u.loginUserChecks(ctx, user); err != nil {
 			return nil, err
 		}
-	}
-
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-		return tx.BindAccount(ctx, user, request.Resource, info.UserID)
-	})
-	if err := u.handleDBError(err); err != nil {
-		return nil, bindAccountFailed
+	} else {
+		u.log.Info("User is found by email. Binding account")
+		err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+			return tx.BindAccount(ctx, user, request.Resource, info.UserID)
+		})
+		if err := u.handleDBError(err); err != nil {
+			return nil, bindAccountFailed
+		}
 	}
 
 	return u.createTokens(ctx, user)
