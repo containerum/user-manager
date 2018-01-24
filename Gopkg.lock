@@ -17,7 +17,7 @@
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = ["errors","mail-templater","user-manager"]
-  revision = "766442be4f9d464a1a40fd53bda36cd585505f11"
+  revision = "cbbad1ddff1fcff4435a30318801ed9fee2dfae3"
 
 [[projects]]
   branch = "master"
@@ -41,13 +41,13 @@
   branch = "master"
   name = "github.com/gin-gonic/contrib"
   packages = ["ginrus"]
-  revision = "88aede40372d4bcb11e45168a8c30d99e44cf617"
+  revision = "dccbb4a462e965297e21372a9ad3ea05e0df3e5f"
 
 [[projects]]
   branch = "master"
   name = "github.com/gin-gonic/gin"
   packages = [".","binding","json","render"]
-  revision = "7a9a290b36bb803a18874aa5c5b108be2d7eb34d"
+  revision = "2fbb97117cda046278ad34bd7bac35cbc38c68d5"
 
 [[projects]]
   branch = "master"
@@ -59,7 +59,7 @@
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "7cbc1505685d6ce57a82b50ee4968ee41dec5b2b"
+  revision = "b1f138353a6287df5156971b3963e9107eca06a1"
 
 [[projects]]
   branch = "master"
@@ -101,7 +101,7 @@
   branch = "master"
   name = "github.com/lib/pq"
   packages = [".","oid"]
-  revision = "61fe37aa2ee24fabcdbe5c4ac1d4ac566f88f345"
+  revision = "19c8e9ad00952ce0c64489b60e8df88bb16dd514"
 
 [[projects]]
   name = "github.com/magiconair/properties"
@@ -132,6 +132,12 @@
   packages = ["."]
   revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
   version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   name = "github.com/sirupsen/logrus"
@@ -185,7 +191,7 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","context/ctxhttp","http2","http2/hpack","idna","internal/timeseries","lex/httplex","publicsuffix","trace"]
-  revision = "5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec"
+  revision = "0ed95abb35c445290478a5348a7b38bb154135fd"
 
 [[projects]]
   branch = "master"
@@ -209,7 +215,7 @@
   branch = "master"
   name = "google.golang.org/api"
   packages = ["gensupport","googleapi","googleapi/internal/uritemplates","oauth2/v2"]
-  revision = "65b0d8655182691ad23b4fac11e6f7b897d9b634"
+  revision = "adc96e7cd85a1474b9ffb0c47dbc327d0e7ce5fb"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -221,7 +227,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "a8101f21cf983e773d0c1133ebc5424792003214"
+  revision = "14790a1795ea4c3387aaf24aed670ddb51f18292"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -250,6 +256,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6e35eddc0bba90e279f515373f8158f9049ede0f6b80878505428ad9aa0d5e45"
+  inputs-digest = "468cf13ef953ece4015eed1d6fa9a1389532eb2033b130127efaf9ea1bb8ec63"
   solver-name = "gps-cdcl"
   solver-version = 1
