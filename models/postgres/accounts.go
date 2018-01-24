@@ -26,6 +26,7 @@ func (db *pgDB) GetUserByBoundAccount(ctx context.Context, service umtypes.OAuth
 
 	var ret models.User
 
+	//nolint: gas
 	rows, err := db.qLog.QueryxContext(ctx, fmt.Sprintf(`SELECT users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist
 	FROM accounts JOIN users ON accounts.user_id = users.id WHERE accounts.%v = '%v'`, service, accountID))
 
