@@ -14,7 +14,7 @@ import (
 	"github.com/lib/pq"
 )
 
-//Full user information
+//UserProfileAccounts descrobes full information about user
 type UserProfileAccounts struct {
 	User     *User
 	Profile  *Profile
