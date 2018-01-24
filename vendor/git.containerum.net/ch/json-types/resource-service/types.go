@@ -3,6 +3,8 @@ package resource
 import (
 	"time"
 
+	"database/sql"
+
 	"git.containerum.net/ch/json-types/misc"
 )
 
@@ -28,10 +30,10 @@ const (
 
 type Resource struct {
 	ID         string          `json:"id" db:"id"`
-	CreateTime string          `json:"create_time" db:"create_time"`
-	Deleted    bool            `json:"deleted" db:"deleted"`
+	CreateTime string          `json:"create_time,omitempty" db:"create_time"`
+	Deleted    bool            `json:"deleted,omitempty" db:"deleted"`
 	DeleteTime misc.PqNullTime `json:"delete_time,omitempty" db:"delete_time"`
-	TariffID   string          `json:"tariff_id" db:"tariff_id"`
+	TariffID   string          `json:"tariff_id,omitempty" db:"tariff_id"`
 }
 
 type Namespace struct {
@@ -47,10 +49,10 @@ type Namespace struct {
 type Volume struct {
 	Resource
 
-	Active     bool `json:"active" db:"active"`
-	Capacity   int  `json:"capacity" db:"capacity"` // gigabytes
-	Replicas   int  `json:"replicas" db:"replicas"`
-	Persistent bool `json:"is_persistent" db:"is_persistent"`
+	Active     *bool `json:"active,omitempty" db:"active"`
+	Capacity   int   `json:"capacity" db:"capacity"` // gigabytes
+	Replicas   int   `json:"replicas" db:"replicas"`
+	Persistent bool  `json:"is_persistent" db:"is_persistent"`
 }
 
 type Deployment struct {
@@ -59,48 +61,48 @@ type Deployment struct {
 	Name        string          `json:"name" db:"name"`
 	RAM         int             `json:"ram" db:"ram"`
 	CPU         int             `json:"cpu" db:"cpu"`
-	CreateTime  time.Time       `json:"create_time" db:"create_time"`
-	Deleted     bool            `json:"deleted" db:"deleted"`
+	CreateTime  time.Time       `json:"create_time,omitempty" db:"create_time"`
+	Deleted     *bool           `json:"deleted,omitempty" db:"deleted"`
 	DeleteTime  misc.PqNullTime `json:"delete_time,omitempty" db:"delete_time"`
 }
 
-type AccessRecord struct {
+type PermissionRecord struct {
+	ID                    string           `json:"id,omitempty" db:"id"`
+	Kind                  Kind             `json:"kind,omitempty" db:"kind"`
+	ResourceID            sql.NullString   `json:"resource_id,omitempty" db:"resource_id"` // it can be null for resources without tables
+	ResourceLabel         string           `json:"label,omitempty" db:"resource_label"`
+	OwnerUserID           string           `json:"owner_user_id,omitempty" db:"owner_user_id"`
+	CreateTime            time.Time        `json:"create_time,omitempty" db:"create_time"`
 	UserID                string           `json:"user_id" db:"user_id"`
 	AccessLevel           PermissionStatus `json:"access_level" db:"access_level"`
 	Limited               bool             `json:"limited" db:"limited"`
 	AccessLevelChangeTime time.Time        `json:"access_level_change_time" db:"access_level_change_time"`
-}
-
-type PermissionRecord struct {
-	ID            string    `json:"id" db:"id"`
-	Kind          Kind      `json:"kind" db:"kind"`
-	ResourceID    string    `json:"resource_id" db:"resource_id"`
-	ResourceLabel string    `json:"resource_label" db:"resource_label"`
-	OwnerUserID   string    `json:"owner_user_id" db:"owner_user_id"`
-	CreateTime    time.Time `json:"create_time" db:"create_time"`
-
-	AccessRecord
-	NewAccessLevel PermissionStatus `json:"new_access_level,omitempty" db:"new_access_level"`
+	NewAccessLevel        PermissionStatus `json:"new_access_level,omitempty" db:"new_access_level"`
 }
 
 // Types below is not for storing in db
 
-type NamespaceWithVolumes struct {
+type NamespaceWithPermission struct {
 	Namespace
-	Volumes []Volume `json:"volumes"`
+	PermissionRecord
 }
 
-type NamespaceWithAccesses struct {
-	Namespace
-	Users []AccessRecord `json:"users"`
-}
-
-type VolumeWithAccess struct {
+type VolumeWithPermission struct {
 	Volume
-	AccessRecord
+	PermissionRecord
 }
 
-type VolumeWithUserAccesses struct {
-	VolumeWithAccess
-	Users []AccessRecord `json:"users"`
+type NamespaceWithVolumes struct {
+	NamespaceWithPermission
+	Volume []VolumeWithPermission `json:"volumes"`
+}
+
+type NamespaceWithUserPermissions struct {
+	NamespaceWithPermission
+	Users []PermissionRecord `json:"users"`
+}
+
+type VolumeWithUserPermissions struct {
+	VolumeWithPermission
+	Users []PermissionRecord `json:"users"`
 }

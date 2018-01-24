@@ -45,6 +45,10 @@ type UserManager interface {
 
 	LinkResend(ctx context.Context, request umtypes.ResendLinkRequest) error
 
+	//checks
+	CheckAdmin(ctx context.Context) error
+	CheckUserExist(ctx context.Context) error
+
 	io.Closer
 }
 

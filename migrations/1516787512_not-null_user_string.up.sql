@@ -1,0 +1,5 @@
+ALTER TABLE users
+  ALTER COLUMN role SET NOT NULL,
+  ALTER COLUMN is_active SET NOT NULL,
+  ALTER COLUMN is_deleted SET NOT NULL,
+  ALTER COLUMN is_in_blacklist SET NOT NULL;

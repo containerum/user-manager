@@ -128,9 +128,9 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILoginRequest) (map[string]interface{}, error) {
 	u.log.WithField("username", request.Username).Infof("Login through web-api")
 
-	resp, code, err := u.svc.WebAPIClient.Login(ctx, &request)
+	resp, _, err := u.svc.WebAPIClient.Login(ctx, &request)
 	if err != nil {
-		return nil, &server.WebAPIError{Err: err.(*errors.Error), StatusCode: code}
+		return nil, err
 	}
 
 	tokens, err := u.createTokens(ctx, &models.User{

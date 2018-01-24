@@ -102,6 +102,7 @@ type UserInfoGetResponse struct {
 	Login     string                 `json:"login"`
 	Data      map[string]interface{} `json:"data"`
 	ID        string                 `json:"id"`
+	Role      string                 `json:"role"`
 	IsActive  bool                   `json:"is_active"`
 	CreatedAt time.Time              `json:"created_at"`
 }
@@ -112,9 +113,9 @@ type UserListEntry struct {
 	Referral      string                 `json:"referral"`
 	Role          string                 `json:"role"`
 	Access        string                 `json:"access"`
-	CreatedAt     time.Time              `json:"created_at"`
-	DeletedAt     time.Time              `json:"deleted_at"`
-	BlacklistedAt time.Time              `json:"blacklisted_at"`
+	CreatedAt     string                 `json:"created_at"`
+	DeletedAt     string                 `json:"deleted_at"`
+	BlacklistedAt string                 `json:"blacklisted_at"`
 	Data          map[string]interface{} `json:"data"`
 	IsActive      bool                   `json:"is_active"`
 	IsInBlacklist bool                   `json:"is_in_blacklist"`

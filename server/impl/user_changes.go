@@ -11,6 +11,8 @@ import (
 	"math"
 	"math/big"
 
+	"database/sql"
+
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	"git.containerum.net/ch/grpc-proto-files/common"
 	"git.containerum.net/ch/json-types/errors"
@@ -19,6 +21,8 @@ import (
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/server"
 	"git.containerum.net/ch/user-manager/utils"
+
+	"github.com/lib/pq"
 )
 
 func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateRequest) (*umtypes.UserCreateResponse, error) {
@@ -64,9 +68,9 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 
 		if createErr := tx.CreateProfile(ctx, &models.Profile{
 			User:      newUser,
-			Referral:  request.Referral,
-			Access:    "rw",
-			CreatedAt: time.Now().UTC(),
+			Referral:  sql.NullString{String: request.Referral, Valid: true},
+			Access:    sql.NullString{String: "rw", Valid: true},
+			CreatedAt: pq.NullTime{Time: time.Now().UTC(), Valid: true},
 		}); createErr != nil {
 			return profileCreateFailed
 		}
@@ -200,9 +204,10 @@ func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interfac
 	return &umtypes.UserInfoGetResponse{
 		Login:     user.Login,
 		Data:      profile.Data,
+		Role:      user.Role,
 		ID:        user.ID,
 		IsActive:  user.IsActive,
-		CreatedAt: profile.CreatedAt,
+		CreatedAt: profile.CreatedAt.Time,
 	}, err
 }
 
@@ -323,8 +328,8 @@ func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserC
 
 		if createErr := tx.CreateProfile(ctx, &models.Profile{
 			User:      newUser,
-			Access:    "rw",
-			CreatedAt: createdAt,
+			Access:    sql.NullString{String: "rw", Valid: true},
+			CreatedAt: pq.NullTime{Time: createdAt, Valid: true},
 			Data:      request.Data,
 		}); createErr != nil {
 			return profileCreateFailed

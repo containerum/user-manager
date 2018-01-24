@@ -63,7 +63,7 @@ func (u *serverImpl) GetBoundAccounts(ctx context.Context) (*umtypes.BoundAccoun
 		accs["github"] = accounts.Github.String
 	}
 
-	return &umtypes.BoundAccountsResponce{accs}, nil
+	return &umtypes.BoundAccountsResponce{Accounts: accs}, nil
 }
 
 func (u *serverImpl) DeleteBoundAccount(ctx context.Context, request umtypes.BoundAccountDeleteRequest) error {

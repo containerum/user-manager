@@ -44,7 +44,7 @@ type GetUserNamespaceResponse = NamespaceWithVolumes
 
 type GetAllNamespacesResponse = []NamespaceWithVolumes
 
-type GetNamespaceAccessResponse = NamespaceWithAccesses
+type GetNamespaceAccessResponse = NamespaceWithPermission
 
 type RenameNamespaceRequest = RenameResourceRequest
 
@@ -56,13 +56,13 @@ type ResizeNamespaceRequest = ResizeResourceRequest
 
 type CreateVolumeRequest = CreateResourceRequest
 
-type GetUserVolumesRequest = []VolumeWithAccess
+type GetUserVolumesRequest = []VolumeWithPermission
 
-type GetUserVolumeRequest = VolumeWithAccess
+type GetUserVolumeRequest = VolumeWithPermission
 
-type GetAllVolumesRequest = []VolumeWithAccess
+type GetAllVolumesRequest = []VolumeWithPermission
 
-type GetVolumeAccessesResponse = VolumeWithUserAccesses
+type GetVolumeAccessesResponse = VolumeWithUserPermissions
 
 type RenameVolumeRequest = RenameResourceRequest
 

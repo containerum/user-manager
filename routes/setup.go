@@ -20,7 +20,7 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 
 	root := app.Group("/")
 	{
-		root.POST("/logout/:token_id", requireIdentityHeaders, logoutHandler)
+		root.POST("/logout/:token_id", requireIdentityHeaders, requireUserExist, logoutHandler)
 	}
 
 	user := app.Group("/user")
@@ -31,17 +31,17 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 		user.POST("/sign_up/resend", linkResendHandler)
 		user.POST("/activation", activateHandler)
 		user.POST("/blacklist", requireIdentityHeaders, requireAdminRole, userToBlacklistHandler)
-		user.POST("/delete/partial", requireIdentityHeaders, partialDeleteHandler)
+		user.POST("/delete/partial", requireIdentityHeaders, requireUserExist, partialDeleteHandler)
 		user.POST("/delete/complete", requireIdentityHeaders, requireAdminRole, completeDeleteHandler)
-		user.POST("/bound_accounts", requireIdentityHeaders, addBoundAccountHandler)
+		user.POST("/bound_accounts", requireIdentityHeaders, requireUserExist, addBoundAccountHandler)
 
 		user.GET("/links/:user_id", requireIdentityHeaders, requireAdminRole, linksGetHandler)
 		user.GET("/blacklist", requireIdentityHeaders, requireAdminRole, blacklistGetHandler)
-		user.GET("/info", requireIdentityHeaders, userInfoGetHandler)
+		user.GET("/info", requireIdentityHeaders, requireUserExist, userInfoGetHandler)
 		user.GET("/users", requireIdentityHeaders, requireAdminRole, userListGetHandler)
-		user.GET("/bound_accounts", requireIdentityHeaders, getBoundAccountsHandler)
+		user.GET("/bound_accounts", requireIdentityHeaders, requireUserExist, getBoundAccountsHandler)
 
-		user.DELETE("/bound_accounts", requireIdentityHeaders, deleteBoundAccountHandler)
+		user.DELETE("/bound_accounts", requireIdentityHeaders, requireUserExist, deleteBoundAccountHandler)
 	}
 
 	requireLoginHeaders := requireHeaders(umtypes.UserAgentHeader, umtypes.FingerprintHeader, umtypes.ClientIPHeader)
@@ -55,7 +55,7 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 
 	password := app.Group("/password")
 	{
-		password.PUT("/change", requireIdentityHeaders, passwordChangeHandler)
+		password.PUT("/change", requireIdentityHeaders, requireUserExist, passwordChangeHandler)
 
 		password.POST("/reset", passwordResetHandler)
 		password.POST("/restore", passwordRestoreHandler)
