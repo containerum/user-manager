@@ -66,10 +66,13 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 			return userCreateFailed
 		}
 
+		referral := sql.NullString{request.Referral, true}
+		access := sql.NullString{"rw", true}
+
 		if createErr := tx.CreateProfile(ctx, &models.Profile{
 			User:      newUser,
-			Referral:  sql.NullString{request.Referral, true},
-			Access:    sql.NullString{"rw", true},
+			Referral:  referral,
+			Access:    access,
 			CreatedAt: pq.NullTime{time.Now().UTC(), true},
 		}); createErr != nil {
 			return profileCreateFailed
@@ -326,9 +329,11 @@ func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserC
 			createdAt = time.Now().UTC()
 		}
 
+		access := sql.NullString{"rw", true}
+
 		if createErr := tx.CreateProfile(ctx, &models.Profile{
 			User:      newUser,
-			Access:    sql.NullString{"rw", true},
+			Access:    access,
 			CreatedAt: pq.NullTime{createdAt, true},
 			Data:      request.Data,
 		}); createErr != nil {
