@@ -53,14 +53,16 @@ func (u *serverImpl) GetBoundAccounts(ctx context.Context) (*umtypes.BoundAccoun
 
 	accs := make(map[string]string)
 
-	if accounts.Google.String != "" {
-		accs["google"] = accounts.Google.String
-	}
-	if accounts.Facebook.String != "" {
-		accs["facebook"] = accounts.Facebook.String
-	}
-	if accounts.Github.String != "" {
-		accs["github"] = accounts.Github.String
+	if accounts != nil {
+		if accounts.Google.String != "" {
+			accs["google"] = accounts.Google.String
+		}
+		if accounts.Facebook.String != "" {
+			accs["facebook"] = accounts.Facebook.String
+		}
+		if accounts.Github.String != "" {
+			accs["github"] = accounts.Github.String
+		}
 	}
 
 	return &umtypes.BoundAccountsResponce{Accounts: accs}, nil
