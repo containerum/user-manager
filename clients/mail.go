@@ -47,7 +47,6 @@ func (mc *httpMailClient) sendOneTemplate(ctx context.Context, tmplName string, 
 	req.Delay = 0
 	req.Message.Recipients = append(req.Message.Recipients, *recipient)
 	resp, err := mc.rest.R().
-		SetContext(ctx).
 		SetHeaders(utils.RequestHeadersMap(ctx)). // forward request headers to other our service
 		SetBody(req).
 		SetResult(mttypes.SendResponse{}).
