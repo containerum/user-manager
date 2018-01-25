@@ -50,7 +50,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.BasicLoginR
 			return resp, err
 		}
 		go u.linkSend(ctx, link)
-		return resp, nil
+		return resp, &server.AccessDeniedError{Err: errors.New(activationNeeded)}
 	}
 	resp, err = u.createTokens(ctx, user)
 	return
