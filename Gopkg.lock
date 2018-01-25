@@ -17,13 +17,13 @@
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = ["errors","mail-templater","user-manager"]
-  revision = "cbbad1ddff1fcff4435a30318801ed9fee2dfae3"
+  revision = "48bc8d5eb64a01c9e2cf2b313c1ebe1ff83e6b0d"
 
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/utils"
   packages = ["."]
-  revision = "b00f2eea44849569dda2ba22420da2eee12ec209"
+  revision = "be58be569f33028518b079164fac34f35049b1f9"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -89,7 +89,7 @@
   branch = "master"
   name = "github.com/jmoiron/sqlx"
   packages = [".","reflectx"]
-  revision = "de8647470aafe4854c976707c431dbe1eb2822c6"
+  revision = "05cef0741ade10ca668982355b3f3f0bcf0ff0a8"
 
 [[projects]]
   name = "github.com/json-iterator/go"
@@ -203,7 +203,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["unix","windows"]
-  revision = "af50095a40f9041b3b38960738837185c26e9419"
+  revision = "ef802241c90f84d84d644a2d8d0de8ee96038c9c"
 
 [[projects]]
   branch = "master"
@@ -215,7 +215,7 @@
   branch = "master"
   name = "google.golang.org/api"
   packages = ["gensupport","googleapi","googleapi/internal/uritemplates","oauth2/v2"]
-  revision = "adc96e7cd85a1474b9ffb0c47dbc327d0e7ce5fb"
+  revision = "a27ddaf5ce0ce688be462071a9e55566e60bb59e"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -227,7 +227,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "14790a1795ea4c3387aaf24aed670ddb51f18292"
+  revision = "4eb30f4778eed4c258ba66527a0d4f9ec8a36c45"
 
 [[projects]]
   name = "google.golang.org/grpc"

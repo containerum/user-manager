@@ -1,0 +1,3 @@
+ALTER TABLE domains
+  ALTER COLUMN created_at SET NOT NULL,
+  ALTER COLUMN created_at SET DEFAULT NOW();

@@ -23,6 +23,8 @@ const (
 	tokenNotOwnedByUser     = "token %s not owned by user %s"
 	adminRequired           = "you don`t have access to do this"
 	invalidReCaptcha        = "invalid recaptcha"
+	domainNotBlacklist      = "domain is not in blacklist"
+	domainBlacklistEmpty    = "domain blacklist is empty"
 )
 
 // internal errors

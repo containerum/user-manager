@@ -38,6 +38,21 @@ func (db *pgDB) GetUserByID(ctx context.Context, id string) (*models.User, error
 	return &user, err
 }
 
+/*func (db *pgDB) GetUserByID(ctx context.Context, id string) (*models.User, error) {
+	db.log.Infoln("Get user by id", id)
+	var user models.User
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE id = $1 AND NOT is_deleted", id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, rows.Err()
+	}
+	err = rows.StructScan(&user)
+	return &user, err
+}*/
+
 func (db *pgDB) CreateUser(ctx context.Context, user *models.User) error {
 	db.log.Infoln("Create user", user.Login)
 	rows, err := db.qLog.QueryxContext(ctx, "INSERT INTO users (login, password_hash, salt, role, is_active) "+
