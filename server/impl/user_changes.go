@@ -256,7 +256,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 
 func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) error {
 	u.log.WithField("user_id", userID).Info("completely delete user")
-	user, err := u.svc.DB.GetUserByID(ctx, userID)
+	user, err := u.svc.DB.GetDeletedUserByID(ctx, userID)
 	if err := u.handleDBError(err); err != nil {
 		return userGetFailed
 	}
