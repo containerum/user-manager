@@ -8,10 +8,10 @@ import (
 	"git.containerum.net/ch/user-manager/server"
 )
 
-func (db *pgDB) BlacklistDomain(ctx context.Context, domain string, userId string) error {
+func (db *pgDB) BlacklistDomain(ctx context.Context, domain string, userID string) error {
 	db.log.Infoln("Blacklisting domain", domain)
 	_, err := db.eLog.ExecContext(ctx, "INSERT INTO domains (domain, added_by) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-		domain, userId)
+		domain, userID)
 	return err
 }
 

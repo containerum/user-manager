@@ -115,7 +115,7 @@ type DB interface {
 	BindAccount(ctx context.Context, user *User, service umtypes.OAuthResource, accountID string) error
 	DeleteBoundAccount(ctx context.Context, user *User, service umtypes.OAuthResource) error
 
-	BlacklistDomain(ctx context.Context, domain string, userId string) error
+	BlacklistDomain(ctx context.Context, domain string, userID string) error
 	UnBlacklistDomain(ctx context.Context, domain string) error
 	IsDomainBlacklisted(ctx context.Context, domain string) (bool, error)
 	GetBlacklistedDomain(ctx context.Context, domain string) (*DomainBlacklistEntry, error)
