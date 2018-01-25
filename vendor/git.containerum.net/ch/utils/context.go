@@ -10,6 +10,7 @@ var (
 	SessionIDContextKey   = new(int)
 	UserIDContextKey      = new(int)
 	TokenIDContextKey     = new(int)
+	UserRoleContextKey    = new(int)
 )
 
 // MustGetFingerprint attempts to extract client fingerprint using FingerPrintContextKey from context.
@@ -70,4 +71,14 @@ func MustGetTokenID(ctx context.Context) string {
 		panic("token id not found in context")
 	}
 	return uid
+}
+
+// MustGetUserRole attempts to extract user role using UserRoleContextKey from context
+// It panics if value was not found in context.
+func MustGetUserRole(ctx context.Context) string {
+	role, ok := ctx.Value(UserRoleContextKey).(string)
+	if !ok {
+		panic("user role not found in context")
+	}
+	return role
 }

@@ -45,9 +45,15 @@ type UserManager interface {
 
 	LinkResend(ctx context.Context, request umtypes.ResendLinkRequest) error
 
-	//checks
+	// checks
 	CheckAdmin(ctx context.Context) error
 	CheckUserExist(ctx context.Context) error
+
+	// Domain blacklist
+	AddDomainToBlacklist(ctx context.Context, request umtypes.DomainToBlacklistRequest) error
+	RemoveDomainFromBlacklist(ctx context.Context, domain string) error
+	GetBlacklistedDomain(ctx context.Context, domain string) (*umtypes.DomainResponce, error)
+	GetBlacklistedDomainsList(ctx context.Context) (*umtypes.DomainListResponce, error)
 
 	io.Closer
 }

@@ -60,4 +60,14 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 		password.POST("/reset", passwordResetHandler)
 		password.POST("/restore", passwordRestoreHandler)
 	}
+
+	domain_blacklist := app.Group("/domain")
+	{
+		domain_blacklist.POST("/", requireIdentityHeaders, requireAdminRole, blacklistDomainAddHandler)
+
+		domain_blacklist.GET("/", requireIdentityHeaders, requireAdminRole, blacklistDomainsListGetHandler)
+		domain_blacklist.GET("/:domain", requireIdentityHeaders, requireAdminRole, blacklistDomainGetHandler)
+
+		domain_blacklist.DELETE("/:domain", requireIdentityHeaders, requireAdminRole, blacklistDomainDeleteHandler)
+	}
 }

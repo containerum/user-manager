@@ -82,8 +82,9 @@ type Token struct {
 // DomainBlacklistEntry describes one blacklisted email domain.
 // Registration with email for this domain must be rejected. It should be used only inside this project.
 type DomainBlacklistEntry struct {
-	Domain    string
-	CreatedAt time.Time
+	Domain    string         `db:"domain"`
+	CreatedAt time.Time      `db:"created_at"`
+	AddedBy   sql.NullString `db:"added_by"`
 }
 
 // Errors which may occur in transactional operations
@@ -114,10 +115,11 @@ type DB interface {
 	BindAccount(ctx context.Context, user *User, service umtypes.OAuthResource, accountID string) error
 	DeleteBoundAccount(ctx context.Context, user *User, service umtypes.OAuthResource) error
 
-	BlacklistDomain(ctx context.Context, domain string) error
+	BlacklistDomain(ctx context.Context, domain string, userId string) error
 	UnBlacklistDomain(ctx context.Context, domain string) error
 	IsDomainBlacklisted(ctx context.Context, domain string) (bool, error)
-	/*GetBlacklistedDomains() ([]DomainBlacklistEntry, error)*/
+	GetBlacklistedDomain(ctx context.Context, domain string) (*DomainBlacklistEntry, error)
+	GetBlacklistedDomainsList(ctx context.Context) ([]DomainBlacklistEntry, error)
 
 	CreateLink(ctx context.Context, linkType umtypes.LinkType, lifeTime time.Duration, user *User) (*Link, error)
 	GetLinkForUser(ctx context.Context, linkType umtypes.LinkType, user *User) (*Link, error)
