@@ -43,6 +43,9 @@ func main() {
 	app.Use(gin.RecoveryWithWriter(logrus.StandardLogger().WithField("component", "gin_recovery").WriterLevel(logrus.ErrorLevel)))
 	app.Use(ginrus.Ginrus(logrus.StandardLogger(), time.RFC3339, true))
 
+	err := oauthClientsSetup()
+	exitOnErr(err)
+
 	userManager, err := getUserManager(server.Services{
 		MailClient:            getService(getMailClient()).(clients.MailClient),
 		DB:                    getService(getDB()).(models.DB),
