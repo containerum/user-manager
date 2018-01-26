@@ -17,7 +17,7 @@ func userCreateHandler(ctx *gin.Context) {
 	var request umtypes.UserCreateRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -34,7 +34,7 @@ func linkResendHandler(ctx *gin.Context) {
 	var request umtypes.ResendLinkRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -51,7 +51,7 @@ func activateHandler(ctx *gin.Context) {
 	var request umtypes.ActivateRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -68,7 +68,7 @@ func userToBlacklistHandler(ctx *gin.Context) {
 	var request umtypes.UserToBlacklistRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -85,7 +85,7 @@ func blacklistGetHandler(ctx *gin.Context) {
 	var params umtypes.UserListQuery
 	if err := ctx.ShouldBindQuery(&params); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -125,7 +125,7 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 	var newData map[string]interface{}
 	if err := ctx.ShouldBindJSON(&newData); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -148,7 +148,7 @@ func userListGetHandler(ctx *gin.Context) {
 	var params umtypes.UserListQuery
 	if err := ctx.ShouldBindQuery(&params); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -176,7 +176,7 @@ func completeDeleteHandler(ctx *gin.Context) {
 	var request umtypes.CompleteDeleteHandlerRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -193,7 +193,7 @@ func addBoundAccountHandler(ctx *gin.Context) {
 	var request umtypes.OAuthLoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -220,7 +220,7 @@ func deleteBoundAccountHandler(ctx *gin.Context) {
 	var request umtypes.BoundAccountDeleteRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 

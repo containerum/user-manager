@@ -6,24 +6,18 @@ import (
 )
 
 const (
-	userNotFound            = "user was not found"
 	userAlreadyExists       = "user %s is already registered"
 	userNotPartiallyDeleted = "user %s is not partially deleted"
 	domainInBlacklist       = "email domain %s is in blacklist"
 	linkNotFound            = "link %s was not found or already used or expired"
-	profilesNotFound        = "profiles not found"
 	waitForResend           = "can`t resend link now, please wait %d seconds"
 	oneTimeTokenNotFound    = "one-time token %s not exists or already used"
 	resourceNotSupported    = "resource %s not supported now"
-	activationNeeded        = "Activate your account please. Check your email"
-	invalidPassword         = "invalid password provided"
-	linkNotForPassword      = "link %s is not for password changing" // nolint: gas
+	linkNotForPassword      = "link %s is not for password changing"
 	linkNotForConfirm       = "link %s is not for activation"
 	userBanned              = "user banned"
 	tokenNotOwnedByUser     = "token %s not owned by user %s"
-	adminRequired           = "you don`t have access to do this"
 	invalidReCaptcha        = "invalid recaptcha"
-	domainNotBlacklist      = "domain is not in blacklist"
 	domainBlacklistEmpty    = "domain blacklist is empty"
 )
 
@@ -44,9 +38,10 @@ var (
 
 	oauthUserInfoGetFailed = &server.InternalError{Err: errors.New("get user info over oauth failed")}
 
-	boundAccountsGetFailed = &server.InternalError{Err: errors.New("get user bound accounts from db failed")}
+	boundAccountsGetFailed    = &server.InternalError{Err: errors.New("get user bound accounts from db failed")}
+	boundAccountsDeleteFailed = &server.InternalError{Err: errors.New("delete user bound account failed")}
+	bindAccountFailed         = &server.InternalError{Err: errors.New("bind account failed")}
 
-	bindAccountFailed      = &server.InternalError{Err: errors.New("bind account failed")}
 	reCaptchaRequestFailed = &server.InternalError{Err: errors.New("reCaptcha check request failed")}
 
 	blacklistDomainCheckFailed = &server.InternalError{Err: errors.New("check if domain blacklisted failed")}
@@ -62,4 +57,20 @@ var (
 	tokenDeleteFailed = &server.InternalError{Err: errors.New("token delete failed")}
 
 	resourceAccessGetFailed = &server.InternalError{Err: errors.New("resource access get failed")}
+
+	blacklistDomainFailed   = &server.InternalError{Err: errors.New("domain blacklisting failed")}
+	unblacklistDomainFailed = &server.InternalError{Err: errors.New("removing domain from blacklisting failed")}
+)
+
+var (
+	userNotFound       = &server.NotFoundError{Err: errors.New("User with such email does not exist")}
+	profilesNotFound   = &server.NotFoundError{Err: errors.New("profiles not found")}
+	domainNotBlacklist = &server.NotFoundError{Err: errors.New("domain is not in blacklist")}
+)
+
+var (
+	webApiLoginFailed = &server.AccessDeniedError{Err: errors.New("login using webapi failed")}
+	adminRequired     = &server.AccessDeniedError{Err: errors.New("you don`t have access to do this")}
+	invalidPassword   = &server.AccessDeniedError{Err: errors.New("invalid password provided")}
+	activationNeeded  = &server.AccessDeniedError{Err: errors.New("Activate your account please. Check your email")}
 )

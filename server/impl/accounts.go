@@ -28,7 +28,7 @@ func (u *serverImpl) AddBoundAccount(ctx context.Context, request umtypes.OAuthL
 		return tx.BindAccount(ctx, user, umtypes.OAuthResource(request.Resource), request.AccessToken)
 	})
 	if err := u.handleDBError(err); err != nil {
-		return err
+		return bindAccountFailed
 	}
 	return nil
 }
@@ -48,7 +48,7 @@ func (u *serverImpl) GetBoundAccounts(ctx context.Context) (*umtypes.BoundAccoun
 	var accounts *models.Accounts
 	accounts, err = u.svc.DB.GetUserBoundAccounts(ctx, user)
 	if err != nil {
-		return nil, err
+		return nil, boundAccountsGetFailed
 	}
 
 	accs := make(map[string]string)
@@ -86,7 +86,7 @@ func (u *serverImpl) DeleteBoundAccount(ctx context.Context, request umtypes.Bou
 		return tx.DeleteBoundAccount(ctx, user, umtypes.OAuthResource(request.Resource))
 	})
 	if err := u.handleDBError(err); err != nil {
-		return err
+		return boundAccountsDeleteFailed
 	}
 	return nil
 }

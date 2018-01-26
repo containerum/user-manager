@@ -3,7 +3,6 @@ package routes
 import (
 	"net/http"
 
-	"git.containerum.net/ch/json-types/errors"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +11,7 @@ func passwordChangeHandler(ctx *gin.Context) {
 	var request umtypes.PasswordChangeRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -29,7 +28,7 @@ func passwordResetHandler(ctx *gin.Context) {
 	var request umtypes.PasswordResetRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -46,7 +45,7 @@ func passwordRestoreHandler(ctx *gin.Context) {
 	var request umtypes.PasswordRestoreRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 

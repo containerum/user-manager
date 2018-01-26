@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"git.containerum.net/ch/user-manager/server"
-	"github.com/pkg/errors"
 )
 
 func (u *serverImpl) CheckUserExist(ctx context.Context) error {
@@ -33,7 +32,7 @@ func (u *serverImpl) CheckAdmin(ctx context.Context) error {
 	}
 
 	if user.Role != "admin" {
-		return errors.New(adminRequired)
+		return adminRequired
 	}
 
 	return nil

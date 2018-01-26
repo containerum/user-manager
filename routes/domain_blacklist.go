@@ -3,7 +3,6 @@ package routes
 import (
 	"net/http"
 
-	"git.containerum.net/ch/json-types/errors"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +11,7 @@ func blacklistDomainAddHandler(ctx *gin.Context) {
 	var request umtypes.DomainToBlacklistRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 

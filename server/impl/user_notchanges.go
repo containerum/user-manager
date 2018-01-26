@@ -5,7 +5,6 @@ import (
 
 	"time"
 
-	"git.containerum.net/ch/json-types/errors"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/server"
@@ -18,7 +17,7 @@ func (u *serverImpl) GetUserLinks(ctx context.Context, userID string) (*umtypes.
 		return nil, userGetFailed
 	}
 	if user == nil {
-		return nil, &server.NotFoundError{Err: errors.New(userNotFound)}
+		return nil, userNotFound
 	}
 
 	links, err := u.svc.DB.GetUserLinks(ctx, user)
@@ -78,7 +77,7 @@ func (u *serverImpl) GetUserInfoByID(ctx context.Context, userID string) (*umtyp
 		return nil, userGetFailed
 	}
 	if user == nil {
-		return nil, &server.NotFoundError{Err: errors.New(userNotFound)}
+		return nil, userNotFound
 	}
 
 	profile, err := u.svc.DB.GetProfileByUser(ctx, user)
@@ -115,7 +114,7 @@ func (u *serverImpl) GetUsers(ctx context.Context, params umtypes.UserListQuery,
 		return nil, profileGetFailed
 	}
 	if profiles == nil {
-		return nil, &server.NotFoundError{Err: errors.New(profilesNotFound)}
+		return nil, profilesNotFound
 	}
 
 	satisfiesFilter := server.CreateFilterFunc(filters...)

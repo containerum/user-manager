@@ -3,7 +3,6 @@ package routes
 import (
 	"net/http"
 
-	"git.containerum.net/ch/json-types/errors"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +11,7 @@ func basicLoginHandler(ctx *gin.Context) {
 	var request umtypes.BasicLoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -29,7 +28,7 @@ func oneTimeTokenLoginHandler(ctx *gin.Context) {
 	var request umtypes.OneTimeTokenLoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -46,7 +45,7 @@ func oauthLoginHandler(ctx *gin.Context) {
 	var request umtypes.OAuthLoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 
@@ -63,7 +62,7 @@ func webAPILoginHandler(ctx *gin.Context) {
 	var request umtypes.WebAPILoginRequest
 	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.Error(err)
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
 		return
 	}
 

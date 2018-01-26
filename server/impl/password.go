@@ -28,7 +28,7 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 	}
 
 	if !utils.CheckPassword(user.Login, request.CurrentPassword, user.Salt, user.PasswordHash) {
-		return nil, &server.AccessDeniedError{Err: errors.New(invalidPassword)}
+		return nil, invalidPassword
 	}
 
 	var tokens *auth.CreateTokenResponse
@@ -127,7 +127,7 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 			UserId: &common.UUID{Value: link.User.ID},
 		})
 		if authErr != nil {
-			return authErr
+			return tokenDeleteFailed
 		}
 
 		if updErr := tx.UpdateLink(ctx, link); updErr != nil {

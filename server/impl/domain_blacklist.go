@@ -3,8 +3,6 @@ package impl
 import (
 	"context"
 
-	"git.containerum.net/ch/json-types/errors"
-
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/server"
@@ -19,7 +17,7 @@ func (u *serverImpl) GetBlacklistedDomain(ctx context.Context, domain string) (*
 	}
 
 	if blacklistedDomain == nil {
-		return nil, &server.NotFoundError{Err: errors.Format(domainNotBlacklist)}
+		return nil, domainNotBlacklist
 	}
 
 	return &umtypes.DomainResponce{
@@ -37,7 +35,7 @@ func (u *serverImpl) GetBlacklistedDomainsList(ctx context.Context) (*umtypes.Do
 	}
 
 	if len(blacklistedDomains) == 0 {
-		return nil, &server.NotFoundError{Err: errors.Format(domainBlacklistEmpty)}
+		return nil, domainNotBlacklist
 	}
 
 	resp := umtypes.DomainListResponce{
@@ -66,7 +64,7 @@ func (u *serverImpl) AddDomainToBlacklist(ctx context.Context, request umtypes.D
 		return tx.BlacklistDomain(ctx, request.Domain, userID)
 	})
 	if err := u.handleDBError(err); err != nil {
-		return err
+		return blacklistDomainFailed
 	}
 
 	return nil
@@ -82,7 +80,7 @@ func (u *serverImpl) RemoveDomainFromBlacklist(ctx context.Context, domain strin
 		return tx.UnBlacklistDomain(ctx, domain)
 	})
 	if err := u.handleDBError(err); err != nil {
-		return err
+		return unblacklistDomainFailed
 	}
 
 	return nil
