@@ -13,7 +13,7 @@ const (
 	waitForResend           = "can`t resend link now, please wait %d seconds"
 	oneTimeTokenNotFound    = "one-time token %s not exists or already used"
 	resourceNotSupported    = "resource %s not supported now"
-	linkNotForPassword      = "link %s is not for password changing"
+	linkNotForPassword      = "link %s is not for password changing" //nolint: gas
 	linkNotForConfirm       = "link %s is not for activation"
 	userBanned              = "user banned"
 	tokenNotOwnedByUser     = "token %s not owned by user %s"
@@ -69,7 +69,7 @@ var (
 )
 
 var (
-	webApiLoginFailed = &server.AccessDeniedError{Err: errors.New("login using webapi failed")}
+	webAPILoginFailed = &server.AccessDeniedError{Err: errors.New("login using webapi failed")}
 	adminRequired     = &server.AccessDeniedError{Err: errors.New("you don`t have access to do this")}
 	invalidPassword   = &server.AccessDeniedError{Err: errors.New("invalid password provided")}
 	activationNeeded  = &server.AccessDeniedError{Err: errors.New("Activate your account please. Check your email")}

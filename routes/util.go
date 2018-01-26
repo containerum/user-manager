@@ -6,10 +6,12 @@ import (
 	"gopkg.in/go-playground/validator.v8"
 )
 
+//BindError is a type for bind errors
 type BindError struct {
 	Error string `json:"error"`
 }
 
+//ParseBindErorrs parses errors from message content binding
 func ParseBindErorrs(in error) []BindError {
 	var out []BindError
 	for _, v := range in.(validator.ValidationErrors) {
