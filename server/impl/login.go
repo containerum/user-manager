@@ -29,7 +29,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.BasicLoginR
 		return resp, checksErr
 	}
 	if !utils.CheckPassword(request.Username, request.Password, user.Salt, user.PasswordHash) {
-		return resp, &server.AccessDeniedError{Err: errors.New(invalidPassword)}
+		return resp, invalidPassword
 	}
 	if !user.IsActive {
 		link, err := u.svc.DB.GetLinkForUser(ctx, umtypes.LinkTypeConfirm, user)
@@ -50,7 +50,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.BasicLoginR
 			return resp, err
 		}
 		go u.linkSend(ctx, link)
-		return resp, &server.AccessDeniedError{Err: errors.New(activationNeeded)}
+		return resp, activationNeeded
 	}
 	resp, err = u.createTokens(ctx, user)
 	return
@@ -79,7 +79,7 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneT
 		return err
 	})
 	if err := u.handleDBError(err); err != nil {
-		return nil, err
+		return nil, oneTimeTokenCreateFailed
 	}
 	return tokens, nil
 }
@@ -138,7 +138,7 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILogi
 		Role: "user",
 	})
 	if err != nil {
-		return nil, err
+		return nil, tokenCreateFailed
 	}
 
 	resp["access_token"] = tokens.AccessToken
@@ -152,7 +152,7 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILogi
 		IsActive:  resp["user"].(map[string]interface{})["is_active"].(bool)}
 
 	if _, err = u.CreateUserWebAPI(ctx, newUser); err != nil {
-		u.log.WithError(err).Warnf("Unable to add user in new db")
+		u.log.WithError(err).Warnf("Unable to add user to new db")
 	}
 
 	return resp, nil
@@ -174,7 +174,7 @@ func (u *serverImpl) Logout(ctx context.Context) error {
 		TokenId: &common.UUID{Value: tokenID},
 	})
 	if err != nil {
-		return err
+		return tokenDeleteFailed
 	}
 
 	oneTimeToken, err := u.svc.DB.GetTokenBySessionID(ctx, sessionID)

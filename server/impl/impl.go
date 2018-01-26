@@ -107,7 +107,7 @@ func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp 
 
 func (u *serverImpl) loginUserChecks(ctx context.Context, user *models.User) error {
 	if user == nil || user.IsDeleted {
-		return &server.NotFoundError{Err: errors.Format(userNotFound)}
+		return userNotFound
 	}
 	if user.IsInBlacklist {
 		return &server.AccessDeniedError{Err: errors.Format(userBanned)}

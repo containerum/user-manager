@@ -28,7 +28,7 @@ import (
 func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateRequest) (*umtypes.UserCreateResponse, error) {
 	u.log.WithField("login", request.UserName).Info("creating user")
 	if err := u.checkReCaptcha(ctx, request.ReCaptcha); err != nil {
-		return nil, err
+		return nil, reCaptchaRequestFailed
 	}
 
 	domain := strings.Split(request.UserName, "@")[1]
@@ -82,7 +82,7 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 		return nil
 	})
 	if err := u.handleDBError(err); err != nil {
-		return nil, err
+		return nil, userCreateFailed
 	}
 
 	go u.linkSend(ctx, link)
@@ -126,7 +126,7 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.ActivateR
 		return err
 	})
 	if err := u.handleDBError(err); err != nil {
-		return nil, err
+		return nil, tokenCreateFailed
 	}
 
 	go func() {
@@ -219,7 +219,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		return userGetFailed
 	}
 	if user == nil {
-		return &server.NotFoundError{Err: errors.New(userNotFound)}
+		return userNotFound
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
@@ -236,7 +236,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		return authErr
 	})
 	if err := u.handleDBError(err); err != nil {
-		return err
+		return tokenDeleteFailed
 	}
 
 	go func() {
@@ -261,7 +261,7 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 		return userGetFailed
 	}
 	if user == nil {
-		return &server.NotFoundError{Err: errors.New(userNotFound)}
+		return userNotFound
 	}
 	if !user.IsDeleted {
 		return &server.BadRequestError{Err: errors.Format(userNotPartiallyDeleted, userID)}
@@ -277,7 +277,7 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 		return tx.UpdateUser(ctx, user)
 	})
 	if err := u.handleDBError(err); err != nil {
-		return userUpdateFailed
+		return err
 	}
 	return nil
 }
