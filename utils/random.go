@@ -11,21 +11,22 @@ const (
 )
 
 //SecureRandomString securly generates random string
-func SecureRandomString(length int) (res string, err error) {
-
+func SecureRandomString(length int) (ret string, err error) {
 	result := make([]byte, length)
 	bufferSize := int(float64(length) * 1.3)
 	for i, j, randomBytes := 0, 0, []byte{}; i < length; j++ {
 		if j%bufferSize == 0 {
 			randomBytes, err = SecureRandomBytes(bufferSize)
 		}
+		if err != nil {
+			return "", err
+		}
 		if idx := int(randomBytes[j%length] & letterIdxMask); idx < len(letterBytes) {
 			result[i] = letterBytes[idx]
 			i++
 		}
 	}
-	res = string(result)
-	return res, nil
+	return string(result), nil
 }
 
 // SecureRandomBytes returns the requested number of bytes using crypto/rand
