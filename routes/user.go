@@ -129,7 +129,7 @@ func userInfoUpdateHandler(ctx *gin.Context) {
 		return
 	}
 
-	if err := validate.Field(newData["email"], "required,email"); err != nil {
+	if err := validate.Field(newData["email"], "omitempty,email"); err != nil {
 		ctx.Error(err)
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, errors.New(err.Error()))
 		return
