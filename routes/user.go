@@ -118,6 +118,17 @@ func userInfoGetHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
+func userGetHandler(ctx *gin.Context) {
+
+	resp, err := srv.GetUserInfoByID(ctx.Request.Context(), ctx.Param("user_id"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(errorWithHTTPStatus(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+}
+
 func userInfoUpdateHandler(ctx *gin.Context) {
 	config := &validator.Config{TagName: "validate"}
 	validate = validator.New(config)
