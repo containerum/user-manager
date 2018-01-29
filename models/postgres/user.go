@@ -127,3 +127,17 @@ func (db *pgDB) BlacklistUser(ctx context.Context, user *models.User) error {
 	user.IsInBlacklist = true
 	return nil
 }
+
+func (db *pgDB) UnBlacklistUser(ctx context.Context, user *models.User) error {
+	db.log.Infoln("Unblacklisting user", user.Login)
+	_, err := db.eLog.ExecContext(ctx, "UPDATE users SET is_in_blacklist = FALSE WHERE id = $1", user.ID)
+	if err != nil {
+		return err
+	}
+	_, err = db.eLog.ExecContext(ctx, "UPDATE profiles SET blacklist_at = NULL WHERE user_id = $1", user.ID)
+	if err != nil {
+		return err
+	}
+	user.IsInBlacklist = false
+	return nil
+}

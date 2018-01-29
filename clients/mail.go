@@ -16,6 +16,7 @@ type MailClient interface {
 	SendConfirmationMail(ctx context.Context, recipient *mttypes.Recipient) error
 	SendActivationMail(ctx context.Context, recipient *mttypes.Recipient) error
 	SendBlockedMail(ctx context.Context, recipient *mttypes.Recipient) error
+	SendUnBlockedMail(ctx context.Context, recipient *mttypes.Recipient) error
 	SendPasswordChangedMail(ctx context.Context, recipient *mttypes.Recipient) error
 	SendPasswordResetMail(ctx context.Context, recipient *mttypes.Recipient) error
 	SendAccDeletedMail(ctx context.Context, recipient *mttypes.Recipient) error
@@ -73,6 +74,11 @@ func (mc *httpMailClient) SendActivationMail(ctx context.Context, recipient *mtt
 func (mc *httpMailClient) SendBlockedMail(ctx context.Context, recipient *mttypes.Recipient) error {
 	mc.log.Infoln("Sending blocked mail to", recipient.Email)
 	return mc.sendOneTemplate(ctx, "blocked_acc", recipient)
+}
+
+func (mc *httpMailClient) SendUnBlockedMail(ctx context.Context, recipient *mttypes.Recipient) error {
+	mc.log.Infoln("Sending unblocked mail to", recipient.Email)
+	return mc.sendOneTemplate(ctx, "unblocked_acc", recipient)
 }
 
 func (mc *httpMailClient) SendPasswordChangedMail(ctx context.Context, recipient *mttypes.Recipient) error {

@@ -81,6 +81,23 @@ func userToBlacklistHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+func userDeleteFromBlacklistHandler(ctx *gin.Context) {
+	var request umtypes.UserToBlacklistRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.Error(err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, ParseBindErorrs(err))
+		return
+	}
+
+	err := srv.UnBlacklistUser(ctx.Request.Context(), request)
+	if err != nil {
+		ctx.AbortWithStatusJSON(errorWithHTTPStatus(err))
+		return
+	}
+
+	ctx.Status(http.StatusAccepted)
+}
+
 func blacklistGetHandler(ctx *gin.Context) {
 	var params umtypes.UserListQuery
 	if err := ctx.ShouldBindQuery(&params); err != nil {

@@ -43,6 +43,8 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 		user.GET("/bound_accounts", requireIdentityHeaders, requireUserExist, getBoundAccountsHandler)
 
 		user.DELETE("/bound_accounts", requireIdentityHeaders, requireUserExist, deleteBoundAccountHandler)
+		user.DELETE("/blacklist", requireIdentityHeaders, requireAdminRole, userDeleteFromBlacklistHandler)
+
 	}
 
 	requireLoginHeaders := requireHeaders(umtypes.UserAgentHeader, umtypes.FingerprintHeader, umtypes.ClientIPHeader)

@@ -73,4 +73,5 @@ var (
 	adminRequired     = &server.AccessDeniedError{Err: errors.New("you don`t have access to do this")}
 	invalidPassword   = &server.AccessDeniedError{Err: errors.New("invalid password provided")}
 	activationNeeded  = &server.AccessDeniedError{Err: errors.New("Activate your account please. Check your email")}
+	userNotBlacklist  = &server.AccessDeniedError{Err: errors.New("user is not in blacklist")}
 )
