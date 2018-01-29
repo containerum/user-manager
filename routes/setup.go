@@ -35,6 +35,7 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 		user.POST("/delete/complete", requireIdentityHeaders, requireAdminRole, completeDeleteHandler)
 		user.POST("/bound_accounts", requireIdentityHeaders, requireUserExist, addBoundAccountHandler)
 
+		user.GET("/info/:user_id", userGetHandler)
 		user.GET("/links/:user_id", requireIdentityHeaders, requireAdminRole, linksGetHandler)
 		user.GET("/blacklist", requireIdentityHeaders, requireAdminRole, blacklistGetHandler)
 		user.GET("/info", requireIdentityHeaders, requireUserExist, userInfoGetHandler)
