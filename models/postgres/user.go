@@ -38,10 +38,10 @@ func (db *pgDB) GetUserByID(ctx context.Context, id string) (*models.User, error
 	return &user, err
 }
 
-func (db *pgDB) GetDeletedUserByID(ctx context.Context, id string) (*models.User, error) {
+func (db *pgDB) GetAnyUserByID(ctx context.Context, id string) (*models.User, error) {
 	db.log.Infoln("Get user by id", id)
 	var user models.User
-	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE id = $1 AND is_deleted", id)
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE id = $1", id)
 	if err != nil {
 		return nil, err
 	}

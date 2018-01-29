@@ -6,11 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"crypto/rand"
-
-	"math"
-	"math/big"
-
 	"database/sql"
 
 	"git.containerum.net/ch/grpc-proto-files/auth"
@@ -291,7 +286,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 
 func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) error {
 	u.log.WithField("user_id", userID).Info("completely delete user")
-	user, err := u.svc.DB.GetDeletedUserByID(ctx, userID)
+	user, err := u.svc.DB.GetAnyUserByID(ctx, userID)
 	if err := u.handleDBError(err); err != nil {
 		return userGetFailed
 	}
@@ -303,11 +298,11 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-		add, rngErr := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
+		add, rngErr := utils.SecureRandomString(6)
 		if rngErr != nil {
 			return rngErr
 		}
-		user.Login = user.Login + add.String()
+		user.Login = user.Login + "-" + add
 		// TODO: send request to billing manager
 		return tx.UpdateUser(ctx, user)
 	})

@@ -98,7 +98,7 @@ var (
 type DB interface {
 	GetUserByLogin(ctx context.Context, login string) (*User, error)
 	GetUserByID(ctx context.Context, id string) (*User, error)
-	GetDeletedUserByID(ctx context.Context, id string) (*User, error)
+	GetAnyUserByID(ctx context.Context, id string) (*User, error)
 	CreateUser(ctx context.Context, user *User) error
 	CreateUserWebAPI(ctx context.Context, user *User) error
 	UpdateUser(ctx context.Context, user *User) error
