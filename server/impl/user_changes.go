@@ -157,6 +157,13 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserToBl
 		return blacklistUserFailed
 	}
 
+	_, err = u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
+		UserId: &common.UUID{Value: user.ID},
+	})
+	if err != nil {
+		return tokenDeleteFailed
+	}
+
 	go func() {
 		err := u.svc.MailClient.SendBlockedMail(ctx, &mttypes.Recipient{
 			ID:    user.ID,
