@@ -176,6 +176,41 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserToBl
 	return nil
 }
 
+func (u *serverImpl) UnBlacklistUser(ctx context.Context, request umtypes.UserToBlacklistRequest) error {
+	u.log.WithField("user_id", request.UserID).Info("unblacklisting user")
+	user, err := u.svc.DB.GetUserByID(ctx, request.UserID)
+	if err := u.handleDBError(err); err != nil {
+		return userGetFailed
+	}
+	if user == nil {
+		return userNotFound
+	}
+	if user.IsInBlacklist != true {
+		return userNotBlacklist
+	}
+
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+		// TODO: send request to resource manager
+		return tx.UnBlacklistUser(ctx, user)
+	})
+	if err := u.handleDBError(err); err != nil {
+		return blacklistUserFailed
+	}
+
+	go func() {
+		err := u.svc.MailClient.SendUnBlockedMail(ctx, &mttypes.Recipient{
+			ID:    user.ID,
+			Name:  user.Login,
+			Email: user.Login,
+		})
+		if err != nil {
+			u.log.WithError(err).Error("email send failed")
+		}
+	}()
+
+	return nil
+}
+
 func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interface{}) (*umtypes.UserInfoGetResponse, error) {
 	userID := server.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("updating user profile data")

@@ -104,6 +104,7 @@ type DB interface {
 	UpdateUser(ctx context.Context, user *User) error
 	GetBlacklistedUsers(ctx context.Context, limit, offset int) ([]User, error)
 	BlacklistUser(ctx context.Context, user *User) error
+	UnBlacklistUser(ctx context.Context, user *User) error
 
 	CreateProfile(ctx context.Context, profile *Profile) error
 	GetProfileByID(ctx context.Context, id string) (*Profile, error)
