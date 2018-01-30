@@ -17,17 +17,20 @@ import (
 
 func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.PasswordChangeRequest) (*auth.CreateTokenResponse, error) {
 	userID := server.MustGetUserID(ctx)
-	u.log.WithField("user_id", userID).Info("Changing password")
+	u.log.WithField("user_id", userID).Info("changing password")
 
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
+		u.log.WithError(err)
 		return nil, err
 	}
 
 	if !utils.CheckPassword(user.Login, request.CurrentPassword, user.Salt, user.PasswordHash) {
+		u.log.WithError(invalidPassword)
 		return nil, invalidPassword
 	}
 
@@ -50,7 +53,10 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 		return authErr
 	})
 	err = u.handleDBError(err)
-
+	if err != nil {
+		u.log.WithError(err)
+		return nil, err
+	}
 	go func() {
 		mailErr := u.svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
 			ID:        user.ID,
@@ -70,9 +76,11 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request umtypes.Password
 	u.log.WithField("login", request.Username).Info("resetting password")
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Username)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
+		u.log.WithError(err)
 		return err
 	}
 
@@ -83,6 +91,7 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request umtypes.Password
 		return err
 	})
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return linkCreateFailed
 	}
 
@@ -102,15 +111,19 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request umtypes.Password
 }
 
 func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.PasswordRestoreRequest) (*auth.CreateTokenResponse, error) {
-	u.log.WithField("link", request.Link).Info("Restore password")
+	u.log.Info("restoring password")
+	u.log.WithField("link", request.Link).Debug("restoring password details")
 	link, err := u.svc.DB.GetLinkFromString(ctx, request.Link)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, linkGetFailed
 	}
 	if link == nil {
+		u.log.WithError(errors.Format(linkNotFound, request.Link))
 		return nil, &server.NotFoundError{Err: errors.Format(linkNotFound, request.Link)}
 	}
 	if link.Type != umtypes.LinkTypePwdChange {
+		u.log.WithError(errors.Format(linkNotForPassword, request.Link))
 		return nil, &server.AccessDeniedError{Err: errors.Format(linkNotForPassword, request.Link)}
 	}
 
@@ -138,6 +151,7 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 		return authErr
 	})
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, err
 	}
 

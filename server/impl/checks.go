@@ -8,7 +8,7 @@ import (
 
 func (u *serverImpl) CheckUserExist(ctx context.Context) error {
 	userID := server.MustGetUserID(ctx)
-	u.log.WithField("user_id", userID).Info("check if user exists")
+	u.log.WithField("user_id", userID).Info("checking if user exists")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
 	if err := u.handleDBError(err); err != nil {
 		return userGetFailed
@@ -22,7 +22,7 @@ func (u *serverImpl) CheckUserExist(ctx context.Context) error {
 
 func (u *serverImpl) CheckAdmin(ctx context.Context) error {
 	userID := server.MustGetUserID(ctx)
-	u.log.WithField("user_id", userID).Info("check if admin")
+	u.log.WithField("user_id", userID).Info("checking if user is admin")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
 	if err := u.handleDBError(err); err != nil {
 		return userGetFailed

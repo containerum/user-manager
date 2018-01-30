@@ -6,17 +6,18 @@ import (
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/server"
-	"github.com/sirupsen/logrus"
 )
 
 func (u *serverImpl) GetBlacklistedDomain(ctx context.Context, domain string) (*umtypes.DomainResponce, error) {
 	u.log.WithField("domain", domain).Info("get domain info")
 	blacklistedDomain, err := u.svc.DB.GetBlacklistedDomain(ctx, domain)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, userGetFailed
 	}
 
 	if blacklistedDomain == nil {
+		u.log.WithError(domainNotBlacklist)
 		return nil, domainNotBlacklist
 	}
 
@@ -31,10 +32,12 @@ func (u *serverImpl) GetBlacklistedDomainsList(ctx context.Context) (*umtypes.Do
 	u.log.Info("get domains list")
 	blacklistedDomains, err := u.svc.DB.GetBlacklistedDomainsList(ctx)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, userGetFailed
 	}
 
 	if len(blacklistedDomains) == 0 {
+		u.log.WithError(domainNotBlacklist)
 		return nil, domainNotBlacklist
 	}
 
@@ -53,10 +56,7 @@ func (u *serverImpl) GetBlacklistedDomainsList(ctx context.Context) (*umtypes.Do
 }
 
 func (u *serverImpl) AddDomainToBlacklist(ctx context.Context, request umtypes.DomainToBlacklistRequest) error {
-	u.log.Info("adding domain to blacklist")
-	u.log.WithFields(logrus.Fields{
-		"domain": request.Domain,
-	})
+	u.log.WithField("domain", request.Domain).Info("adding domain to blacklist")
 
 	userID := server.MustGetUserID(ctx)
 
@@ -64,6 +64,7 @@ func (u *serverImpl) AddDomainToBlacklist(ctx context.Context, request umtypes.D
 		return tx.BlacklistDomain(ctx, request.Domain, userID)
 	})
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return blacklistDomainFailed
 	}
 
@@ -71,15 +72,13 @@ func (u *serverImpl) AddDomainToBlacklist(ctx context.Context, request umtypes.D
 }
 
 func (u *serverImpl) RemoveDomainFromBlacklist(ctx context.Context, domain string) error {
-	u.log.Info("removing blacklisted domain")
-	u.log.WithFields(logrus.Fields{
-		"domain": domain,
-	})
+	u.log.WithField("domain", domain).Info("removing domain from blacklist")
 
 	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		return tx.UnBlacklistDomain(ctx, domain)
 	})
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return unblacklistDomainFailed
 	}
 

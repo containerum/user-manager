@@ -23,23 +23,28 @@ import (
 func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateRequest) (*umtypes.UserCreateResponse, error) {
 	u.log.WithField("login", request.UserName).Info("creating user")
 	if err := u.checkReCaptcha(ctx, request.ReCaptcha); err != nil {
+		u.log.WithError(err)
 		return nil, reCaptchaRequestFailed
 	}
 
 	domain := strings.Split(request.UserName, "@")[1]
 	blacklisted, err := u.svc.DB.IsDomainBlacklisted(ctx, domain)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, blacklistDomainCheckFailed
 	}
 	if blacklisted {
+		u.log.WithError(errors.Format(domainInBlacklist, domain))
 		return nil, &server.AccessDeniedError{Err: errors.Format(domainInBlacklist, domain)}
 	}
 
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.UserName)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, userGetFailed
 	}
 	if user != nil {
+		u.log.WithError(errors.Format(userAlreadyExists, request.UserName))
 		return nil, &server.AlreadyExistsError{Err: errors.Format(userAlreadyExists, request.UserName)}
 	}
 
@@ -77,6 +82,7 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 		return nil
 	})
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, userCreateFailed
 	}
 
@@ -90,15 +96,19 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.UserCreateR
 }
 
 func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.ActivateRequest) (*auth.CreateTokenResponse, error) {
-	u.log.WithField("link", request.Link).Info("activating user")
+	u.log.Info("activating user")
+	u.log.WithField("link", request.Link).Debugln("activating user details")
 	link, err := u.svc.DB.GetLinkFromString(ctx, request.Link)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, linkGetFailed
 	}
 	if link == nil {
+		u.log.WithError(errors.Format(linkNotFound, request.Link))
 		return nil, &server.NotFoundError{Err: errors.Format(linkNotFound, request.Link)}
 	}
 	if link.Type != umtypes.LinkTypeConfirm {
+		u.log.WithError(errors.Format(linkNotForConfirm, request.Link))
 		return nil, &server.AccessDeniedError{Err: errors.Format(linkNotForConfirm, request.Link)}
 	}
 
@@ -121,6 +131,7 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.ActivateR
 		return err
 	})
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, tokenCreateFailed
 	}
 
@@ -143,9 +154,11 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserToBl
 	u.log.WithField("user_id", request.UserID).Info("blacklisting user")
 	user, err := u.svc.DB.GetUserByID(ctx, request.UserID)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
+		u.log.WithError(err)
 		return err
 	}
 
@@ -154,6 +167,7 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserToBl
 		return tx.BlacklistUser(ctx, user)
 	})
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return blacklistUserFailed
 	}
 
@@ -161,6 +175,7 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserToBl
 		UserId: &common.UUID{Value: user.ID},
 	})
 	if err != nil {
+		u.log.WithError(err)
 		return tokenDeleteFailed
 	}
 
@@ -182,12 +197,15 @@ func (u *serverImpl) UnBlacklistUser(ctx context.Context, request umtypes.UserTo
 	u.log.WithField("user_id", request.UserID).Info("unblacklisting user")
 	user, err := u.svc.DB.GetUserByID(ctx, request.UserID)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return userGetFailed
 	}
 	if user == nil {
+		u.log.WithError(userNotFound)
 		return userNotFound
 	}
 	if user.IsInBlacklist != true {
+		u.log.WithError(userNotBlacklist)
 		return userNotBlacklist
 	}
 
@@ -196,6 +214,7 @@ func (u *serverImpl) UnBlacklistUser(ctx context.Context, request umtypes.UserTo
 		return tx.UnBlacklistUser(ctx, user)
 	})
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return blacklistUserFailed
 	}
 
@@ -218,14 +237,17 @@ func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interfac
 	u.log.WithField("user_id", userID).Info("updating user profile data")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, userGetFailed
 	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
+		u.log.WithError(err)
 		return nil, err
 	}
 
 	profile, err := u.svc.DB.GetProfileByUser(ctx, user)
 	if err := u.handleDBError(err); err != nil || profile == nil {
+		u.log.WithError(err)
 		return nil, profileGetFailed
 	}
 
@@ -233,8 +255,8 @@ func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interfac
 		profile.Data = newData
 		return tx.UpdateProfile(ctx, profile)
 	})
-	err = u.handleDBError(err)
-	if err != nil {
+	if err = u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, profileUpdateFailed
 	}
 
@@ -250,12 +272,14 @@ func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interfac
 
 func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 	userID := server.MustGetUserID(ctx)
-	u.log.WithField("user_id", userID).Info("partially delete user")
+	u.log.WithField("user_id", userID).Info("partially deleting user")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return userGetFailed
 	}
 	if user == nil {
+		u.log.WithError(userNotFound)
 		return userNotFound
 	}
 
@@ -273,6 +297,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		return authErr
 	})
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return tokenDeleteFailed
 	}
 
@@ -292,15 +317,18 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 }
 
 func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) error {
-	u.log.WithField("user_id", userID).Info("completely delete user")
+	u.log.WithField("user_id", userID).Info("completely deleting user")
 	user, err := u.svc.DB.GetAnyUserByID(ctx, userID)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return userGetFailed
 	}
 	if user == nil {
+		u.log.WithError(userNotFound)
 		return userNotFound
 	}
 	if !user.IsDeleted {
+		u.log.WithError(errors.Format(userNotPartiallyDeleted, userID))
 		return &server.BadRequestError{Err: errors.Format(userNotPartiallyDeleted, userID)}
 	}
 
@@ -314,6 +342,7 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 		return tx.UpdateUser(ctx, user)
 	})
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return err
 	}
 	return nil
@@ -325,17 +354,21 @@ func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserC
 	domain := strings.Split(request.UserName, "@")[1]
 	blacklisted, err := u.svc.DB.IsDomainBlacklisted(ctx, domain)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, blacklistDomainCheckFailed
 	}
 	if blacklisted {
+		u.log.WithError(errors.Format(domainInBlacklist, domain))
 		return nil, &server.AccessDeniedError{Err: errors.Format(domainInBlacklist, domain)}
 	}
 
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.UserName)
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, userGetFailed
 	}
 	if user != nil {
+		u.log.WithError(err)
 		return nil, &server.AlreadyExistsError{Err: errors.Format(userAlreadyExists, request.UserName)}
 	}
 
@@ -353,6 +386,7 @@ func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserC
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		if createErr := tx.CreateUserWebAPI(ctx, newUser); createErr != nil {
+			u.log.WithError(createErr)
 			return userCreateFailed
 		}
 
@@ -375,6 +409,7 @@ func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserC
 		return nil
 	})
 	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return nil, err
 	}
 
