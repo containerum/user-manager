@@ -95,10 +95,12 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	}
 	info, oauthError := resource.GetUserInfo(ctx, request.AccessToken)
 	if oauthError != nil {
-		if oauthError.Code == 403 || oauthError.Code == 401 {
+		switch oauthError.Code {
+		case 403, 401:
 			return nil, oauthLoginFailed
+		default:
+			return nil, oauthUserInfoGetFailed
 		}
-		return nil, oauthUserInfoGetFailed
 	}
 
 	user, err := u.svc.DB.GetUserByLogin(ctx, info.Email)

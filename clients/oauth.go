@@ -90,10 +90,12 @@ func (gh *githubOAuthClient) GetUserInfo(ctx context.Context, authCode string) (
 		Get("/user")
 
 	if err != nil {
+		gh.log.WithError(err)
 		return nil, errors.New(err.Error())
 	}
 
 	if resp.Error().(*githubError).Message != "" {
+		gh.log.Errorln(resp.Error().(*githubError).Message)
 		return nil, errors.NewWithCode(resp.Error().(*githubError).Message, resp.StatusCode())
 	}
 
@@ -125,7 +127,6 @@ func NewGoogleOAuthClient() OAuthClient {
 			rest: client,
 		},
 	}
-	return nil
 }
 
 func (gc *googleOAuthClient) GetResource() umtypes.OAuthResource {
@@ -155,10 +156,12 @@ func (gc *googleOAuthClient) GetUserInfo(ctx context.Context, authCode string) (
 		Get("/userinfo")
 
 	if err != nil {
+		gc.log.WithError(err)
 		return nil, errors.New(err.Error())
 	}
 
 	if resp.Error().(*googleError).Error.Code != 0 {
+		gc.log.Errorln(resp.Error().(*googleError).Error.Message)
 		return nil, errors.NewWithCode(resp.Error().(*googleError).Error.Message, resp.StatusCode())
 	}
 
@@ -225,10 +228,12 @@ func (fb *facebookOAuthClient) GetUserInfo(ctx context.Context, authCode string)
 		Get("/me")
 
 	if err != nil {
+		fb.log.WithError(err)
 		return nil, errors.New(err.Error())
 	}
 
 	if resp.Error().(*facebookError).Error.Code != 0 {
+		fb.log.Errorln(resp.Error().(*facebookError).Error.Code)
 		if resp.Error().(*facebookError).Error.Code == 190 {
 			return nil, errors.NewWithCode(resp.Error().(*facebookError).Error.Message, 403)
 		}

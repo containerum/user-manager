@@ -11,7 +11,7 @@ const (
 	domainInBlacklist       = "Email domain %s is in blacklist"
 	linkNotFound            = "Link %s was not found or already used or expired"
 	waitForResend           = "Can`t resend link now, please wait %d seconds"
-	oneTimeTokenNotFound    = "One-time token %s not exists or already used"
+	oneTimeTokenNotFound    = "One-time token %s not exists or already used" //nolint: gas
 	resourceNotSupported    = "Resource %s not supported now"
 	linkNotForPassword      = "Link %s is not for password changing" //nolint: gas
 	linkNotForConfirm       = "Link %s is not for activation"
