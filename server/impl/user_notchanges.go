@@ -87,6 +87,7 @@ func (u *serverImpl) GetUserInfoByID(ctx context.Context, userID string) (*umtyp
 
 	return &umtypes.UserInfoByIDGetResponse{
 		Login: user.Login,
+		Role:  user.Role,
 		Data:  profile.Data,
 	}, nil
 }

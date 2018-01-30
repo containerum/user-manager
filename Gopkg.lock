@@ -11,13 +11,13 @@
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = ["errors","mail-templater","user-manager"]
-  revision = "ea9e7af05bf14c77f079620e1ddd7de3501ce0a7"
+  revision = "3d60cc778bf96a82fe81e3d6deef8c478008eeb5"
 
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/utils"
   packages = ["."]
-  revision = "f8c59a2a35c0df3606909acdecbeefc721e4c60b"
+  revision = "01ba9d47c4b82471b4255747da4eece2463851d6"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -208,6 +208,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "273f46faf2f139ef23d94ee9fdf420b3bc43a6fd4f6244e41bb069c3112c87c9"
+  inputs-digest = "b7441ab66035c1ec178ac63d0d0b07885f5f4e85240e7885d3b361d4ee5b0c1b"
   solver-name = "gps-cdcl"
   solver-version = 1

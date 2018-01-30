@@ -5,6 +5,8 @@ import (
 
 	"context"
 
+	"strings"
+
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 )
@@ -16,6 +18,12 @@ type sqlxQueryLogger struct {
 	l *logrus.Entry
 }
 
+func queryMinify(query string) string {
+	st1 := strings.Replace(query, "\t", "", -1)
+	st2 := strings.Replace(st1, "\n", " ", -1)
+	return st2
+}
+
 func NewSQLXQueryLogger(queryer sqlx.Queryer, entry *logrus.Entry) sqlx.Queryer {
 	return &sqlxQueryLogger{
 		Queryer: queryer,
@@ -25,19 +33,19 @@ func NewSQLXQueryLogger(queryer sqlx.Queryer, entry *logrus.Entry) sqlx.Queryer 
 
 func (q *sqlxQueryLogger) Query(query string, args ...interface{}) (*sql.Rows, error) {
 	rows, err := q.Queryer.Query(query, args...)
-	q.l.WithField("query", query).WithError(err).Debugln(args...)
+	q.l.WithField("query", queryMinify(query)).WithError(err).Debugln(args...)
 	return rows, err
 }
 
 func (q *sqlxQueryLogger) Queryx(query string, args ...interface{}) (*sqlx.Rows, error) {
 	rows, err := q.Queryer.Queryx(query, args...)
-	q.l.WithField("query", query).WithError(err).Debugln(args...)
+	q.l.WithField("query", queryMinify(query)).WithError(err).Debugln(args...)
 	return rows, err
 }
 
 func (q *sqlxQueryLogger) QueryRowx(query string, args ...interface{}) *sqlx.Row {
 	row := q.Queryer.QueryRowx(query, args...)
-	q.l.WithField("query", query).Debugln(args...)
+	q.l.WithField("query", queryMinify(query)).Debugln(args...)
 	return row
 }
 
@@ -57,7 +65,7 @@ func NewSQLXExecLogger(execer sqlx.Execer, entry *logrus.Entry) sqlx.Execer {
 
 func (e *sqlxExecLogger) Exec(query string, args ...interface{}) (sql.Result, error) {
 	result, err := e.Execer.Exec(query, args...)
-	e.l.WithField("query", query).WithError(err).Debugln(args...)
+	e.l.WithField("query", queryMinify(query)).WithError(err).Debugln(args...)
 	return result, err
 }
 
@@ -77,19 +85,19 @@ func NewSQLXContextQueryLogger(queryer sqlx.QueryerContext, entry *logrus.Entry)
 
 func (q *sqlxContextQueryLogger) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
 	rows, err := q.QueryerContext.QueryContext(ctx, query, args...)
-	q.l.WithField("query", query).WithError(err).Debugln(args...)
+	q.l.WithField("query", queryMinify(query)).WithError(err).Debugln(args...)
 	return rows, err
 }
 
 func (q *sqlxContextQueryLogger) QueryxContext(ctx context.Context, query string, args ...interface{}) (*sqlx.Rows, error) {
 	rows, err := q.QueryerContext.QueryxContext(ctx, query, args...)
-	q.l.WithField("query", query).WithError(err).Debugln(args...)
+	q.l.WithField("query", queryMinify(query)).WithError(err).Debugln(args...)
 	return rows, err
 }
 
 func (q *sqlxContextQueryLogger) QueryRowxContext(ctx context.Context, query string, args ...interface{}) *sqlx.Row {
 	rows := q.QueryerContext.QueryRowxContext(ctx, query, args...)
-	q.l.WithField("query", query).Debugln(args...)
+	q.l.WithField("query", queryMinify(query)).Debugln(args...)
 	return rows
 }
 
@@ -109,7 +117,7 @@ func NewSQLXContextExecLogger(execer sqlx.ExecerContext, entry *logrus.Entry) sq
 
 func (e *sqlxContextExecLogger) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	result, err := e.ExecerContext.ExecContext(ctx, query, args...)
-	e.l.WithField("query", query).WithError(err).Debugln(args...)
+	e.l.WithField("query", queryMinify(query)).WithError(err).Debugln(args...)
 	return result, err
 }
 
