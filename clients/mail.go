@@ -34,7 +34,8 @@ func NewHTTPMailClient(serverURL string) MailClient {
 		SetHostURL(serverURL).
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
 		SetDebug(true).
-		SetError(errors.Error{})
+		SetError(errors.Error{}).
+		SetRedirectPolicy(resty.FlexibleRedirectPolicy(10))
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
 	return &httpMailClient{
@@ -44,14 +45,15 @@ func NewHTTPMailClient(serverURL string) MailClient {
 }
 
 func (mc *httpMailClient) sendOneTemplate(ctx context.Context, tmplName string, recipient *mttypes.Recipient) error {
-	req := &mttypes.SendRequest{}
-	req.Delay = 0
-	req.Message.Recipients = append(req.Message.Recipients, *recipient)
+	req := &mttypes.SimpleSendRequest{}
+	req.Template = tmplName
+	req.UserID = recipient.ID
+	req.Variables = recipient.Variables
 	resp, err := mc.rest.R().
 		SetHeaders(utils.RequestHeadersMap(ctx)). // forward request headers to other our service
 		SetBody(req).
 		SetResult(mttypes.SendResponse{}).
-		Post("/templates/" + tmplName)
+		Post("/send/")
 	if err != nil {
 		return err
 	}
