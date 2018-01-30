@@ -84,6 +84,7 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneT
 	return tokens, nil
 }
 
+//nolint: gocyclo
 func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginRequest) (*auth.CreateTokenResponse, error) {
 	u.log.WithFields(logrus.Fields{
 		"resource":        request.Resource,
@@ -93,9 +94,14 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	if !exist {
 		return nil, &server.BadRequestError{Err: errors.Format(resourceNotSupported, request.Resource)}
 	}
-	info, err := resource.GetUserInfo(ctx, request.AccessToken)
-	if err != nil {
-		return nil, oauthUserInfoGetFailed
+	info, oauthError := resource.GetUserInfo(ctx, request.AccessToken)
+	if oauthError != nil {
+		switch oauthError.Code {
+		case 403, 401:
+			return nil, oauthLoginFailed
+		default:
+			return nil, oauthUserInfoGetFailed
+		}
 	}
 
 	user, err := u.svc.DB.GetUserByLogin(ctx, info.Email)
@@ -104,24 +110,25 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	}
 	if err = u.loginUserChecks(ctx, user); err != nil {
 		u.log.Info("User is not found by email. Checking bound accounts")
-
-		user, err = u.svc.DB.GetUserByBoundAccount(ctx, request.Resource, info.UserID)
-		if err = u.handleDBError(err); err != nil {
-			return nil, userGetFailed
+		if info.UserID != "" {
+			user, err = u.svc.DB.GetUserByBoundAccount(ctx, request.Resource, info.UserID)
+			if err = u.handleDBError(err); err != nil {
+				return nil, userGetFailed
+			}
+			if err := u.loginUserChecks(ctx, user); err != nil {
+				return nil, err
+			}
 		}
-		if err := u.loginUserChecks(ctx, user); err != nil {
-			return nil, err
-		}
-	} else {
-		u.log.Info("User is found by email. Binding account")
-		err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-			return tx.BindAccount(ctx, user, request.Resource, info.UserID)
-		})
-		if err := u.handleDBError(err); err != nil {
-			return nil, bindAccountFailed
-		}
+		return nil, userNotFound
 	}
 
+	u.log.Info("User is found by email. Binding account")
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+		return tx.BindAccount(ctx, user, request.Resource, info.UserID)
+	})
+	if err := u.handleDBError(err); err != nil {
+		return nil, bindAccountFailed
+	}
 	return u.createTokens(ctx, user)
 }
 

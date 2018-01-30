@@ -74,9 +74,9 @@ func oauthClientsSetup() error {
 	viper.SetDefault("oauth_clients", serviceClientHTTP)
 	switch viper.GetString("oauth_clients") {
 	case serviceClientHTTP:
-		clients.RegisterOAuthClient(clients.NewGithubOAuthClient(viper.GetString("github_app_id"), viper.GetString("github_secret")))
-		clients.RegisterOAuthClient(clients.NewGoogleOAuthClient(viper.GetString("google_app_id"), viper.GetString("google_secret")))
-		clients.RegisterOAuthClient(clients.NewFacebookOAuthClient(viper.GetString("facebook_app_id"), viper.GetString("facebook_secret")))
+		clients.RegisterOAuthClient(clients.NewGithubOAuthClient())
+		clients.RegisterOAuthClient(clients.NewGoogleOAuthClient())
+		clients.RegisterOAuthClient(clients.NewFacebookOAuthClient())
 	default:
 		return errors.New("invalid oauth clients kind")
 	}
