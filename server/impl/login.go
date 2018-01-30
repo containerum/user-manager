@@ -93,8 +93,11 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	if !exist {
 		return nil, &server.BadRequestError{Err: errors.Format(resourceNotSupported, request.Resource)}
 	}
-	info, err := resource.GetUserInfo(ctx, request.AccessToken)
-	if err != nil {
+	info, oauthError := resource.GetUserInfo(ctx, request.AccessToken)
+	if oauthError != nil {
+		if oauthError.Code == 403 || oauthError.Code == 401 {
+			return nil, oauthLoginFailed
+		}
 		return nil, oauthUserInfoGetFailed
 	}
 
@@ -105,12 +108,16 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	if err = u.loginUserChecks(ctx, user); err != nil {
 		u.log.Info("User is not found by email. Checking bound accounts")
 
-		user, err = u.svc.DB.GetUserByBoundAccount(ctx, request.Resource, info.UserID)
-		if err = u.handleDBError(err); err != nil {
-			return nil, userGetFailed
-		}
-		if err := u.loginUserChecks(ctx, user); err != nil {
-			return nil, err
+		if info.UserID != "" {
+			user, err = u.svc.DB.GetUserByBoundAccount(ctx, request.Resource, info.UserID)
+			if err = u.handleDBError(err); err != nil {
+				return nil, userGetFailed
+			}
+			if err := u.loginUserChecks(ctx, user); err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, userNotFound
 		}
 	} else {
 		u.log.Info("User is found by email. Binding account")
