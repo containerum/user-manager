@@ -84,6 +84,7 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneT
 	return tokens, nil
 }
 
+//nolint: gocyclo
 func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginRequest) (*auth.CreateTokenResponse, error) {
 	u.log.WithFields(logrus.Fields{
 		"resource":        request.Resource,
@@ -109,7 +110,6 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	}
 	if err = u.loginUserChecks(ctx, user); err != nil {
 		u.log.Info("User is not found by email. Checking bound accounts")
-
 		if info.UserID != "" {
 			user, err = u.svc.DB.GetUserByBoundAccount(ctx, request.Resource, info.UserID)
 			if err = u.handleDBError(err); err != nil {
@@ -118,9 +118,8 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 			if err := u.loginUserChecks(ctx, user); err != nil {
 				return nil, err
 			}
-		} else {
-			return nil, userNotFound
 		}
+		return nil, userNotFound
 	} else {
 		u.log.Info("User is found by email. Binding account")
 		err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
@@ -130,7 +129,6 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 			return nil, bindAccountFailed
 		}
 	}
-
 	return u.createTokens(ctx, user)
 }
 
