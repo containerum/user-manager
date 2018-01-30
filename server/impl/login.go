@@ -120,14 +120,14 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 			}
 		}
 		return nil, userNotFound
-	} else {
-		u.log.Info("User is found by email. Binding account")
-		err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-			return tx.BindAccount(ctx, user, request.Resource, info.UserID)
-		})
-		if err := u.handleDBError(err); err != nil {
-			return nil, bindAccountFailed
-		}
+	}
+
+	u.log.Info("User is found by email. Binding account")
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+		return tx.BindAccount(ctx, user, request.Resource, info.UserID)
+	})
+	if err := u.handleDBError(err); err != nil {
+		return nil, bindAccountFailed
 	}
 	return u.createTokens(ctx, user)
 }
