@@ -33,7 +33,7 @@ func requireHeaders(headers ...string) gin.HandlerFunc {
 		if len(notFoundHeaders) > 0 {
 			err := errors.Format("required headers %v was not provided", notFoundHeaders)
 			ctx.Error(err)
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, []*errors.Error{err})
 		}
 	}
 }
@@ -47,42 +47,42 @@ func prepareContext(ctx *gin.Context) {
 	}
 }
 
-func errorWithHTTPStatus(err error) (int, *errors.Error) {
+func errorWithHTTPStatus(err error) (int, []*errors.Error) {
 	switch err.(type) {
 	case *server.AccessDeniedError:
-		return http.StatusForbidden, err.(*server.AccessDeniedError).Err
+		return http.StatusForbidden, []*errors.Error{err.(*server.AccessDeniedError).Err}
 	case *server.NotFoundError:
-		return http.StatusNotFound, err.(*server.NotFoundError).Err
+		return http.StatusNotFound, []*errors.Error{err.(*server.NotFoundError).Err}
 	case *server.BadRequestError:
-		return http.StatusBadRequest, err.(*server.BadRequestError).Err
+		return http.StatusBadRequest, []*errors.Error{err.(*server.BadRequestError).Err}
 	case *server.AlreadyExistsError:
-		return http.StatusConflict, err.(*server.AlreadyExistsError).Err
+		return http.StatusConflict, []*errors.Error{err.(*server.AlreadyExistsError).Err}
 	case *server.InternalError:
-		return http.StatusInternalServerError, err.(*server.InternalError).Err
+		return http.StatusInternalServerError, []*errors.Error{err.(*server.InternalError).Err}
 	case *server.WebAPIError:
-		return err.(*server.WebAPIError).StatusCode, err.(*server.WebAPIError).Err
+		return err.(*server.WebAPIError).StatusCode, []*errors.Error{err.(*server.WebAPIError).Err}
 	default:
 		if grpcStatus, ok := status.FromError(err); ok {
 			if httpStatus, hasStatus := grpcutils.GRPCToHTTPCode[grpcStatus.Code()]; hasStatus {
-				return httpStatus, errors.New(grpcStatus.Message())
+				return httpStatus, []*errors.Error{errors.New(grpcStatus.Message())}
 			}
-			return http.StatusInternalServerError, errors.New(grpcStatus.Err().Error())
+			return http.StatusInternalServerError, []*errors.Error{errors.New(grpcStatus.Err().Error())}
 		}
-		return http.StatusInternalServerError, errors.New(err.Error())
+		return http.StatusInternalServerError, []*errors.Error{errors.New(err.Error())}
 	}
 }
 
 // needs role header
 func requireAdminRole(ctx *gin.Context) {
 	if ctx.GetHeader(umtypes.UserRoleHeader) != "admin" {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New("only admin can do this"))
+		ctx.AbortWithStatusJSON(http.StatusForbidden, []*errors.Error{errors.New("only admin can do this")})
 		return
 	}
 
 	err := srv.CheckAdmin(ctx.Request.Context())
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, err.Error())
+		ctx.AbortWithStatusJSON(http.StatusForbidden, []*errors.Error{errors.New(err.Error())})
 	}
 }
 
@@ -90,6 +90,6 @@ func requireUserExist(ctx *gin.Context) {
 	err := srv.CheckUserExist(ctx.Request.Context())
 
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, err.Error())
+		ctx.AbortWithStatusJSON(http.StatusForbidden, []*errors.Error{errors.New(err.Error())})
 	}
 }
