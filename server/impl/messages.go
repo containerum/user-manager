@@ -75,4 +75,6 @@ var (
 	activationNeeded  = &server.AccessDeniedError{Err: errors.New("Activate your account please. Check your email")}
 	userNotBlacklist  = &server.AccessDeniedError{Err: errors.New("User is not in blacklist")}
 	oauthLoginFailed  = &server.AccessDeniedError{Err: errors.New("Invalid OAuth access token")}
+	userBanYourself   = &server.AccessDeniedError{Err: errors.New("You can't ban yourself")}
+	userBanAdmin      = &server.AccessDeniedError{Err: errors.New("You can't ban admin")}
 )

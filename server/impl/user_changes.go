@@ -152,6 +152,11 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.ActivateR
 
 func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserToBlacklistRequest) error {
 	u.log.WithField("user_id", request.UserID).Info("blacklisting user")
+	userID := server.MustGetUserID(ctx)
+	if request.UserID == userID {
+		return userBanYourself
+	}
+
 	user, err := u.svc.DB.GetUserByID(ctx, request.UserID)
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
@@ -160,6 +165,9 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserToBl
 	if err := u.loginUserChecks(ctx, user); err != nil {
 		u.log.WithError(err)
 		return err
+	}
+	if user.Role == "admin" {
+		return userBanAdmin
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
