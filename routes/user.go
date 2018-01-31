@@ -147,9 +147,6 @@ func userGetHandler(ctx *gin.Context) {
 }
 
 func userInfoUpdateHandler(ctx *gin.Context) {
-	config := &validator.Config{TagName: "validate"}
-	validate = validator.New(config)
-
 	var newData map[string]interface{}
 	if err := ctx.ShouldBindJSON(&newData); err != nil {
 		ctx.Error(err)
