@@ -3,7 +3,9 @@ package impl
 import (
 	"context"
 
+	"git.containerum.net/ch/json-types/errors"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
+	"git.containerum.net/ch/user-manager/clients"
 	"git.containerum.net/ch/user-manager/models"
 	"git.containerum.net/ch/user-manager/server"
 	"github.com/sirupsen/logrus"
@@ -27,8 +29,25 @@ func (u *serverImpl) AddBoundAccount(ctx context.Context, request umtypes.OAuthL
 		return err
 	}
 
+	resource, exist := clients.OAuthClientByResource(request.Resource)
+	if !exist {
+		u.log.WithError(errors.Format(resourceNotSupported, request.Resource))
+		return &server.BadRequestError{Err: errors.Format(resourceNotSupported, request.Resource)}
+	}
+	info, oauthError := resource.GetUserInfo(ctx, request.AccessToken)
+	if oauthError != nil {
+		switch oauthError.Code {
+		case 403, 401:
+			u.log.WithError(oauthLoginFailed)
+			return oauthLoginFailed
+		default:
+			u.log.WithError(oauthUserInfoGetFailed)
+			return oauthUserInfoGetFailed
+		}
+	}
+
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-		return tx.BindAccount(ctx, user, umtypes.OAuthResource(request.Resource), request.AccessToken)
+		return tx.BindAccount(ctx, user, umtypes.OAuthResource(request.Resource), info.UserID)
 	})
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
