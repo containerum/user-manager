@@ -143,6 +143,7 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 				u.log.WithError(err)
 				return nil, err
 			}
+			return u.createTokens(ctx, user)
 		}
 		u.log.WithError(userNotFound)
 		return nil, userNotFound
