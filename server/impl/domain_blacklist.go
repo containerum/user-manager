@@ -8,7 +8,7 @@ import (
 	"git.containerum.net/ch/user-manager/server"
 )
 
-func (u *serverImpl) GetBlacklistedDomain(ctx context.Context, domain string) (*umtypes.DomainResponce, error) {
+func (u *serverImpl) GetBlacklistedDomain(ctx context.Context, domain string) (*umtypes.DomainResponse, error) {
 	u.log.WithField("domain", domain).Info("get domain info")
 	blacklistedDomain, err := u.svc.DB.GetBlacklistedDomain(ctx, domain)
 	if err := u.handleDBError(err); err != nil {
@@ -21,14 +21,14 @@ func (u *serverImpl) GetBlacklistedDomain(ctx context.Context, domain string) (*
 		return nil, domainNotBlacklist
 	}
 
-	return &umtypes.DomainResponce{
+	return &umtypes.DomainResponse{
 		Domain:    blacklistedDomain.Domain,
 		AddedBy:   blacklistedDomain.AddedBy.String,
 		CreatedAt: blacklistedDomain.CreatedAt.String(),
 	}, nil
 }
 
-func (u *serverImpl) GetBlacklistedDomainsList(ctx context.Context) (*umtypes.DomainListResponce, error) {
+func (u *serverImpl) GetBlacklistedDomainsList(ctx context.Context) (*umtypes.DomainListResponse, error) {
 	u.log.Info("get domains list")
 	blacklistedDomains, err := u.svc.DB.GetBlacklistedDomainsList(ctx)
 	if err := u.handleDBError(err); err != nil {
@@ -41,11 +41,11 @@ func (u *serverImpl) GetBlacklistedDomainsList(ctx context.Context) (*umtypes.Do
 		return nil, domainNotBlacklist
 	}
 
-	resp := umtypes.DomainListResponce{
-		DomainList: []umtypes.DomainResponce{},
+	resp := umtypes.DomainListResponse{
+		DomainList: []umtypes.DomainResponse{},
 	}
 	for _, v := range blacklistedDomains {
-		resp.DomainList = append(resp.DomainList, umtypes.DomainResponce{
+		resp.DomainList = append(resp.DomainList, umtypes.DomainResponse{
 			Domain:    v.Domain,
 			AddedBy:   v.AddedBy.String,
 			CreatedAt: v.CreatedAt.String(),

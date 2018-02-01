@@ -158,12 +158,42 @@ type DomainToBlacklistRequest struct {
 	Domain string `json:"domain" binding:"required"`
 }
 
-type DomainListResponce struct {
-	DomainList []DomainResponce `json:"domain_list"`
+type DomainListResponse struct {
+	DomainList []DomainResponse `json:"domain_list"`
 }
 
-type DomainResponce struct {
+type DomainResponse struct {
 	Domain    string `json:"domain"`
 	AddedBy   string `json:"added_by"`
 	CreatedAt string `json:"created_at"`
+}
+
+type WebAPILoginResponse struct {
+	BadSignature bool   `json:"bad_signature"`
+	IsExpired    bool   `json:"is_expired"`
+	Token        string `json:"token"`
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+	User         struct {
+		CreatedAt string                 `json:"created_at"`
+		Data      map[string]interface{} `json:"data"`
+		ID        string                 `json:"id"`
+		IsActive  bool                   `json:"is_active"`
+		Login     string                 `json:"login"`
+	} `json:"user"`
+}
+
+type WebAPIVolumesResponse struct {
+	Name string `json:"name"`
+}
+
+type WebAPINamespaceResponse struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type WebAPIResource struct {
+	ID     string `json:"id"`
+	Label  string `json:"label"`
+	Access string `json:"access"`
 }

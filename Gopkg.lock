@@ -10,14 +10,14 @@
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/json-types"
-  packages = ["errors","mail-templater","user-manager"]
-  revision = "3d60cc778bf96a82fe81e3d6deef8c478008eeb5"
+  packages = ["errors","mail-templater","misc","user-manager"]
+  revision = "dbc6fd7af0ef596599822aabbab21aecd2337880"
 
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/utils"
   packages = ["."]
-  revision = "01ba9d47c4b82471b4255747da4eece2463851d6"
+  revision = "508227f5dfd463f6f4ec0f433ce81b9d0c972b18"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -44,10 +44,10 @@
   revision = "783c7ee9c14eac0e65b501664b4f553291556b43"
 
 [[projects]]
-  branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["jsonpb","proto","ptypes","ptypes/any","ptypes/duration","ptypes/empty","ptypes/struct","ptypes/timestamp"]
   revision = "925541529c1fa6821df4e44ce2723319eb2be768"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -161,7 +161,7 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context","http2","http2/hpack","idna","internal/timeseries","lex/httplex","publicsuffix","trace"]
-  revision = "0ed95abb35c445290478a5348a7b38bb154135fd"
+  revision = "309822c5b9b9f80db67f016069a12628d94fad34"
 
 [[projects]]
   branch = "master"

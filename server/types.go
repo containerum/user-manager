@@ -17,7 +17,7 @@ type UserManager interface {
 	BasicLogin(ctx context.Context, request umtypes.BasicLoginRequest) (*auth.CreateTokenResponse, error)
 	OneTimeTokenLogin(ctx context.Context, request umtypes.OneTimeTokenLoginRequest) (*auth.CreateTokenResponse, error)
 	OAuthLogin(ctx context.Context, request umtypes.OAuthLoginRequest) (*auth.CreateTokenResponse, error)
-	WebAPILogin(ctx context.Context, request umtypes.WebAPILoginRequest) (map[string]interface{}, error) // login through old web-api
+	WebAPILogin(ctx context.Context, request umtypes.WebAPILoginRequest) (*umtypes.WebAPILoginResponse, error) // login through old web-api
 
 	ChangePassword(ctx context.Context, request umtypes.PasswordChangeRequest) (*auth.CreateTokenResponse, error)
 	ResetPassword(ctx context.Context, request umtypes.PasswordResetRequest) error
@@ -53,8 +53,8 @@ type UserManager interface {
 	// Domain blacklist
 	AddDomainToBlacklist(ctx context.Context, request umtypes.DomainToBlacklistRequest) error
 	RemoveDomainFromBlacklist(ctx context.Context, domain string) error
-	GetBlacklistedDomain(ctx context.Context, domain string) (*umtypes.DomainResponce, error)
-	GetBlacklistedDomainsList(ctx context.Context) (*umtypes.DomainListResponce, error)
+	GetBlacklistedDomain(ctx context.Context, domain string) (*umtypes.DomainResponse, error)
+	GetBlacklistedDomainsList(ctx context.Context) (*umtypes.DomainListResponse, error)
 
 	io.Closer
 }
