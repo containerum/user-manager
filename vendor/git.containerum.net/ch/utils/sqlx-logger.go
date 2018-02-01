@@ -132,8 +132,9 @@ type sqlxExtLogger struct {
 
 func NewSQLXExtLogger(ext sqlx.Ext, entry *logrus.Entry) sqlx.Ext {
 	return &sqlxExtLogger{
-		ql: sqlxQueryLogger{Queryer: ext, l: entry},
-		el: sqlxExecLogger{Execer: ext, l: entry},
+		Ext: ext,
+		ql:  sqlxQueryLogger{Queryer: ext, l: entry},
+		el:  sqlxExecLogger{Execer: ext, l: entry},
 	}
 }
 
@@ -164,8 +165,9 @@ type sqlxExtContextLogger struct {
 
 func NewSQLXExtContextLogger(ext sqlx.ExtContext, entry *logrus.Entry) sqlx.ExtContext {
 	return &sqlxExtContextLogger{
-		ql: sqlxContextQueryLogger{QueryerContext: ext, l: entry},
-		el: sqlxContextExecLogger{ExecerContext: ext, l: entry},
+		ExtContext: ext,
+		ql:         sqlxContextQueryLogger{QueryerContext: ext, l: entry},
+		el:         sqlxContextExecLogger{ExecerContext: ext, l: entry},
 	}
 }
 

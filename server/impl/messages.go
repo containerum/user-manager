@@ -60,6 +60,9 @@ var (
 
 	blacklistDomainFailed   = &server.InternalError{Err: errors.New("Domain blacklisting failed")}
 	unblacklistDomainFailed = &server.InternalError{Err: errors.New("Removing domain from blacklisting failed")}
+
+	webAPIGetVolumesFailed    = &server.InternalError{Err: errors.New("Unable to get volumes from WebAPI")}
+	webAPIGetNamespacesFailed = &server.InternalError{Err: errors.New("Unable to get namespaces from WebAPI")}
 )
 
 var (

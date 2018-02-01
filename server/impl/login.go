@@ -160,40 +160,59 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	return u.createTokens(ctx, user)
 }
 
-func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILoginRequest) (map[string]interface{}, error) {
+func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILoginRequest) (*umtypes.WebAPILoginResponse, error) {
 	u.log.WithField("username", request.Username).Infof("Login through web-api")
 
 	resp, _, err := u.svc.WebAPIClient.Login(ctx, &request)
 	if err != nil {
 		u.log.WithError(err)
-		return nil, err
+		return nil, webAPILoginFailed
 	}
 
-	tokens, err := u.createTokens(ctx, &models.User{
-		ID:   resp["user"].(map[string]interface{})["id"].(string),
-		Role: "user",
+	volumes, _, err := u.svc.WebAPIClient.GetVolumes(ctx, resp.Token, resp.User.ID)
+	if err != nil {
+		u.log.WithError(err).Errorln("Unable to get volumes")
+		return nil, webAPIGetVolumesFailed
+	}
+
+	namespaces, _, err := u.svc.WebAPIClient.GetNamespaces(ctx, resp.Token)
+	if err != nil {
+		u.log.WithError(err).Errorln("Unable to get namespaces")
+		return nil, webAPIGetNamespacesFailed
+	}
+
+	tokens, err := u.svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
+		UserAgent:   server.MustGetUserAgent(ctx),
+		Fingerprint: server.MustGetFingerprint(ctx),
+		UserId:      &common.UUID{Value: resp.User.ID},
+		UserIp:      server.MustGetClientIP(ctx),
+		UserRole:    "user",
+		RwAccess:    true,
+		Access:      &auth.ResourcesAccess{Volume: volumes, Namespace: namespaces},
+		PartTokenId: nil,
 	})
+
 	if err != nil {
 		u.log.WithError(err)
 		return nil, tokenCreateFailed
 	}
 
-	resp["access_token"] = tokens.AccessToken
-	resp["refresh_token"] = tokens.RefreshToken
+	resp.AccessToken = tokens.AccessToken
+	resp.RefreshToken = tokens.RefreshToken
 
-	newUser := umtypes.UserCreateWebAPIRequest{ID: resp["user"].(map[string]interface{})["id"].(string),
-		UserName:  resp["user"].(map[string]interface{})["login"].(string),
+	newUser := umtypes.UserCreateWebAPIRequest{ID: resp.User.ID,
+		UserName:  resp.User.Login,
 		Password:  request.Password,
-		Data:      resp["user"].(map[string]interface{})["data"].(map[string]interface{}),
-		CreatedAt: resp["user"].(map[string]interface{})["created_at"].(string),
-		IsActive:  resp["user"].(map[string]interface{})["is_active"].(bool)}
+		Data:      resp.User.Data,
+		CreatedAt: resp.User.CreatedAt,
+		IsActive:  resp.User.IsActive,
+	}
 
 	if _, err = u.CreateUserWebAPI(ctx, newUser); err != nil {
 		u.log.WithError(err).Warnf("Unable to add user to new db")
 	}
 
 	return resp, nil
-
 }
 
 func (u *serverImpl) Logout(ctx context.Context) error {
