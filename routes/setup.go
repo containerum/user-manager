@@ -25,24 +25,27 @@ func SetupRoutes(app *gin.Engine, server server.UserManager) {
 
 	user := app.Group("/user")
 	{
-		user.PUT("/info", userInfoUpdateHandler)
-
 		user.POST("/sign_up", userCreateHandler)
 		user.POST("/sign_up/resend", linkResendHandler)
 		user.POST("/activation", activateHandler)
-		user.POST("/blacklist", requireIdentityHeaders, requireAdminRole, userToBlacklistHandler)
 		user.POST("/delete/partial", requireIdentityHeaders, requireUserExist, partialDeleteHandler)
 		user.POST("/delete/complete", requireIdentityHeaders, requireAdminRole, completeDeleteHandler)
-		user.POST("/bound_accounts", requireIdentityHeaders, requireUserExist, addBoundAccountHandler)
 
-		user.GET("/info/:user_id", userGetHandler)
-		user.GET("/links/:user_id", requireIdentityHeaders, requireAdminRole, linksGetHandler)
-		user.GET("/blacklist", requireIdentityHeaders, requireAdminRole, blacklistGetHandler)
+		user.GET("/info/id/:user_id", userGetByIDHandler)
+		user.GET("/info/login/:login", userGetByLoginHandler)
 		user.GET("/info", requireIdentityHeaders, requireUserExist, userInfoGetHandler)
-		user.GET("/users", requireIdentityHeaders, requireAdminRole, userListGetHandler)
-		user.GET("/bound_accounts", requireIdentityHeaders, requireUserExist, getBoundAccountsHandler)
+		user.PUT("/info", userInfoUpdateHandler)
 
+		user.GET("/users", requireIdentityHeaders, requireAdminRole, userListGetHandler)
+
+		user.GET("/links/:user_id", requireIdentityHeaders, requireAdminRole, linksGetHandler)
+
+		user.GET("/bound_accounts", requireIdentityHeaders, requireUserExist, getBoundAccountsHandler)
+		user.POST("/bound_accounts", requireIdentityHeaders, requireUserExist, addBoundAccountHandler)
 		user.DELETE("/bound_accounts", requireIdentityHeaders, requireUserExist, deleteBoundAccountHandler)
+
+		user.GET("/blacklist", requireIdentityHeaders, requireAdminRole, blacklistGetHandler)
+		user.POST("/blacklist", requireIdentityHeaders, requireAdminRole, userToBlacklistHandler)
 		user.DELETE("/blacklist", requireIdentityHeaders, requireAdminRole, userDeleteFromBlacklistHandler)
 
 	}

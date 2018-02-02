@@ -85,7 +85,7 @@ func (d *Deployment) Mask() {
 }
 
 type PermissionRecord struct {
-	ID                    string           `json:"id,omitempty" db:"id"`
+	PermID                string           `json:"perm_id,omitempty" db:"perm_id"`
 	Kind                  Kind             `json:"kind,omitempty" db:"kind"`
 	ResourceID            misc.NullString  `json:"resource_id,omitempty" db:"resource_id"` // it can be null for resources without tables
 	ResourceLabel         string           `json:"label,omitempty" db:"resource_label"`
@@ -99,7 +99,7 @@ type PermissionRecord struct {
 }
 
 func (p *PermissionRecord) Mask() {
-	p.ID = ""
+	p.PermID = ""
 	p.Kind = "" // will be already known though
 	p.ResourceID.Valid = false
 	p.CreateTime = time.Time{}

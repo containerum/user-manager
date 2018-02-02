@@ -135,9 +135,20 @@ func userInfoGetHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
-func userGetHandler(ctx *gin.Context) {
+func userGetByIDHandler(ctx *gin.Context) {
 
 	resp, err := srv.GetUserInfoByID(ctx.Request.Context(), ctx.Param("user_id"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(errorWithHTTPStatus(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+}
+
+func userGetByLoginHandler(ctx *gin.Context) {
+
+	resp, err := srv.GetUserInfoByLogin(ctx.Request.Context(), ctx.Param("login"))
 	if err != nil {
 		ctx.AbortWithStatusJSON(errorWithHTTPStatus(err))
 		return
