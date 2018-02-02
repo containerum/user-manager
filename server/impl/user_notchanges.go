@@ -101,6 +101,31 @@ func (u *serverImpl) GetUserInfoByID(ctx context.Context, userID string) (*umtyp
 	}, nil
 }
 
+func (u *serverImpl) GetUserInfoByLogin(ctx context.Context, login string) (*umtypes.UserInfoByLoginGetResponse, error) {
+	u.log.WithField("login", login).Info("get user info by login")
+	user, err := u.svc.DB.GetUserByLogin(ctx, login)
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return nil, userGetFailed
+	}
+	if user == nil {
+		u.log.WithError(userNotFound)
+		return nil, userNotFound
+	}
+
+	profile, err := u.svc.DB.GetProfileByUser(ctx, user)
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return nil, profileGetFailed
+	}
+
+	return &umtypes.UserInfoByLoginGetResponse{
+		ID:   user.ID,
+		Role: user.Role,
+		Data: profile.Data,
+	}, nil
+}
+
 func (u *serverImpl) GetBlacklistedUsers(ctx context.Context, params umtypes.UserListQuery) (*umtypes.BlacklistGetResponse, error) {
 	u.log.WithField("per_page", params.PerPage).WithField("page", params.Page).Info("get blacklisted users")
 	blacklisted, err := u.svc.DB.GetBlacklistedUsers(ctx, params.PerPage, (params.Page-1)*params.PerPage)
