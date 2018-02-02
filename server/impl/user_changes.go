@@ -356,10 +356,10 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 	return nil
 }
 
-func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserCreateWebAPIRequest) (*umtypes.UserCreateResponse, error) {
-	u.log.WithField("login", request.UserName).Info("creating user from old api")
+func (u *serverImpl) CreateUserWebAPI(ctx context.Context, userName string, password string, id string, createdAtStr string, data map[string]interface{}) (*umtypes.UserCreateResponse, error) {
+	u.log.WithField("login", userName).Info("creating user from old api")
 
-	domain := strings.Split(request.UserName, "@")[1]
+	domain := strings.Split(userName, "@")[1]
 	blacklisted, err := u.svc.DB.IsDomainBlacklisted(ctx, domain)
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
@@ -370,21 +370,21 @@ func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserC
 		return nil, &server.AccessDeniedError{Err: errors.Format(domainInBlacklist, domain)}
 	}
 
-	user, err := u.svc.DB.GetUserByLogin(ctx, request.UserName)
+	user, err := u.svc.DB.GetUserByLogin(ctx, userName)
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
 		return nil, userGetFailed
 	}
 	if user != nil {
 		u.log.WithError(err)
-		return nil, &server.AlreadyExistsError{Err: errors.Format(userAlreadyExists, request.UserName)}
+		return nil, &server.AlreadyExistsError{Err: errors.Format(userAlreadyExists, userName)}
 	}
 
-	salt := utils.GenSalt(request.UserName, request.UserName, request.UserName) // compatibility with old client db
-	passwordHash := utils.GetKey(request.UserName, request.Password, salt)
+	salt := utils.GenSalt(userName, userName, userName) // compatibility with old client db
+	passwordHash := utils.GetKey(userName, password, salt)
 	newUser := &models.User{
-		ID:           request.ID,
-		Login:        request.UserName,
+		ID:           id,
+		Login:        userName,
 		PasswordHash: passwordHash,
 		Salt:         salt,
 		Role:         "user",
@@ -399,7 +399,7 @@ func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserC
 		}
 
 		var createdAt time.Time
-		createdAt, err := time.Parse("2006-01-02 15:04:05", request.CreatedAt)
+		createdAt, err := time.Parse("2006-01-02 15:04:05", createdAtStr)
 		if err != nil {
 			u.log.WithError(err).Warnf("Error parsing time")
 			createdAt = time.Now().UTC()
@@ -409,7 +409,7 @@ func (u *serverImpl) CreateUserWebAPI(ctx context.Context, request umtypes.UserC
 			User:      newUser,
 			Access:    sql.NullString{String: "rw", Valid: true},
 			CreatedAt: pq.NullTime{Time: createdAt, Valid: true},
-			Data:      request.Data,
+			Data:      data,
 		}); createErr != nil {
 			return profileCreateFailed
 		}
