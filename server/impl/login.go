@@ -163,9 +163,13 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILoginRequest) (*umtypes.WebAPILoginResponse, error) {
 	u.log.WithField("username", request.Username).Infof("Login through web-api")
 
-	resp, _, err := u.svc.WebAPIClient.Login(ctx, &request)
+	resp, code, err := u.svc.WebAPIClient.Login(ctx, &request)
 	if err != nil {
 		u.log.WithError(err)
+		return nil, webAPILoginFailed
+	}
+
+	if code > 399 {
 		return nil, webAPILoginFailed
 	}
 
@@ -200,15 +204,7 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILogi
 	resp.AccessToken = tokens.AccessToken
 	resp.RefreshToken = tokens.RefreshToken
 
-	newUser := umtypes.UserCreateWebAPIRequest{ID: resp.User.ID,
-		UserName:  resp.User.Login,
-		Password:  request.Password,
-		Data:      resp.User.Data,
-		CreatedAt: resp.User.CreatedAt,
-		IsActive:  resp.User.IsActive,
-	}
-
-	if _, err = u.CreateUserWebAPI(ctx, newUser); err != nil {
+	if _, err = u.CreateUserWebAPI(ctx, resp.User.Login, request.Password, resp.User.ID, resp.User.CreatedAt, resp.User.Data); err != nil {
 		u.log.WithError(err).Warnf("Unable to add user to new db")
 	}
 

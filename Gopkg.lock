@@ -11,7 +11,7 @@
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = ["errors","mail-templater","misc","user-manager"]
-  revision = "259ba9a278eb5d825641a40c97802886e441bc6b"
+  revision = "71eefb002216c98e1008a27c3f6bd51d2271d613"
 
 [[projects]]
   branch = "master"
