@@ -72,12 +72,15 @@ var (
 )
 
 var (
-	webAPILoginFailed = &server.AccessDeniedError{Err: errors.New("Login using WebAPI failed")}
-	adminRequired     = &server.AccessDeniedError{Err: errors.New("You don`t have access to do this")}
-	invalidPassword   = &server.AccessDeniedError{Err: errors.New("Invalid password provided")}
-	activationNeeded  = &server.AccessDeniedError{Err: errors.New("Activate your account please. Check your email")}
-	userNotBlacklist  = &server.AccessDeniedError{Err: errors.New("User is not in blacklist")}
-	oauthLoginFailed  = &server.AccessDeniedError{Err: errors.New("Invalid OAuth access token")}
-	userBanYourself   = &server.AccessDeniedError{Err: errors.New("You can't ban yourself")}
-	userBanAdmin      = &server.AccessDeniedError{Err: errors.New("You can't ban admin")}
+	adminRequired    = &server.AccessDeniedError{Err: errors.New("You don`t have access to do this")}
+	invalidPassword  = &server.AccessDeniedError{Err: errors.New("Invalid password provided")}
+	activationNeeded = &server.AccessDeniedError{Err: errors.New("Activate your account please. Check your email")}
+	userNotBlacklist = &server.AccessDeniedError{Err: errors.New("User is not in blacklist")}
+	oauthLoginFailed = &server.AccessDeniedError{Err: errors.New("Invalid OAuth access token")}
+	userBanYourself  = &server.AccessDeniedError{Err: errors.New("You can't ban yourself")}
+	userBanAdmin     = &server.AccessDeniedError{Err: errors.New("You can't ban admin")}
+)
+
+var (
+	loginFailed = &server.UnauthorizedError{Err: errors.New("Login failed")}
 )
