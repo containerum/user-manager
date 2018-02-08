@@ -23,10 +23,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.BasicLoginR
 		"username": request.Username,
 		"password": request.Password,
 	}).Debugln("Basic login details")
-	if rcErr := u.checkReCaptcha(ctx, request.ReCaptcha); rcErr != nil {
-		u.log.WithError(rcErr)
-		return nil, rcErr
-	}
+
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Username)
 	if dbErr := u.handleDBError(err); dbErr != nil {
 		u.log.WithError(dbErr)
