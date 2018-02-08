@@ -163,11 +163,11 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILogi
 	resp, code, err := u.svc.WebAPIClient.Login(ctx, &request)
 	if err != nil {
 		u.log.WithError(err)
-		return nil, webAPILoginFailed
+		return nil, loginFailed
 	}
 
 	if code > 399 {
-		return nil, webAPILoginFailed
+		return nil, loginFailed
 	}
 
 	volumes, _, err := u.svc.WebAPIClient.GetVolumes(ctx, resp.Token, resp.User.ID)

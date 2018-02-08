@@ -59,6 +59,8 @@ func errorWithHTTPStatus(err error) (int, []*errors.Error) {
 		return http.StatusConflict, []*errors.Error{err.(*server.AlreadyExistsError).Err}
 	case *server.InternalError:
 		return http.StatusInternalServerError, []*errors.Error{err.(*server.InternalError).Err}
+	case *server.UnauthorizedError:
+		return http.StatusUnauthorized, []*errors.Error{err.(*server.UnauthorizedError).Err}
 	case *server.WebAPIError:
 		return err.(*server.WebAPIError).StatusCode, []*errors.Error{err.(*server.WebAPIError).Err}
 	default:
