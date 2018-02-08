@@ -47,6 +47,7 @@ func prepareContext(ctx *gin.Context) {
 	}
 }
 
+//nolint: gocyclo
 func errorWithHTTPStatus(err error) (int, []*errors.Error) {
 	switch err.(type) {
 	case *server.AccessDeniedError:

@@ -115,7 +115,7 @@ func (e *AlreadyExistsError) Error() string {
 	return e.Err.Error()
 }
 
-// AlreadyExistsError describes error returned if the request has not been applied because it lacks valid authentication credentials for the target resource.
+// UnauthorizedError describes error returned if the request has not been applied because it lacks valid authentication credentials for the target resource.
 type UnauthorizedError struct {
 	Err *errors.Error
 }
