@@ -42,7 +42,7 @@ docker-build-test:
   services:
     - docker:dind
   image: docker:latest
-  stage: build
+  stage: test
   tags:
     - test
   script:
