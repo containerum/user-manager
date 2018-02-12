@@ -172,14 +172,12 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILogi
 
 	volumes, _, err := u.svc.WebAPIClient.GetVolumes(ctx, resp.Token, resp.User.ID)
 	if err != nil {
-		u.log.WithError(err).Errorln("Unable to get volumes")
-		return nil, webAPIGetVolumesFailed
+		u.log.WithError(err).Warningln("Unable to get volumes")
 	}
 
 	namespaces, _, err := u.svc.WebAPIClient.GetNamespaces(ctx, resp.Token)
 	if err != nil {
-		u.log.WithError(err).Errorln("Unable to get namespaces")
-		return nil, webAPIGetNamespacesFailed
+		u.log.WithError(err).Warningln("Unable to get namespaces")
 	}
 
 	tokens, err := u.svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
