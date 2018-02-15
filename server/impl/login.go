@@ -18,7 +18,6 @@ import (
 
 func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.BasicLoginRequest) (resp *auth.CreateTokenResponse, err error) {
 	u.log.Infoln("Basic login")
-
 	u.log.WithFields(logrus.Fields{
 		"username": request.Username,
 		"password": request.Password,
