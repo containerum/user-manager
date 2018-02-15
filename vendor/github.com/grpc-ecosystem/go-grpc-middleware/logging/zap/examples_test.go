@@ -1,26 +1,24 @@
+// Copyright 2017 Michal Witkowski. All Rights Reserved.
+// See LICENSE for licensing terms.
+
 package grpc_zap_test
 
 import (
+	pb_testproto "github.com/grpc-ecosystem/go-grpc-middleware/testing/testproto"
+
 	"context"
 	"time"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/grpc-ecosystem/go-grpc-middleware/tags"
-	"github.com/grpc-ecosystem/go-grpc-middleware/tags/zap"
-	pb_testproto "github.com/grpc-ecosystem/go-grpc-middleware/testing/testproto"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
 )
 
-var (
-	zapLogger  *zap.Logger
-	customFunc grpc_zap.CodeToLevel
-)
-
 // Initialization shows a relatively complex initialization sequence.
-func Example_Initialization() {
+func Example_initialization(zapLogger *zap.Logger, customFunc grpc_zap.CodeToLevel) *grpc.Server {
 	// Shared options for the logger, with a custom gRPC code to log level function.
 	opts := []grpc_zap.Option{
 		grpc_zap.WithLevels(customFunc),
@@ -28,7 +26,7 @@ func Example_Initialization() {
 	// Make sure that log statements internal to gRPC library are logged using the zapLogger as well.
 	grpc_zap.ReplaceGrpcLogger(zapLogger)
 	// Create a server, make sure we put the grpc_ctxtags context before everything else.
-	_ = grpc.NewServer(
+	server := grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
 			grpc_ctxtags.UnaryServerInterceptor(grpc_ctxtags.WithFieldExtractor(grpc_ctxtags.CodeGenRequestFieldExtractor)),
 			grpc_zap.UnaryServerInterceptor(zapLogger, opts...),
@@ -38,17 +36,18 @@ func Example_Initialization() {
 			grpc_zap.StreamServerInterceptor(zapLogger, opts...),
 		),
 	)
+	return server
 }
 
 // Initialization shows an initialization sequence with the duration field generation overridden.
-func Example_InitializationWithDurationFieldOverride() {
+func Example_initializationWithDurationFieldOverride(zapLogger *zap.Logger) *grpc.Server {
 	opts := []grpc_zap.Option{
 		grpc_zap.WithDurationField(func(duration time.Duration) zapcore.Field {
 			return zap.Int64("grpc.time_ns", duration.Nanoseconds())
 		}),
 	}
 
-	_ = grpc.NewServer(
+	server := grpc.NewServer(
 		grpc_middleware.WithUnaryServerChain(
 			grpc_ctxtags.UnaryServerInterceptor(),
 			grpc_zap.UnaryServerInterceptor(zapLogger, opts...),
@@ -58,41 +57,18 @@ func Example_InitializationWithDurationFieldOverride() {
 			grpc_zap.StreamServerInterceptor(zapLogger, opts...),
 		),
 	)
+
+	return server
 }
 
 // Simple unary handler that adds custom fields to the requests's context. These will be used for all log statements.
-func Example_HandlerUsageUnaryPing() {
-	_ = func(ctx context.Context, ping *pb_testproto.PingRequest) (*pb_testproto.PingResponse, error) {
+func Example_handlerUsageUnaryPing() interface{} {
+	x := func(ctx context.Context, ping *pb_testproto.PingRequest) (*pb_testproto.PingResponse, error) {
 		// Add fields the ctxtags of the request which will be added to all extracted loggers.
 		grpc_ctxtags.Extract(ctx).Set("custom_tags.string", "something").Set("custom_tags.int", 1337)
-
-		// Extract a single request-scoped zap.Logger and log messages. (containing the grpc.xxx tags)
-		l := ctx_zap.Extract(ctx)
-		l.Info("some ping")
-		l.Info("another ping")
+		// Extract a request-scoped zap.Logger and log a message.
+		grpc_zap.Extract(ctx).Info("some ping")
 		return &pb_testproto.PingResponse{Value: ping.Value}, nil
 	}
-}
-
-func ExampleWithDecider() {
-	opts := []grpc_zap.Option{
-		grpc_zap.WithDecider(func(fullMethodName string, err error) bool {
-			// will not log gRPC calls if it was a call to healthcheck and no error was raised
-			if err == nil && fullMethodName == "foo.bar.healthcheck" {
-				return false
-			}
-
-			// by default everything will be logged
-			return true
-		}),
-	}
-
-	_ = []grpc.ServerOption{
-		grpc_middleware.WithStreamServerChain(
-			grpc_ctxtags.StreamServerInterceptor(),
-			grpc_zap.StreamServerInterceptor(zap.NewNop(), opts...)),
-		grpc_middleware.WithUnaryServerChain(
-			grpc_ctxtags.UnaryServerInterceptor(),
-			grpc_zap.UnaryServerInterceptor(zap.NewNop(), opts...)),
-	}
+	return x
 }

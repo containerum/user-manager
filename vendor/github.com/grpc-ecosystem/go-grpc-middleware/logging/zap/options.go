@@ -1,3 +1,6 @@
+// Copyright 2017 Michal Witkowski. All Rights Reserved.
+// See LICENSE for licensing terms.
+
 package grpc_zap
 
 import (
@@ -12,7 +15,6 @@ import (
 var (
 	defaultOptions = &options{
 		levelFunc:    DefaultCodeToLevel,
-		shouldLog:    grpc_logging.DefaultDeciderMethod,
 		codeFunc:     grpc_logging.DefaultErrorToCode,
 		durationFunc: DefaultDurationToField,
 	}
@@ -20,7 +22,6 @@ var (
 
 type options struct {
 	levelFunc    CodeToLevel
-	shouldLog    grpc_logging.Decider
 	codeFunc     grpc_logging.ErrorToCode
 	durationFunc DurationToField
 }
@@ -52,13 +53,6 @@ type CodeToLevel func(code codes.Code) zapcore.Level
 
 // DurationToField function defines how to produce duration fields for logging
 type DurationToField func(duration time.Duration) zapcore.Field
-
-// WithDecider customizes the function for deciding if the gRPC interceptor logs should log.
-func WithDecider(f grpc_logging.Decider) Option {
-	return func(o *options) {
-		o.shouldLog = f
-	}
-}
 
 // WithLevels customizes the function for mapping gRPC return codes and interceptor log level statements.
 func WithLevels(f CodeToLevel) Option {
@@ -180,5 +174,5 @@ func DurationToDurationField(duration time.Duration) zapcore.Field {
 }
 
 func durationToMilliseconds(duration time.Duration) float32 {
-	return float32(duration.Nanoseconds()/1000) / 1000
+	return float32(duration.Nanoseconds() / 1000 / 1000)
 }

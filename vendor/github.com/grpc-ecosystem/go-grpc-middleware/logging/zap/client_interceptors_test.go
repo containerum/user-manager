@@ -1,6 +1,10 @@
+// Copyright 2017 Michal Witkowski. All Rights Reserved.
+// See LICENSE for licensing terms.
+
 package grpc_zap_test
 
 import (
+	"fmt"
 	"io"
 	"runtime"
 	"strings"
@@ -48,17 +52,16 @@ type zapClientSuite struct {
 
 func (s *zapClientSuite) TestPing() {
 	_, err := s.Client.Ping(s.SimpleCtx(), goodPing)
-	require.NoError(s.T(), err, "there must be not be an error on a successful call")
-
+	assert.NoError(s.T(), err, "there must be not be an on a successful call")
 	msgs := s.getOutputJSONs()
 	require.Len(s.T(), msgs, 1, "one log statement should be logged")
-
-	assert.Equal(s.T(), msgs[0]["grpc.service"], "mwitkow.testproto.TestService", "all lines must contain service name")
-	assert.Equal(s.T(), msgs[0]["grpc.method"], "Ping", "all lines must contain method name")
-	assert.Equal(s.T(), msgs[0]["msg"], "finished client unary call", "must contain correct message")
-	assert.Equal(s.T(), msgs[0]["span.kind"], "client", "all lines must contain the kind of call (client)")
-	assert.Equal(s.T(), msgs[0]["level"], "debug", "must be logged on debug level.")
-	assert.Contains(s.T(), msgs[0], "grpc.time_ms", "interceptor log statement should contain execution time")
+	m := msgs[0]
+	assert.Contains(s.T(), m, `"grpc.service": "mwitkow.testproto.TestService"`, "all lines must contain service name")
+	assert.Contains(s.T(), m, `"grpc.method": "Ping"`, "all lines must contain method name")
+	assert.Contains(s.T(), m, `"span.kind": "client"`, "all lines must contain the kind of call (client)")
+	assert.Contains(s.T(), m, `"msg": "finished client unary call"`, "interceptor message must contain string")
+	assert.Contains(s.T(), m, `"level": "debug"`, "OK error codes must be logged on debug level.")
+	assert.Contains(s.T(), m, `"grpc.time_ms":`, "interceptor log statement should contain execution time")
 }
 
 func (s *zapClientSuite) TestPingList() {
@@ -73,13 +76,13 @@ func (s *zapClientSuite) TestPingList() {
 	}
 	msgs := s.getOutputJSONs()
 	require.Len(s.T(), msgs, 1, "one log statement should be logged")
-
-	assert.Equal(s.T(), msgs[0]["grpc.service"], "mwitkow.testproto.TestService", "all lines must contain service name")
-	assert.Equal(s.T(), msgs[0]["grpc.method"], "PingList", "all lines must contain method name")
-	assert.Equal(s.T(), msgs[0]["msg"], "finished client streaming call", "handler's message must contain user message")
-	assert.Equal(s.T(), msgs[0]["span.kind"], "client", "all lines must contain the kind of call (client)")
-	assert.Equal(s.T(), msgs[0]["level"], "debug", "OK codes must be logged on debug level.")
-	assert.Contains(s.T(), msgs[0], "grpc.time_ms", "handler's message must contain time in ms")
+	m := msgs[0]
+	assert.Contains(s.T(), m, `"grpc.service": "mwitkow.testproto.TestService"`, "all lines must contain service name")
+	assert.Contains(s.T(), m, `"grpc.method": "PingList"`, "all lines must contain method name")
+	assert.Contains(s.T(), m, `"span.kind": "client"`, "all lines must contain the kind of call (client)")
+	assert.Contains(s.T(), m, `"msg": "finished client streaming call"`, "interceptor message must contain string")
+	assert.Contains(s.T(), m, `"level": "debug"`, "OK error codes must be logged on debug level.")
+	assert.Contains(s.T(), m, `"grpc.time_ms":`, "interceptor log statement should contain execution time")
 }
 
 func (s *zapClientSuite) TestPingError_WithCustomLevels() {
@@ -113,15 +116,14 @@ func (s *zapClientSuite) TestPingError_WithCustomLevels() {
 		_, err := s.Client.PingError(
 			s.SimpleCtx(),
 			&pb_testproto.PingRequest{Value: "something", ErrorCodeReturned: uint32(tcase.code)})
-		require.Error(s.T(), err, "each call here must return an error")
-
+		assert.Error(s.T(), err, "each call here must return an error")
 		msgs := s.getOutputJSONs()
 		require.Len(s.T(), msgs, 1, "only the interceptor log message is printed in PingErr")
-
-		assert.Equal(s.T(), msgs[0]["grpc.service"], "mwitkow.testproto.TestService", "all lines must contain service name")
-		assert.Equal(s.T(), msgs[0]["grpc.method"], "PingError", "all lines must contain method name")
-		assert.Equal(s.T(), msgs[0]["grpc.code"], tcase.code.String(), "all lines must contain the correct gRPC code")
-		assert.Equal(s.T(), msgs[0]["level"], tcase.level.String(), tcase.msg)
+		m := msgs[0]
+		assert.Contains(s.T(), m, `"grpc.service": "mwitkow.testproto.TestService"`, "all lines must contain service name")
+		assert.Contains(s.T(), m, `"grpc.method": "PingError"`, "all lines must contain method name")
+		assert.Contains(s.T(), m, fmt.Sprintf(`"grpc.code": "%s"`, tcase.code.String()), "all lines must contain method name")
+		assert.Contains(s.T(), m, fmt.Sprintf(`"level": "%s"`, tcase.level.String()), tcase.msg)
 	}
 }
 
@@ -147,17 +149,17 @@ type zapClientOverrideSuite struct {
 
 func (s *zapClientOverrideSuite) TestPing_HasOverrides() {
 	_, err := s.Client.Ping(s.SimpleCtx(), goodPing)
-	require.NoError(s.T(), err, "there must be not be an error on a successful call")
-
+	assert.NoError(s.T(), err, "there must be not be an on a successful call")
 	msgs := s.getOutputJSONs()
 	require.Len(s.T(), msgs, 1, "one log statement should be logged")
-
-	assert.Equal(s.T(), msgs[0]["grpc.service"], "mwitkow.testproto.TestService", "all lines must contain service name")
-	assert.Equal(s.T(), msgs[0]["grpc.method"], "Ping", "all lines must contain method name")
-	assert.Equal(s.T(), msgs[0]["msg"], "finished client unary call", "handler's message must contain user message")
-
-	assert.NotContains(s.T(), msgs[0], "grpc.time_ms", "handler's message must not contain default duration")
-	assert.Contains(s.T(), msgs[0], "grpc.duration", "handler's message must contain overridden duration")
+	m := msgs[0]
+	assert.Contains(s.T(), m, `"grpc.service": "mwitkow.testproto.TestService"`, "all lines must contain service name")
+	assert.Contains(s.T(), m, `"grpc.method": "Ping"`, "all lines must contain method name")
+	assert.Contains(s.T(), m, `"span.kind": "client"`, "all lines must contain the kind of call (client)")
+	assert.Contains(s.T(), m, `"msg": "finished client unary call"`, "interceptor message must contain string")
+	assert.Contains(s.T(), m, `"level": "debug"`, "OK error codes must be logged on debug level.")
+	assert.NotContains(s.T(), m, "grpc.time_ms", "interceptor message must not contain default duration")
+	assert.Contains(s.T(), m, "grpc.duration", "interceptor message must contain overridden duration")
 }
 
 func (s *zapClientOverrideSuite) TestPingList_HasOverrides() {
@@ -172,13 +174,12 @@ func (s *zapClientOverrideSuite) TestPingList_HasOverrides() {
 	}
 	msgs := s.getOutputJSONs()
 	require.Len(s.T(), msgs, 1, "one log statement should be logged")
-
-	assert.Equal(s.T(), msgs[0]["grpc.service"], "mwitkow.testproto.TestService", "all lines must contain service name")
-	assert.Equal(s.T(), msgs[0]["grpc.method"], "PingList", "all lines must contain method name")
-	assert.Equal(s.T(), msgs[0]["msg"], "finished client streaming call", "handler's message must contain user message")
-	assert.Equal(s.T(), msgs[0]["span.kind"], "client", "all lines must contain the kind of call (client)")
-	assert.Equal(s.T(), msgs[0]["level"], "debug", "must be logged on debug level.")
-
-	assert.NotContains(s.T(), msgs[0], "grpc.time_ms", "handler's message must not contain default duration")
-	assert.Contains(s.T(), msgs[0], "grpc.duration", "handler's message must contain overridden duration")
+	m := msgs[0]
+	assert.Contains(s.T(), m, `"grpc.service": "mwitkow.testproto.TestService"`, "all lines must contain service name")
+	assert.Contains(s.T(), m, `"grpc.method": "PingList"`, "all lines must contain method name")
+	assert.Contains(s.T(), m, `"span.kind": "client"`, "all lines must contain the kind of call (client)")
+	assert.Contains(s.T(), m, `"msg": "finished client streaming call"`, "interceptor message must contain string")
+	assert.Contains(s.T(), m, `"level": "debug"`, "OK error codes must be logged on debug level.")
+	assert.NotContains(s.T(), m, "grpc.time_ms", "interceptor message must not contain default duration")
+	assert.Contains(s.T(), m, "grpc.duration", "interceptor message must contain overridden duration")
 }

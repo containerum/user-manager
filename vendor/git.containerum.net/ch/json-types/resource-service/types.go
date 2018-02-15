@@ -13,7 +13,6 @@ const (
 	KindVolume          = "volume"
 	KindExtService      = "extservice"
 	KindIntService      = "intservice"
-	KindDomain          = "domain"
 )
 
 type PermissionStatus string // constants PermissionStatusOwner, PermissionStatusRead
@@ -54,26 +53,27 @@ type Namespace struct {
 type Volume struct {
 	Resource
 
-	Active     misc.NullBool `json:"active,omitempty" db:"active"`
-	Capacity   int           `json:"capacity" db:"capacity"` // gigabytes
-	Replicas   int           `json:"replicas" db:"replicas"`
-	Persistent bool          `json:"is_persistent" db:"is_persistent"`
+	Active      misc.NullBool   `json:"active,omitempty" db:"active"`
+	Capacity    int             `json:"capacity" db:"capacity"` // gigabytes
+	Replicas    int             `json:"replicas,omitempty" db:"replicas"`
+	NamespaceID misc.NullString `json:"namespace_id,omitempty" db:"ns_id"`
 }
 
 func (v *Volume) Mask() {
 	v.Resource.Mask()
 	v.Active.Valid = false
+	v.Replicas = 0
+	v.NamespaceID.Valid = false
 }
 
 type Deployment struct {
 	ID          string        `json:"id,omitempty" db:"id"`
 	NamespaceID string        `json:"namespace_id,omitempty" db:"ns_id"`
 	Name        string        `json:"name" db:"name"`
-	RAM         int           `json:"ram" db:"ram"`
-	CPU         int           `json:"cpu" db:"cpu"`
 	CreateTime  time.Time     `json:"create_time,omitempty" db:"create_time"`
 	Deleted     bool          `json:"deleted,omitempty" db:"deleted"`
 	DeleteTime  misc.NullTime `json:"delete_time,omitempty" db:"delete_time"`
+	Replicas    int           `json:"replicas" db:"replicas"`
 }
 
 func (d *Deployment) Mask() {
@@ -92,7 +92,7 @@ type PermissionRecord struct {
 	OwnerUserID           string           `json:"owner_user_id,omitempty" db:"owner_user_id"`
 	CreateTime            time.Time        `json:"create_time,omitempty" db:"create_time"`
 	UserID                string           `json:"user_id" db:"user_id"`
-	AccessLevel           PermissionStatus `json:"access_level" db:"access_level"`
+	AccessLevel           PermissionStatus `json:"access" db:"access_level"`
 	Limited               bool             `json:"limited,omitempty" db:"limited"`
 	AccessLevelChangeTime time.Time        `json:"access_level_change_time" db:"access_level_change_time"`
 	NewAccessLevel        PermissionStatus `json:"new_access_level,omitempty" db:"new_access_level"`
@@ -102,11 +102,81 @@ func (p *PermissionRecord) Mask() {
 	p.PermID = ""
 	p.Kind = "" // will be already known though
 	p.ResourceID.Valid = false
+	p.OwnerUserID = ""
 	p.CreateTime = time.Time{}
+	p.UserID = ""
 	p.AccessLevel = p.NewAccessLevel
-	p.NewAccessLevel = ""
-	p.AccessLevelChangeTime = time.Time{}
 	p.Limited = false
+	p.AccessLevelChangeTime = time.Time{}
+	p.NewAccessLevel = ""
+}
+
+type Container struct {
+	ID       string `json:"id,omitempty" db:"id"`
+	DeployID string `json:"depl_id,omitempty" db:"depl_id"`
+	Name     string `json:"name" db:"name"`
+	Image    string `json:"image" db:"image"`
+	RAM      int    `json:"ram" db:"ram"`
+	CPU      int    `json:"cpu" db:"cpu"`
+}
+
+func (c *Container) Mask() {
+	c.ID = ""
+	c.DeployID = ""
+}
+
+type EnvironmentVariable struct {
+	EnvID       string `json:"id,omitempty" db:"env_id"`
+	ContainerID string `json:"container_id,omitempty" db:"container_id"`
+	Name        string `json:"name" db:"name"`
+	Value       string `json:"value" db:"value"`
+}
+
+func (e *EnvironmentVariable) Mask() {
+	e.EnvID = ""
+	e.ContainerID = ""
+}
+
+type VolumeMount struct {
+	MountID     string          `json:"id,omitempty" db:"mount_id"`
+	ContainerID string          `json:"container_id,omitempty" db:"container_id"`
+	VolumeID    string          `json:"volume_id,omitempty" db:"volume_id"`
+	MountPath   string          `json:"mount_path" db:"mount_path"`
+	SubPath     misc.NullString `json:"sub_path,omitempty" db:"sub_path"`
+}
+
+func (vm *VolumeMount) Mask() {
+	vm.MountID = ""
+	vm.ContainerID = ""
+	vm.VolumeID = ""
+}
+
+type Domain struct {
+	IP          string `json:"ip" db:"ip"`
+	Domain      string `json:"domain" db:"domain"`
+	DomainGroup string `json:"domain_group" db:"domain_group"`
+}
+
+type DomainEntry struct {
+	Domain      string   `json:"domain" binding:"required"`
+	DomainGroup string   `json:"domain_group"`
+	IP          []string `json:"ip" binding:"required,dive,ip"`
+}
+
+type IngressType string
+
+const (
+	IngressHTTP        IngressType = "http"
+	IngressHTTPS                   = "https"
+	IngressCustomHTTPS             = "custom_https"
+)
+
+type IngressEntry struct {
+	ID        string      `json:"id,omitempty" db:"id"`
+	Domain    string      `json:"domain" db:"custom_domain"`
+	Type      IngressType `json:"type" db:"type"`
+	ServiceID string      `json:"service_id" db:"service_id"`
+	CreatedAt time.Time   `json:"created_at" db:"created_at"`
 }
 
 // Types below is not for storing in db
@@ -145,24 +215,34 @@ func (nv *NamespaceWithVolumes) Mask() {
 
 type NamespaceWithUserPermissions struct {
 	NamespaceWithPermission
-	Users []PermissionRecord `json:"users"`
+	Users []PermissionRecord `json:"users,omitempty"`
 }
 
 func (nu *NamespaceWithUserPermissions) Mask() {
+	borrowed := nu.UserID != nu.OwnerUserID
 	nu.NamespaceWithPermission.Mask()
-	for i := range nu.Users {
-		nu.Users[i].Mask()
+	if borrowed {
+		nu.Users = nil
+	} else {
+		for i := range nu.Users {
+			nu.Users[i].Mask()
+		}
 	}
 }
 
 type VolumeWithUserPermissions struct {
 	VolumeWithPermission
-	Users []PermissionRecord `json:"users"`
+	Users []PermissionRecord `json:"users,omitempty"`
 }
 
 func (vp *VolumeWithUserPermissions) Mask() {
+	borrowed := vp.UserID != vp.OwnerUserID
 	vp.VolumeWithPermission.Mask()
-	for i := range vp.Users {
-		vp.Users[i].Mask()
+	if borrowed {
+		vp.Users = nil
+	} else {
+		for i := range vp.Users {
+			vp.Users[i].Mask()
+		}
 	}
 }
