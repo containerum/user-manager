@@ -197,6 +197,3 @@ local.properties
 
 
 coverage.txt
-
-#vendor
-vendor/

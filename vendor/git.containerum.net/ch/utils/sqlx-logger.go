@@ -186,3 +186,35 @@ func (e *sqlxExtContextLogger) QueryRowxContext(ctx context.Context, query strin
 func (e *sqlxExtContextLogger) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	return e.el.ExecContext(ctx, query, args...)
 }
+
+// sqlx statement preparer
+
+type SQLXPreparer interface {
+	PrepareNamed(query string) (*sqlx.NamedStmt, error)
+	Preparex(query string) (*sqlx.Stmt, error)
+}
+
+type sqlxPreparerLogger struct {
+	SQLXPreparer
+
+	l *logrus.Entry
+}
+
+func NewSQLXPreparerLogger(preparer SQLXPreparer, entry *logrus.Entry) SQLXPreparer {
+	return &sqlxPreparerLogger{
+		SQLXPreparer: preparer,
+		l:            entry,
+	}
+}
+
+func (p *sqlxPreparerLogger) PrepareNamed(query string) (*sqlx.NamedStmt, error) {
+	stmt, err := p.SQLXPreparer.PrepareNamed(query)
+	p.l.WithField("query", queryMinify(query)).WithError(err).Debug("prepare named statement")
+	return stmt, err
+}
+
+func (p *sqlxPreparerLogger) Preparex(query string) (*sqlx.Stmt, error) {
+	stmt, err := p.SQLXPreparer.Preparex(query)
+	p.l.WithField("query", queryMinify(query)).WithError(err).Debug("prepare statement")
+	return stmt, err
+}

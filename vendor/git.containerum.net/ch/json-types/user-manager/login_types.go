@@ -3,7 +3,6 @@ package user
 type BasicLoginRequest struct {
 	Username  string `json:"username" binding:"required,email"`
 	Password  string `json:"password" binding:"required"`
-	ReCaptcha string `json:"recaptcha" binding:"required"`
 }
 
 type OneTimeTokenLoginRequest struct {

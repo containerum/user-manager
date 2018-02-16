@@ -1,8 +1,6 @@
 package grpc_ctxtags
 
-import (
-	"context"
-)
+import "context"
 
 type ctxMarker struct{}
 
@@ -43,7 +41,6 @@ func Extract(ctx context.Context) *Tags {
 	if !ok {
 		return &Tags{values: make(map[string]interface{})}
 	}
-
 	return t
 }
 
