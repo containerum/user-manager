@@ -156,6 +156,7 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	return u.createTokens(ctx, user)
 }
 
+//nolint: gocyclo
 func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILoginRequest) (*umtypes.WebAPILoginResponse, error) {
 	u.log.WithField("username", request.Username).Infof("Login through web-api")
 
@@ -167,6 +168,17 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILogi
 
 	if code > 399 {
 		return nil, loginFailed
+	}
+
+	alreadyexist := false
+	role := "user"
+	user, err := u.svc.DB.GetUserByLogin(ctx, request.Username)
+	if err == nil && user != nil {
+		if user != nil {
+			role = user.Role
+			alreadyexist = true
+			u.log.Debugf("User %v exists in db and has role: %v", user.Login, role)
+		}
 	}
 
 	volumes, _, err := u.svc.WebAPIClient.GetVolumes(ctx, resp.Token, resp.User.ID)
@@ -184,12 +196,11 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILogi
 		Fingerprint: server.MustGetFingerprint(ctx),
 		UserId:      &common.UUID{Value: resp.User.ID},
 		UserIp:      server.MustGetClientIP(ctx),
-		UserRole:    "user",
+		UserRole:    role,
 		RwAccess:    true,
 		Access:      &auth.ResourcesAccess{Volume: volumes, Namespace: namespaces},
 		PartTokenId: nil,
 	})
-
 	if err != nil {
 		u.log.WithError(err)
 		return nil, tokenCreateFailed
@@ -198,10 +209,12 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILogi
 	resp.AccessToken = tokens.AccessToken
 	resp.RefreshToken = tokens.RefreshToken
 
-	if _, err = u.CreateUserWebAPI(ctx, resp.User.Login, request.Password, resp.User.ID, resp.User.CreatedAt, resp.User.Data); err != nil {
-		u.log.WithError(err).Warnf("Unable to add user to new db")
+	if !alreadyexist {
+		u.log.WithError(err).Warnf("Adding user to new db")
+		if _, err = u.CreateUserWebAPI(ctx, resp.User.Login, request.Password, resp.User.ID, resp.User.CreatedAt, resp.User.Data); err != nil {
+			u.log.WithError(err).Warnf("Unable to add user to new db")
+		}
 	}
-
 	return resp, nil
 }
 
