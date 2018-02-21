@@ -176,7 +176,7 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILogi
 		if user != nil {
 			role = user.Role
 			alreadyexist = true
-			u.log.Debugln("User exists in db and has role:", role)
+			u.log.Debugf("User %v exists in db and has role: %v", user.Login, role)
 		}
 	}
 
