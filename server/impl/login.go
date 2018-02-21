@@ -156,6 +156,7 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	return u.createTokens(ctx, user)
 }
 
+//nolint: gocyclo
 func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.WebAPILoginRequest) (*umtypes.WebAPILoginResponse, error) {
 	u.log.WithField("username", request.Username).Infof("Login through web-api")
 
