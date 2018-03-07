@@ -7,15 +7,15 @@ const (
 )
 
 type Endpoint struct {
-	Name      string   `json:"name" binding:"required"`
-	Owner     *string  `json:"owner,omitempty" binding:"required"`
+	Name      string   `json:"name"`
+	Owner     *string  `json:"owner,omitempty"`
 	CreatedAt *int64   `json:"created_at,omitempty"`
-	Addresses []string `json:"addresses" binding:"required"`
-	Ports     []Port   `json:"ports" binding:"required"`
+	Addresses []string `json:"addresses"`
+	Ports     []Port   `json:"ports"`
 }
 
 type Port struct {
-	Name       string   `json:"name" binding:"required"`
-	Port       int      `json:"port" binding:"required"`
-	Protocol   Protocol `json:"protocol" binding:"required"`
+	Name       string   `json:"name"`
+	Port       int      `json:"port"`
+	Protocol   Protocol `json:"protocol"`
 }

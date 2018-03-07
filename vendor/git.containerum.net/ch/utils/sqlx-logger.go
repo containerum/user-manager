@@ -45,7 +45,11 @@ func (q *sqlxQueryLogger) Queryx(query string, args ...interface{}) (*sqlx.Rows,
 
 func (q *sqlxQueryLogger) QueryRowx(query string, args ...interface{}) *sqlx.Row {
 	row := q.Queryer.QueryRowx(query, args...)
-	q.l.WithField("query", queryMinify(query)).Debugln(args...)
+	entry := q.l.WithField("query", queryMinify(query))
+	if row != nil {
+		entry = entry.WithError(row.Err())
+	}
+	entry.Debugln(args...)
 	return row
 }
 
@@ -96,9 +100,13 @@ func (q *sqlxContextQueryLogger) QueryxContext(ctx context.Context, query string
 }
 
 func (q *sqlxContextQueryLogger) QueryRowxContext(ctx context.Context, query string, args ...interface{}) *sqlx.Row {
-	rows := q.QueryerContext.QueryRowxContext(ctx, query, args...)
-	q.l.WithField("query", queryMinify(query)).Debugln(args...)
-	return rows
+	row := q.QueryerContext.QueryRowxContext(ctx, query, args...)
+	entry := q.l.WithField("query", queryMinify(query))
+	if row != nil {
+		entry = entry.WithError(row.Err())
+	}
+	entry.Debugln(args...)
+	return row
 }
 
 // sqlx context exec logger

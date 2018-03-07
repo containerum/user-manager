@@ -5,8 +5,11 @@ import (
 	"net/http"
 	"net/textproto"
 
-	"git.containerum.net/ch/json-types/errors"
+	"strings"
+
 	umtypes "git.containerum.net/ch/json-types/user-manager"
+	"git.containerum.net/ch/kube-client/pkg/cherry"
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 )
 
@@ -37,28 +40,31 @@ func RequestHeaders(ctx context.Context) http.Header {
 }
 
 var hdrToKey = map[string]interface{}{
-	umtypes.UserIDHeader:      UserIDContextKey,
-	umtypes.UserAgentHeader:   UserAgentContextKey,
-	umtypes.FingerprintHeader: FingerPrintContextKey,
-	umtypes.SessionIDHeader:   SessionIDContextKey,
-	umtypes.TokenIDHeader:     TokenIDContextKey,
-	umtypes.ClientIPHeader:    ClientIPContextKey,
-	umtypes.UserRoleHeader:    UserRoleContextKey,
+	textproto.CanonicalMIMEHeaderKey(umtypes.UserIDHeader):      UserIDContextKey,
+	textproto.CanonicalMIMEHeaderKey(umtypes.UserAgentHeader):   UserAgentContextKey,
+	textproto.CanonicalMIMEHeaderKey(umtypes.FingerprintHeader): FingerPrintContextKey,
+	textproto.CanonicalMIMEHeaderKey(umtypes.SessionIDHeader):   SessionIDContextKey,
+	textproto.CanonicalMIMEHeaderKey(umtypes.TokenIDHeader):     TokenIDContextKey,
+	textproto.CanonicalMIMEHeaderKey(umtypes.ClientIPHeader):    ClientIPContextKey,
+	textproto.CanonicalMIMEHeaderKey(umtypes.UserRoleHeader):    UserRoleContextKey,
+	textproto.CanonicalMIMEHeaderKey(umtypes.PartTokenIDHeader): PartTokenIDContextKey,
 }
 
 // RequireHeaders is a gin middleware to ensure that headers is set
-func RequireHeaders(headers ...string) gin.HandlerFunc {
+func RequireHeaders(errToReturn func() *cherry.Err, headers ...string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var notFoundHeaders []string
 		for _, v := range headers {
-			if ctx.GetHeader(v) == "" {
+			if ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(v)) == "" {
 				notFoundHeaders = append(notFoundHeaders, v)
 			}
 		}
 		if len(notFoundHeaders) > 0 {
-			err := errors.Format("required headers %v was not provided", notFoundHeaders)
-			ctx.Error(err)
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+			err := errToReturn()
+			for _, notFoundHeader := range notFoundHeaders {
+				err.AddDetailF("required header %s was not provided", notFoundHeader)
+			}
+			gonic.Gonic(err, ctx)
 		}
 	}
 }
@@ -71,18 +77,30 @@ func PrepareContext(ctx *gin.Context) {
 			ctx.Request = ctx.Request.WithContext(rctx)
 		}
 	}
+
+	acceptLanguages := ctx.GetHeader("Accept-Language")
+	acceptLanguagesToContext := make([]string, 0)
+	for _, language := range strings.Split(acceptLanguages, ",") {
+		language = strings.Split(strings.TrimSpace(language), ";")[0] // drop quality values
+		acceptLanguagesToContext = append(acceptLanguagesToContext, language)
+	}
+	ctx.Request = ctx.Request.WithContext(context.WithValue(ctx.Request.Context(), AcceptLanguageContextKey, acceptLanguagesToContext))
 }
 
 // RequireAdminRole is a gin middleware which requires admin role
-func RequireAdminRole(ctx *gin.Context) {
-	if ctx.GetHeader(umtypes.UserRoleHeader) != "admin" {
-		ctx.AbortWithStatusJSON(http.StatusForbidden, errors.New("you don`t have permission to do that"))
+func RequireAdminRole(errToReturn *cherry.Err) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		if ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(umtypes.UserRoleHeader)) != "admin" {
+			err := *errToReturn
+			err = *err.AddDetails("only admin can do this")
+			gonic.Gonic(&err, ctx)
+		}
 	}
 }
 
 // SubstituteUserMiddleware replaces user id in context with user id from query if it set and user is admin
 func SubstituteUserMiddleware(ctx *gin.Context) {
-	role := ctx.GetHeader(umtypes.UserRoleHeader)
+	role := ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(umtypes.UserRoleHeader))
 	if userID, set := ctx.GetQuery("user-id"); set && role == "admin" {
 		rctx := context.WithValue(ctx.Request.Context(), UserIDContextKey, userID)
 		ctx.Request = ctx.Request.WithContext(rctx)

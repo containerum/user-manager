@@ -11,6 +11,9 @@ var (
 	UserIDContextKey      = new(int)
 	TokenIDContextKey     = new(int)
 	UserRoleContextKey    = new(int)
+	PartTokenIDContextKey = new(int)
+
+	AcceptLanguageContextKey = new(int)
 )
 
 // MustGetFingerprint attempts to extract client fingerprint using FingerPrintContextKey from context.
@@ -81,4 +84,20 @@ func MustGetUserRole(ctx context.Context) string {
 		panic("user role not found in context")
 	}
 	return role
+}
+
+// MustGetPartTokenID attempts to extract part token ID using PartTokenIDContextKey from context
+// It panics if value was not found in context.
+func MustGetPartTokenID(ctx context.Context) string {
+	ptid, ok := ctx.Value(PartTokenIDContextKey).(string)
+	if !ok {
+		panic("part token id not found in context")
+	}
+	return ptid
+}
+
+// GetAcceptedLanguages extracts accepted languages from context
+func GetAcceptedLanguages(ctx context.Context) []string {
+	alangs, _ := ctx.Value(AcceptLanguageContextKey).([]string)
+	return alangs
 }
