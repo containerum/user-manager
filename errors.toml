@@ -219,3 +219,9 @@ SID = 4
     StatusHTTP = 500
     Message = "Unable to get blacklisted domains"
     Kind = 34
+
+[[error]]
+    Name = "ErrInternalError"
+    StatusHTTP = 500
+    Message = "Internal error"
+    Kind = 35

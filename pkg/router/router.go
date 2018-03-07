@@ -5,6 +5,9 @@ import (
 	"time"
 
 	umtypes "git.containerum.net/ch/json-types/user-manager"
+	ch "git.containerum.net/ch/kube-client/pkg/cherry"
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/cherrylog"
+	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	h "git.containerum.net/ch/user-manager/pkg/router/handlers"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
@@ -12,6 +15,8 @@ import (
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+
+	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 )
 
 //CreateRouter initialises router and middlewares
@@ -25,7 +30,7 @@ func CreateRouter(um *server.UserManager) http.Handler {
 func initMiddlewares(e *gin.Engine, um *server.UserManager) {
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
-	e.Use(gin.RecoveryWithWriter(logrus.WithField("component", "gin_recovery").WriterLevel(logrus.ErrorLevel)))
+	e.Use(gonic.Recovery(func() *ch.Err { return cherry.ErrInternalError() }, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
 	/* Custom */
 	e.Use(m.RegisterServices(um))
 	e.Use(m.PrepareContext)
