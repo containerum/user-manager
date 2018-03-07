@@ -73,7 +73,7 @@ migrations-test:
     POSTGRES_USER: migtest
     POSTGRES_PASSWORD: migtest
     POSTGRES_DB: migtest
-    MIGRATIONS_DIR: /migrations
+    MIGRATIONS_DIR: ./pkg/migrations
     DOCKER_HOST: tcp://docker:2375
   services:
     - postgres:latest
