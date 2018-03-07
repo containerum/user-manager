@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"git.containerum.net/ch/grpc-proto-files/auth"
-	"github.com/gin-gonic/gin/binding"
 	"gopkg.in/go-playground/validator.v8"
 )
 
@@ -121,33 +120,37 @@ type SetContainerImageRequest struct {
 
 // Domains
 
-type AddDomainRequest = DomainEntry
+type AddDomainRequest = Domain
 
 type GetAllDomainsQueryParams struct {
 	Page    int `form:"page" binding:"gt=0"`
 	PerPage int `form:"per_page" binding:"gt=0"`
 }
 
-type GetAllDomainsResponse = []DomainEntry
+type GetAllDomainsResponse = []Domain
 
-type GetDomainResponse = DomainEntry
+type GetDomainResponse = Domain
 
 // Ingresses
 
 // Ingress is a basic type for ingress-related responses
 type Ingress struct {
-	Domain    string      `json:"domain" binding:"required"`
-	Type      IngressType `json:"type" binding:"eq=http|eq=https|eq=custom_https"`
-	Service   string      `json:"service" binding:"required,dns"`
-	CreatedAt *time.Time  `json:"created_at,omitempty" binding:"-"`
+	Domain      string      `json:"domain" binding:"required"`
+	Type        IngressType `json:"type" binding:"eq=http|eq=https|eq=custom_https"`
+	Service     string      `json:"service" binding:"required,dns"`
+	CreatedAt   *time.Time  `json:"created_at,omitempty" binding:"-"`
+	Path        string      `json:"path"`
+	ServicePort int         `json:"service_port" binding:"min=1,max=65535"`
+}
+
+type IngressTLS struct {
+	Cert string `json:"crt" binding:"base64"`
+	Key  string `json:"key" binding:"base64"`
 }
 
 type CreateIngressRequest struct {
 	Ingress
-	TLS *struct {
-		Cert string `json:"crt" binding:"base64"`
-		Key  string `json:"key" binding:"base64"`
-	} `json:"tls,omitempty" binding:"omitempty"`
+	TLS *IngressTLS `json:"tls,omitempty" binding:"omitempty"`
 }
 
 type GetIngressesResponse []Ingress
@@ -161,7 +164,36 @@ type UpdateIngressRequest struct {
 	Service string `json:"service" binding:"required,dns"`
 }
 
+// Storages
+
+type CreateStorageRequest struct {
+	Name     string   `json:"name" binding:"required"`
+	Size     int      `json:"size" binding:"gt=0"`
+	Replicas int      `json:"replicas" binding:"gt=0"`
+	IPs      []string `json:"ips" binding:"gt=0"`
+}
+
+type GetStoragesResponse []Storage
+
+type UpdateStorageRequest struct {
+	Name     *string  `json:"name,omitempty"`
+	Size     *int     `json:"size,omitempty" binding:"omitempty,gt=0"`
+	Replicas *int     `json:"replicas" binding:"omitempty,gt=0"`
+	IPs      []string `json:"ips" binding:"omitempty,gt=0"`
+}
+
 // Other
+
+type GetResourcesCountResponse struct {
+	Namespaces  int `json:"namespaces"`
+	Volumes     int `json:"volumes"`
+	Deployments int `json:"deployments"`
+	ExtServices int `json:"external_services"`
+	IntServices int `json:"internal_services"`
+	Ingresses   int `json:"ingresses"`
+	Pods        int `json:"pods"`
+	Containers  int `json:"containers"`
+}
 
 // GetUserAccessResponse is response for special request needed for auth server (actually for creating tokens)
 type GetUserAccessesResponse = auth.ResourcesAccess
@@ -174,15 +206,6 @@ var funcs = map[string]validator.Func{
 }
 
 func RegisterCustomTags(validate *validator.Validate) error {
-	for tag, fn := range funcs {
-		if err := validate.RegisterValidation(tag, fn); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func RegisterCustomTagsGin(validate binding.StructValidator) error {
 	for tag, fn := range funcs {
 		if err := validate.RegisterValidation(tag, fn); err != nil {
 			return err

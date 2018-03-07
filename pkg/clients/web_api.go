@@ -16,9 +16,10 @@ import (
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 
+	"errors"
+
 	"git.containerum.net/ch/grpc-proto-files/auth"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
-	"github.com/pkg/errors"
 )
 
 type WebAPIError struct {
