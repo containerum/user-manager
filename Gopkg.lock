@@ -18,7 +18,7 @@
     "misc",
     "user-manager"
   ]
-  revision = "2b91a176625129c8b8d97820c4016459a89530d5"
+  revision = "2b621ab0cce986eb838a27367d3af426cd012f51"
 
 [[projects]]
   branch = "develop"
@@ -27,7 +27,8 @@
     "pkg/cherry",
     "pkg/cherry/adaptors/cherrylog",
     "pkg/cherry/adaptors/gonic",
-    "pkg/cherry/user-manager"
+    "pkg/cherry/user-manager",
+    "pkg/model"
   ]
   revision = "f691d505c0a0c012453678a7e63c8d7d1d6c5bb1"
 
@@ -35,7 +36,7 @@
   branch = "master"
   name = "git.containerum.net/ch/utils"
   packages = ["."]
-  revision = "42f2e87dd145c9d2cc1d7bc7b2ca7537b51d7b4b"
+  revision = "8f285de51d8b4801a4b94b7312cb60965aeb4efb"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -353,6 +354,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "664b0f9673f66ccd4e89fd7740c1670d3db978509d73776d38a3188760e7ebe7"
+  inputs-digest = "976e9bc547221bafbd4acd9ef12dade6a0a480fc73ea1faded5546e895e46bfa"
   solver-name = "gps-cdcl"
   solver-version = 1

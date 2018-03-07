@@ -15,7 +15,7 @@ FROM alpine:3.7
 # app
 COPY --from=builder /bin/user-manager /
 # migrations
-COPY migrations /migrations
+COPY pkg/migrations /migrations
 # timezone data
 ENV ZONEINFO /zoneinfo.zip
 COPY --from=alpine /zoneinfo.zip /
@@ -25,7 +25,7 @@ ENV GIN_MODE=debug \
     CH_USER_LOG_LEVEL=5 \
     CH_USER_DB="postgres" \
     CH_USER_PG_URL="postgres://usermanager:ae9Oodai3aid@postgres:5432/usermanager?sslmode=disable" \
-    CH_USER_MIGRATIONS_PATH="../../pkg/migrations/" \
+    CH_USER_MIGRATIONS_PATH="migrations" \
     CH_USER_MAIL="http" \
     CH_USER_MAIL_URL="http://ch-mail-templater:7070/" \
     CH_USER_RECAPTCHA="dummy" \
