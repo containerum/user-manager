@@ -4,25 +4,26 @@ import (
 	"time"
 
 	"git.containerum.net/ch/json-types/misc"
+	"github.com/lib/pq"
 )
 
 type Kind string // constants KindNamespace, KindVolume, ... It`s recommended to use strings.ToLower before comparsion
 
 const (
 	KindNamespace  Kind = "namespace"
-	KindVolume          = "volume"
-	KindExtService      = "extservice"
-	KindIntService      = "intservice"
+	KindVolume     Kind = "volume"
+	KindExtService Kind = "extservice"
+	KindIntService Kind = "intservice"
 )
 
 type PermissionStatus string // constants PermissionStatusOwner, PermissionStatusRead
 
 const (
 	PermissionStatusOwner      PermissionStatus = "owner"
-	PermissionStatusRead                        = "read"
-	PermissionStatusWrite                       = "write"
-	PermissionStatusReadDelete                  = "readdelete"
-	PermissionStatusNone                        = "none"
+	PermissionStatusRead       PermissionStatus = "read"
+	PermissionStatusWrite      PermissionStatus = "write"
+	PermissionStatusReadDelete PermissionStatus = "readdelete"
+	PermissionStatusNone       PermissionStatus = "none"
 )
 
 type Resource struct {
@@ -57,6 +58,9 @@ type Volume struct {
 	Capacity    int             `json:"capacity" db:"capacity"` // gigabytes
 	Replicas    int             `json:"replicas,omitempty" db:"replicas"`
 	NamespaceID misc.NullString `json:"namespace_id,omitempty" db:"ns_id"`
+
+	GlusterName string `json:"gluster_name,omitempty" db:"gluster_name"`
+	StorageID   string `json:"storage_id,omitempty" db:"storage_id"`
 }
 
 func (v *Volume) Mask() {
@@ -64,6 +68,17 @@ func (v *Volume) Mask() {
 	v.Active.Valid = false
 	v.Replicas = 0
 	v.NamespaceID.Valid = false
+	v.GlusterName = ""
+	v.StorageID = ""
+}
+
+type Storage struct {
+	ID       string         `json:"id,omitempty" db:"id"`
+	Name     string         `json:"name" db:"name"`
+	Used     int            `json:"used" db:"used"`
+	Size     int            `json:"size" db:"size"`
+	Replicas int            `json:"replicas"`
+	IPs      pq.StringArray `json:"ips" db:"ips"`
 }
 
 type Deployment struct {
@@ -152,15 +167,10 @@ func (vm *VolumeMount) Mask() {
 }
 
 type Domain struct {
-	IP          string `json:"ip" db:"ip"`
-	Domain      string `json:"domain" db:"domain"`
-	DomainGroup string `json:"domain_group" db:"domain_group"`
-}
-
-type DomainEntry struct {
-	Domain      string   `json:"domain" binding:"required"`
-	DomainGroup string   `json:"domain_group"`
-	IP          []string `json:"ip" binding:"required,dive,ip"`
+	ID          string         `json:"id,omitempty" binding:"-" db:"id"`
+	Domain      string         `json:"domain" binding:"required" db:"domain"`
+	DomainGroup string         `json:"domain_group" db:"domain_group"`
+	IP          pq.StringArray `json:"ip" binding:"required,dive,ip"`
 }
 
 type IngressType string
@@ -172,11 +182,60 @@ const (
 )
 
 type IngressEntry struct {
-	ID        string      `json:"id,omitempty" db:"id"`
-	Domain    string      `json:"domain" db:"custom_domain"`
-	Type      IngressType `json:"type" db:"type"`
-	ServiceID string      `json:"service_id" db:"service_id"`
-	CreatedAt time.Time   `json:"created_at" db:"created_at"`
+	ID          string      `json:"id,omitempty" db:"id"`
+	Domain      string      `json:"domain" db:"custom_domain"`
+	Type        IngressType `json:"type" db:"type"`
+	ServiceID   string      `json:"service_id" db:"service_id"`
+	CreatedAt   time.Time   `json:"created_at" db:"created_at"`
+	Path        string      `json:"path" db:"path"`
+	ServicePort int         `json:"service_port" db:"service_port"`
+}
+
+type ServiceType string
+
+const (
+	ServiceInternal ServiceType = "internal"
+	ServiceExternal ServiceType = "external"
+)
+
+type Service struct {
+	ID         string        `json:"id,omitempty" db:"id"`
+	DeployID   string        `json:"deployment_id,omitempty" db:"depl_id"`
+	Name       string        `json:"name" db:"name"`
+	Type       ServiceType   `json:"type" db:"type"`
+	CreatedAt  time.Time     `json:"created_at,omitempty" db:"created_at"`
+	Deleted    bool          `json:"deleted,omitempty" db:"deleted"`
+	DeleteTime misc.NullTime `json:"delete_time,omitempty" db:"delete_time"`
+}
+
+func (s *Service) Mask() {
+	s.ID = ""
+	s.DeployID = ""
+	s.CreatedAt = time.Time{}
+	s.Deleted = false
+	s.DeleteTime.Valid = false
+}
+
+type PortProtocol string
+
+const (
+	ProtocolTCP PortProtocol = "tcp"
+	ProtocolUDP PortProtocol = "udp"
+)
+
+type Port struct {
+	ID         string       `json:"id,omitempty" db:"id"`
+	ServiceID  string       `json:"service_id" db:"service_id"`
+	Name       string       `json:"name" db:"name"`
+	Port       int          `json:"port" db:"port"`
+	TargetPort *int         `json:"target_port" db:"target_port"`
+	Protocol   PortProtocol `json:"protocol" db:"protocol"`
+	Domain     *string      `json:"domain" db:"domain"`
+}
+
+func (p *Port) Mask() {
+	p.ID = ""
+	p.ServiceID = ""
 }
 
 // Types below is not for storing in db

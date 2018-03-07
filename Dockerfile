@@ -1,9 +1,10 @@
 FROM golang:1.9-alpine as builder
 WORKDIR src/git.containerum.net/ch/user-manager
 COPY . .
+WORKDIR cmd/user-manager
 RUN CGO_ENABLED=0 go build -v -tags "jsoniter" -ldflags="-w -s -extldflags '-static'" -o /bin/user-manager
 
-FROM alpine:latest as alpine
+FROM alpine:3.7 as alpine
 RUN apk --no-cache add tzdata zip ca-certificates
 WORKDIR /usr/share/zoneinfo
 # -0 means no compression.  Needed because go's
@@ -14,16 +15,17 @@ FROM alpine:3.7
 # app
 COPY --from=builder /bin/user-manager /
 # migrations
-COPY migrations /migrations
+COPY pkg/migrations /migrations
 # timezone data
 ENV ZONEINFO /zoneinfo.zip
 COPY --from=alpine /zoneinfo.zip /
 # tls certificates
 COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-ENV GIN_MODE=release \
+ENV GIN_MODE=debug \
     CH_USER_LOG_LEVEL=5 \
     CH_USER_DB="postgres" \
-    CH_USER_PG_URL="postgres://usermanager:ae9Oodai3aid@192.168.88.200:5432/usermanager?sslmode=disable" \
+    CH_USER_PG_URL="postgres://usermanager:ae9Oodai3aid@postgres:5432/usermanager?sslmode=disable" \
+    CH_USER_MIGRATIONS_PATH="migrations" \
     CH_USER_MAIL="http" \
     CH_USER_MAIL_URL="http://ch-mail-templater:7070/" \
     CH_USER_RECAPTCHA="dummy" \

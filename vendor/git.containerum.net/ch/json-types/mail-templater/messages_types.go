@@ -13,8 +13,8 @@ type MessagesStorageValue struct {
 	UserId       string                 `json:"user_id"`
 	TemplateName string                 `json:"template_name"`
 	Variables    map[string]interface{} `json:"variables,omitempty"`
-	CreatedAt    time.Time              `json:"created_at"` // UTC
-	Message      string                 `json:"message"`    // base64
+	CreatedAt    time.Time              `json:"created_at"`
+	Message      string                 `json:"message"`
 }
 
 type MessageListEntry struct {
@@ -26,4 +26,10 @@ type MessageListEntry struct {
 
 type MessageListResponse struct {
 	Messages []MessageListEntry `json:"message_list"`
+	*MessageListQuery
+}
+
+type MessageListQuery struct {
+	Page    int `form:"page,omitempty"`
+	PerPage int `form:"per_page,omitempty"`
 }
