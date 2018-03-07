@@ -1,18 +1,16 @@
 package resource
 
 import (
-	"reflect"
-
 	"regexp"
 
 	"time"
 
 	"git.containerum.net/ch/grpc-proto-files/auth"
-	"gopkg.in/go-playground/validator.v8"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 type CreateResourceRequest struct {
-	TariffID string `json:"tariff_id" binding:"uuid4"`
+	TariffID string `json:"tariff_id" binding:"uuid"`
 	Label    string `json:"label" binding:"required,dns"`
 }
 
@@ -31,7 +29,7 @@ type SetResourcesAccessRequest struct {
 }
 
 type ResizeResourceRequest struct {
-	NewTariffID string `json:"tariff_id" binding:"uuid4"`
+	NewTariffID string `json:"tariff_id" binding:"uuid"`
 }
 
 type SetResourceAccessRequest struct {
@@ -219,10 +217,10 @@ var (
 	dockerImage = regexp.MustCompile(`(?:.+/)?([^:]+)(?::.+)?`)
 )
 
-func dnsValidationFunc(v *validator.Validate, topStruct reflect.Value, currentStructOrField reflect.Value, field reflect.Value, fieldType reflect.Type, fieldKind reflect.Kind, param string) bool {
-	return dnsLabel.MatchString(field.String())
+func dnsValidationFunc(fl validator.FieldLevel) bool {
+	return dnsLabel.MatchString(fl.Field().String())
 }
 
-func dockerImageValidationFunc(v *validator.Validate, topStruct reflect.Value, currentStructOrField reflect.Value, field reflect.Value, fieldType reflect.Type, fieldKind reflect.Kind, param string) bool {
-	return dockerImage.MatchString(field.String())
+func dockerImageValidationFunc(fl validator.FieldLevel) bool {
+	return dockerImage.MatchString(fl.Field().String())
 }

@@ -2,18 +2,20 @@ package utils
 
 import "context"
 
-// Keys to inject data to context
-var (
-	FingerPrintContextKey = new(int)
-	ClientIPContextKey    = new(int)
-	UserAgentContextKey   = new(int)
-	SessionIDContextKey   = new(int)
-	UserIDContextKey      = new(int)
-	TokenIDContextKey     = new(int)
-	UserRoleContextKey    = new(int)
-	PartTokenIDContextKey = new(int)
+type contextKey int
 
-	AcceptLanguageContextKey = new(int)
+// Keys to inject data to context
+const (
+	FingerPrintContextKey contextKey = iota
+	ClientIPContextKey
+	UserAgentContextKey
+	SessionIDContextKey
+	UserIDContextKey
+	TokenIDContextKey
+	UserRoleContextKey
+	PartTokenIDContextKey
+
+	AcceptLanguageContextKey
 )
 
 // MustGetFingerprint attempts to extract client fingerprint using FingerPrintContextKey from context.
@@ -94,6 +96,12 @@ func MustGetPartTokenID(ctx context.Context) string {
 		panic("part token id not found in context")
 	}
 	return ptid
+}
+
+// GetPartTokenID attempts to extract part token ID using PartTokenIDContextKey from context
+func GetPartTokenID(ctx context.Context) (string, bool) {
+	ptid, ok := ctx.Value(PartTokenIDContextKey).(string)
+	return ptid, ok
 }
 
 // GetAcceptedLanguages extracts accepted languages from context
