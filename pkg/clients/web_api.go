@@ -113,6 +113,10 @@ func (c *httpWebAPIClient) GetNamespaces(ctx context.Context, token string) (ret
 
 	for _, v := range namespaces {
 		ret = append(ret, &auth.AccessObject{Id: v.ID, Label: v.Name, Access: "owner"})
+		c.log.WithFields(logrus.Fields{
+			"ID":    v.ID,
+			"Label": v.Name,
+		}).Debug("Append NS Info")
 	}
 
 	return ret, nil
