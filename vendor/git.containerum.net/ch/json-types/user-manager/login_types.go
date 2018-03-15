@@ -31,6 +31,6 @@ type WebAPILoginResponse struct {
 
 type WebAPIResource struct {
 	ID     string `json:"id"`
-	Name   string `json:"label"`
+	Name   string `json:"name"`
 	Access string `json:"access"`
 }

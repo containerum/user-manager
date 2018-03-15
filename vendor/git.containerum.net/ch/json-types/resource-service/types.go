@@ -3,11 +3,10 @@ package resource
 import (
 	"time"
 
-	"git.containerum.net/ch/json-types/misc"
 	"github.com/lib/pq"
 )
 
-type Kind string // constants KindNamespace, KindVolume, ... It`s recommended to use strings.ToLower before comparsion
+type Kind string // constants KindNamespace, KindVolume, ... It`s recommended to use strings.ToLower before comparison
 
 const (
 	KindNamespace  Kind = "namespace"
@@ -27,18 +26,19 @@ const (
 )
 
 type Resource struct {
-	ID         string        `json:"id,omitempty" db:"id"`
-	CreateTime time.Time     `json:"create_time,omitempty" db:"create_time"`
-	Deleted    bool          `json:"deleted,omitempty" db:"deleted"` // not optional because we actually don`t need it if it`s false
-	DeleteTime misc.NullTime `json:"delete_time,omitempty" db:"delete_time"`
-	TariffID   string        `json:"tariff_id,omitempty" db:"tariff_id"`
+	ID         string     `json:"id,omitempty" db:"id"`
+	CreateTime *time.Time `json:"create_time,omitempty" db:"create_time"`
+	Deleted    bool       `json:"deleted,omitempty" db:"deleted"` // not optional because we actually don`t need it if it`s false
+	DeleteTime *time.Time `json:"delete_time,omitempty" db:"delete_time"`
+	TariffID   string     `json:"tariff_id,omitempty" db:"tariff_id"`
 }
 
 func (r *Resource) Mask() {
 	r.ID = ""
-	r.CreateTime = time.Time{}
+	r.CreateTime = nil
 	r.Deleted = false
-	r.DeleteTime.Valid = false
+	r.DeleteTime = nil
+	r.TariffID = ""
 }
 
 type Namespace struct {
@@ -54,10 +54,10 @@ type Namespace struct {
 type Volume struct {
 	Resource
 
-	Active      misc.NullBool   `json:"active,omitempty" db:"active"`
-	Capacity    int             `json:"capacity" db:"capacity"` // gigabytes
-	Replicas    int             `json:"replicas,omitempty" db:"replicas"`
-	NamespaceID misc.NullString `json:"namespace_id,omitempty" db:"ns_id"`
+	Active      *bool   `json:"active,omitempty" db:"active"`
+	Capacity    int     `json:"capacity" db:"capacity"` // gigabytes
+	Replicas    int     `json:"replicas,omitempty" db:"replicas"`
+	NamespaceID *string `json:"namespace_id,omitempty" db:"ns_id"`
 
 	GlusterName string `json:"gluster_name,omitempty" db:"gluster_name"`
 	StorageID   string `json:"storage_id,omitempty" db:"storage_id"`
@@ -65,9 +65,9 @@ type Volume struct {
 
 func (v *Volume) Mask() {
 	v.Resource.Mask()
-	v.Active.Valid = false
+	v.Active = nil
 	v.Replicas = 0
-	v.NamespaceID.Valid = false
+	v.NamespaceID = nil
 	v.GlusterName = ""
 	v.StorageID = ""
 }
@@ -82,47 +82,47 @@ type Storage struct {
 }
 
 type Deployment struct {
-	ID          string        `json:"id,omitempty" db:"id"`
-	NamespaceID string        `json:"namespace_id,omitempty" db:"ns_id"`
-	Name        string        `json:"name" db:"name"`
-	CreateTime  time.Time     `json:"create_time,omitempty" db:"create_time"`
-	Deleted     bool          `json:"deleted,omitempty" db:"deleted"`
-	DeleteTime  misc.NullTime `json:"delete_time,omitempty" db:"delete_time"`
-	Replicas    int           `json:"replicas" db:"replicas"`
+	ID          string     `json:"id,omitempty" db:"id"`
+	NamespaceID string     `json:"namespace_id,omitempty" db:"ns_id"`
+	Name        string     `json:"name" db:"name"`
+	CreateTime  *time.Time `json:"create_time,omitempty" db:"create_time"`
+	Deleted     bool       `json:"deleted,omitempty" db:"deleted"`
+	DeleteTime  *time.Time `json:"delete_time,omitempty" db:"delete_time"`
+	Replicas    int        `json:"replicas" db:"replicas"`
 }
 
 func (d *Deployment) Mask() {
 	d.ID = ""
 	d.NamespaceID = ""
-	d.CreateTime = time.Time{}
+	d.CreateTime = nil
 	d.Deleted = false
-	d.DeleteTime.Valid = false
+	d.DeleteTime = nil
 }
 
 type PermissionRecord struct {
 	PermID                string           `json:"perm_id,omitempty" db:"perm_id"`
 	Kind                  Kind             `json:"kind,omitempty" db:"kind"`
-	ResourceID            misc.NullString  `json:"resource_id,omitempty" db:"resource_id"` // it can be null for resources without tables
+	ResourceID            *string          `json:"resource_id,omitempty" db:"resource_id"` // it can be null for resources without tables
 	ResourceLabel         string           `json:"label,omitempty" db:"resource_label"`
 	OwnerUserID           string           `json:"owner_user_id,omitempty" db:"owner_user_id"`
-	CreateTime            time.Time        `json:"create_time,omitempty" db:"create_time"`
-	UserID                string           `json:"user_id" db:"user_id"`
+	CreateTime            *time.Time       `json:"create_time,omitempty" db:"create_time"`
+	UserID                string           `json:"user_id,omitempty" db:"user_id"`
 	AccessLevel           PermissionStatus `json:"access" db:"access_level"`
 	Limited               bool             `json:"limited,omitempty" db:"limited"`
-	AccessLevelChangeTime time.Time        `json:"access_level_change_time" db:"access_level_change_time"`
+	AccessLevelChangeTime *time.Time       `json:"access_level_change_time" db:"access_level_change_time"`
 	NewAccessLevel        PermissionStatus `json:"new_access_level,omitempty" db:"new_access_level"`
 }
 
 func (p *PermissionRecord) Mask() {
 	p.PermID = ""
 	p.Kind = "" // will be already known though
-	p.ResourceID.Valid = false
+	p.ResourceID = nil
 	p.OwnerUserID = ""
-	p.CreateTime = time.Time{}
+	p.CreateTime = nil
 	p.UserID = ""
 	p.AccessLevel = p.NewAccessLevel
 	p.Limited = false
-	p.AccessLevelChangeTime = time.Time{}
+	p.AccessLevelChangeTime = nil
 	p.NewAccessLevel = ""
 }
 
@@ -153,11 +153,11 @@ func (e *EnvironmentVariable) Mask() {
 }
 
 type VolumeMount struct {
-	MountID     string          `json:"id,omitempty" db:"mount_id"`
-	ContainerID string          `json:"container_id,omitempty" db:"container_id"`
-	VolumeID    string          `json:"volume_id,omitempty" db:"volume_id"`
-	MountPath   string          `json:"mount_path" db:"mount_path"`
-	SubPath     misc.NullString `json:"sub_path,omitempty" db:"sub_path"`
+	MountID     string  `json:"id,omitempty" db:"mount_id"`
+	ContainerID string  `json:"container_id,omitempty" db:"container_id"`
+	VolumeID    string  `json:"volume_id,omitempty" db:"volume_id"`
+	MountPath   string  `json:"mount_path" db:"mount_path"`
+	SubPath     *string `json:"sub_path,omitempty" db:"sub_path"`
 }
 
 func (vm *VolumeMount) Mask() {
@@ -199,21 +199,21 @@ const (
 )
 
 type Service struct {
-	ID         string        `json:"id,omitempty" db:"id"`
-	DeployID   string        `json:"deployment_id,omitempty" db:"depl_id"`
-	Name       string        `json:"name" db:"name"`
-	Type       ServiceType   `json:"type" db:"type"`
-	CreatedAt  time.Time     `json:"created_at,omitempty" db:"created_at"`
-	Deleted    bool          `json:"deleted,omitempty" db:"deleted"`
-	DeleteTime misc.NullTime `json:"delete_time,omitempty" db:"delete_time"`
+	ID         string      `json:"id,omitempty" db:"id"`
+	DeployID   string      `json:"deployment_id,omitempty" db:"depl_id"`
+	Name       string      `json:"name" db:"name"`
+	Type       ServiceType `json:"type" db:"type"`
+	CreatedAt  *time.Time  `json:"created_at,omitempty" db:"created_at"`
+	Deleted    bool        `json:"deleted,omitempty" db:"deleted"`
+	DeleteTime *time.Time  `json:"delete_time,omitempty" db:"delete_time"`
 }
 
 func (s *Service) Mask() {
 	s.ID = ""
 	s.DeployID = ""
-	s.CreatedAt = time.Time{}
+	s.CreatedAt = nil
 	s.Deleted = false
-	s.DeleteTime.Valid = false
+	s.DeleteTime = nil
 }
 
 type PortProtocol string
@@ -278,15 +278,8 @@ type NamespaceWithUserPermissions struct {
 }
 
 func (nu *NamespaceWithUserPermissions) Mask() {
-	borrowed := nu.UserID != nu.OwnerUserID
-	nu.NamespaceWithPermission.Mask()
-	if borrowed {
-		nu.Users = nil
-	} else {
-		for i := range nu.Users {
-			nu.Users[i].Mask()
-		}
-	}
+	nu.Users = nil
+
 }
 
 type VolumeWithUserPermissions struct {
@@ -295,13 +288,5 @@ type VolumeWithUserPermissions struct {
 }
 
 func (vp *VolumeWithUserPermissions) Mask() {
-	borrowed := vp.UserID != vp.OwnerUserID
-	vp.VolumeWithPermission.Mask()
-	if borrowed {
-		vp.Users = nil
-	} else {
-		for i := range vp.Users {
-			vp.Users[i].Mask()
-		}
-	}
+	vp.Users = nil
 }

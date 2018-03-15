@@ -5,7 +5,7 @@ import (
 
 	"time"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
+	"git.containerum.net/ch/auth/proto"
 	"gopkg.in/go-playground/validator.v9"
 )
 
@@ -194,7 +194,7 @@ type GetResourcesCountResponse struct {
 }
 
 // GetUserAccessResponse is response for special request needed for auth server (actually for creating tokens)
-type GetUserAccessesResponse = auth.ResourcesAccess
+type GetUserAccessesResponse = authProto.ResourcesAccess
 
 // custom tag registration
 

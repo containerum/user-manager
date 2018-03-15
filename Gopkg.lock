@@ -18,7 +18,7 @@
     "misc",
     "user-manager"
   ]
-  revision = "2b621ab0cce986eb838a27367d3af426cd012f51"
+  revision = "fc333451c4bf6bbddf3a43fe1be02ac99c412847"
 
 [[projects]]
   branch = "develop"
