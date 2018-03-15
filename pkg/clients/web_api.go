@@ -2,6 +2,8 @@ package clients
 
 import (
 	"context"
+	"os"
+	"time"
 
 	"fmt"
 
@@ -13,6 +15,7 @@ import (
 	"gopkg.in/resty.v1"
 
 	"net/http"
+	"net/rpc/jsonrpc"
 
 	kube_types "git.containerum.net/ch/kube-client/pkg/model"
 
@@ -30,7 +33,7 @@ type WebAPIError struct {
 type WebAPIClient interface {
 	Login(ctx context.Context, request *umtypes.LoginRequest) (ret *umtypes.WebAPILoginResponse, err error)
 	GetVolumes(ctx context.Context, token string, userID string) (ret []*auth.AccessObject, err error)
-	GetNamespaces(ctx context.Context, token string) (ret []*auth.AccessObject, err error)
+	GetNamespaces(ctx context.Context, token string, userID string) (ret []*auth.AccessObject, err error)
 }
 
 type httpWebAPIClient struct {
@@ -97,25 +100,52 @@ func (c *httpWebAPIClient) GetVolumes(ctx context.Context, token string, userID 
 	return ret, nil
 }
 
-func (c *httpWebAPIClient) GetNamespaces(ctx context.Context, token string) (ret []*auth.AccessObject, err error) {
+func (c *httpWebAPIClient) GetNamespaces(ctx context.Context, token string, userID string) (ret []*auth.AccessObject, err error) {
 	c.log.Infoln("Getting namespaces")
 
-	var namespaces []umtypes.WebAPIResource
+	serverAddr := os.Getenv("CH_STORE_ADDRESS")
 
-	resp, err := c.client.R().SetContext(ctx).SetResult(&namespaces).SetHeader("Authorization", token).Get("/api/namespaces")
+	type Namespace struct {
+		Id             *string
+		Label          *string
+		UserId         *string
+		Created        *time.Time
+		Active         *bool
+		Removed        *bool
+		KubeExist      *bool
+		MemoryLimit    *int
+		CpuLimit       *int
+		LimitUpdated   *time.Time
+		MaxServices    *int
+		TrafficLimit   *int
+		MaxInternalSvc *int
+	}
+
+	// client, err := rpc.Dial("tcp", serverAddr)
+	client, err := jsonrpc.Dial("tcp", serverAddr)
 	if err != nil {
-		c.log.WithError(err).Errorln("Unable to get namespaces from WebAPI")
 		return nil, err
 	}
-	if resp.Error() != nil {
-		return nil, errors.New("Unable to get namespaces")
+	defer client.Close()
+
+	namespaces := new([]Namespace)
+	if err := client.Call("Namespace.GetAll", userID, namespaces); err != nil {
+		c.log.WithError(err).Warn("Unable to get namespace from store")
+		return nil, errors.New("Unable to get namespaces from store")
+	}
+	if namespaces == nil {
+		return nil, errors.New("Unable to get namespaces from store. Namespaces in nil")
 	}
 
-	for _, v := range namespaces {
-		ret = append(ret, &auth.AccessObject{Id: v.ID, Label: v.Name, Access: "owner"})
+	for _, ns := range *namespaces {
+		ret = append(ret, &auth.AccessObject{
+			Id:     *ns.Id,
+			Label:  *ns.Label,
+			Access: "owner",
+		})
 		c.log.WithFields(logrus.Fields{
-			"ID":    v.ID,
-			"Label": v.Name,
+			"ID":    *ns.Id,
+			"Label": *ns.Label,
 		}).Debug("Append NS Info")
 	}
 

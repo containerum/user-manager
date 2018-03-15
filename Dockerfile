@@ -37,5 +37,6 @@ ENV GIN_MODE=debug \
     CH_USER_RESOURCE_SERVICE="http" \
     CH_USER_RESOURCE_SERVICE_URL="http://resource-service:1213" \
     CH_USER_LISTEN_ADDR=":8111" \
+    CH_STORE_ADDRESS="ch-store:1212" \
     CH_USER_USER_MANAGER="impl"
 ENTRYPOINT ["/user-manager"]

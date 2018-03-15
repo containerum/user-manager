@@ -171,7 +171,7 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.LoginReque
 		u.log.WithError(err).Warningln("Unable to get volumes")
 	}
 
-	namespaces, err := u.svc.WebAPIClient.GetNamespaces(ctx, resp.Token)
+	namespaces, err := u.svc.WebAPIClient.GetNamespaces(ctx, resp.Token, resp.User.ID)
 	if err != nil {
 		u.log.WithError(err).Warningln("Unable to get namespaces")
 	}
