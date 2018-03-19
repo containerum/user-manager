@@ -14,8 +14,7 @@ import (
 
 	"fmt"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
-	"git.containerum.net/ch/grpc-proto-files/common"
+	auth "git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"github.com/sirupsen/logrus"
@@ -97,7 +96,7 @@ func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp 
 	resp, err = u.svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
 		UserAgent:   server.MustGetUserAgent(ctx),
 		Fingerprint: server.MustGetFingerprint(ctx),
-		UserId:      &common.UUID{Value: user.ID},
+		UserId:      &auth.UUID{Value: user.ID},
 		UserIp:      server.MustGetClientIP(ctx),
 		UserRole:    user.Role,
 		RwAccess:    true,
@@ -111,9 +110,12 @@ func (u *serverImpl) loginUserChecks(ctx context.Context, user *models.User) err
 	if user == nil {
 		u.log.Error(cherry.ErrUserNotExist())
 		return cherry.ErrUserNotExist()
-	} else if user.IsDeleted || user.IsInBlacklist {
+	} else if user.IsDeleted {
 		u.log.Error(cherry.ErrInvalidLogin())
 		return cherry.ErrInvalidLogin()
+	} else if user.IsInBlacklist {
+		u.log.Error(cherry.ErrAccountBlocked())
+		return cherry.ErrAccountBlocked()
 	}
 	return nil
 }

@@ -8,8 +8,7 @@ import (
 
 	"database/sql"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
-	"git.containerum.net/ch/grpc-proto-files/common"
+	auth "git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/models"
@@ -188,7 +187,7 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserLogi
 	}
 
 	_, err = u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-		UserId: &common.UUID{Value: user.ID},
+		UserId: &auth.UUID{Value: user.ID},
 	})
 	if err != nil {
 		u.log.WithError(err)
@@ -313,7 +312,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		// TODO: send request to billing manager
 
 		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-			UserId: &common.UUID{Value: user.ID},
+			UserId: &auth.UUID{Value: user.ID},
 		})
 		return authErr
 	})
@@ -367,78 +366,4 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 		return cherry.ErrUnableDeleteUser()
 	}
 	return nil
-}
-
-func (u *serverImpl) CreateUserWebAPI(ctx context.Context, userName string, password string, id string, createdAtStr string, data map[string]interface{}) (*umtypes.User, error) {
-	u.log.WithField("login", userName).Info("creating user from old api")
-
-	domain := strings.Split(userName, "@")[1]
-	blacklisted, err := u.svc.DB.IsDomainBlacklisted(ctx, domain)
-	if err := u.handleDBError(err); err != nil {
-		u.log.WithError(err)
-		return nil, cherry.ErrUnableCreateUser()
-	}
-	if blacklisted {
-		u.log.WithError(fmt.Errorf(domainInBlacklist, domain))
-		return nil, cherry.ErrUnableCreateUser().AddDetailsErr(fmt.Errorf(domainInBlacklist, domain))
-	}
-
-	user, err := u.svc.DB.GetUserByLogin(ctx, userName)
-	if err := u.handleDBError(err); err != nil {
-		u.log.WithError(err)
-		return nil, cherry.ErrUnableCreateUser()
-	}
-	if user != nil {
-		u.log.WithError(cherry.ErrUserAlreadyExists())
-		return nil, cherry.ErrUserAlreadyExists()
-	}
-
-	salt := utils.GenSalt(userName, userName, userName) // compatibility with old client db
-	passwordHash := utils.GetKey(userName, password, salt)
-	newUser := &models.User{
-		ID:           id,
-		Login:        userName,
-		PasswordHash: passwordHash,
-		Salt:         salt,
-		Role:         "user",
-		IsActive:     true,
-		IsDeleted:    false,
-	}
-
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-		if createErr := tx.CreateUserWebAPI(ctx, newUser); createErr != nil {
-			u.log.WithError(createErr)
-			return createErr
-		}
-
-		var createdAt time.Time
-		createdAt, err := time.Parse("2006-01-02 15:04:05", createdAtStr)
-		if err != nil {
-			u.log.WithError(err).Warnf("Error parsing time")
-			createdAt = time.Now().UTC()
-		}
-
-		if createErr := tx.CreateProfile(ctx, &models.Profile{
-			User:      newUser,
-			Access:    sql.NullString{String: "rw", Valid: true},
-			CreatedAt: pq.NullTime{Time: createdAt, Valid: true},
-			Data:      data,
-		}); createErr != nil {
-			return createErr
-		}
-
-		return nil
-	})
-	if err := u.handleDBError(err); err != nil {
-		u.log.WithError(err)
-		return nil, err
-	}
-
-	return &umtypes.User{
-		UserLogin: &umtypes.UserLogin{
-			ID:    newUser.ID,
-			Login: newUser.Login,
-		},
-		IsActive: newUser.IsActive,
-	}, nil
 }

@@ -3,7 +3,7 @@ package clients
 import (
 	"io"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
+	auth "git.containerum.net/ch/auth/proto"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/sirupsen/logrus"

@@ -7,8 +7,7 @@ import (
 
 	"fmt"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
-	"git.containerum.net/ch/grpc-proto-files/common"
+	auth "git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
@@ -44,7 +43,7 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 		}
 
 		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-			UserId: &common.UUID{Value: user.ID},
+			UserId: &auth.UUID{Value: user.ID},
 		})
 		if authErr != nil {
 			return authErr
@@ -138,7 +137,7 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 		link.IsActive = false
 
 		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-			UserId: &common.UUID{Value: link.User.ID},
+			UserId: &auth.UUID{Value: link.User.ID},
 		})
 		if authErr != nil {
 			return authErr

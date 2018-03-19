@@ -85,16 +85,6 @@ func oauthClientsSetup() error {
 	return nil
 }
 
-func getWebAPIClient() (clients.WebAPIClient, error) {
-	viper.SetDefault("web_api", serviceClientHTTP)
-	switch viper.GetString("web_api") {
-	case serviceClientHTTP:
-		return clients.NewHTTPWebAPIClient(viper.GetString("web_api_url")), nil
-	default:
-		return nil, errors.New("invalid web_api client")
-	}
-}
-
 func getAuthClient() (clients.AuthClientCloser, error) {
 	viper.SetDefault("auth", "grpc")
 	switch viper.GetString("auth") {

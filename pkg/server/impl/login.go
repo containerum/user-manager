@@ -7,8 +7,7 @@ import (
 
 	"fmt"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
-	"git.containerum.net/ch/grpc-proto-files/common"
+	auth "git.containerum.net/ch/auth/proto"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/clients"
@@ -35,6 +34,11 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginReques
 		u.log.WithError(cherry.ErrInvalidLogin())
 		return resp, cherry.ErrInvalidLogin()
 	}
+
+	if user.IsInBlacklist {
+		return nil, cherry.ErrAccountBlocked()
+	}
+
 	if !user.IsActive {
 		link, err := u.svc.DB.GetLinkForUser(ctx, umtypes.LinkTypeConfirm, user)
 		if err != nil {
@@ -71,27 +75,32 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneT
 		u.log.WithError(err)
 		return nil, cherry.ErrLoginFailed()
 	}
-	if err := u.loginUserChecks(ctx, token.User); err != nil {
-		return nil, err
-	}
 
-	var tokens *auth.CreateTokenResponse
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-		token.IsActive = false
-		token.SessionID = server.MustGetSessionID(ctx)
-		if updErr := tx.UpdateToken(ctx, token); updErr != nil {
-			return updErr
+	if token != nil {
+		if err := u.loginUserChecks(ctx, token.User); err != nil {
+			return nil, err
 		}
 
-		var err error
-		tokens, err = u.createTokens(ctx, token.User)
-		return err
-	})
-	if err := u.handleDBError(err); err != nil {
-		u.log.WithError(err)
-		return nil, cherry.ErrLoginFailed()
+		var tokens *auth.CreateTokenResponse
+		err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+			token.IsActive = false
+			token.SessionID = server.MustGetSessionID(ctx)
+			if updErr := tx.UpdateToken(ctx, token); updErr != nil {
+				return updErr
+			}
+
+			var err error
+			tokens, err = u.createTokens(ctx, token.User)
+			return err
+		})
+		if err := u.handleDBError(err); err != nil {
+			u.log.WithError(err)
+			return nil, cherry.ErrLoginFailed()
+		}
+		return tokens, nil
+	} else {
+		return nil, cherry.ErrInvalidLogin()
 	}
-	return tokens, nil
 }
 
 //nolint: gocyclo
@@ -145,64 +154,6 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	return u.createTokens(ctx, user)
 }
 
-//nolint: gocyclo
-func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.LoginRequest) (*umtypes.WebAPILoginResponse, error) {
-	u.log.WithField("username", request.Login).Infof("Login through web-api")
-
-	resp, err := u.svc.WebAPIClient.Login(ctx, &request)
-	if err != nil {
-		u.log.WithError(err)
-		return nil, err
-	}
-
-	alreadyexist := false
-	role := "user"
-	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)
-	if err == nil && user != nil {
-		if user != nil {
-			role = user.Role
-			alreadyexist = true
-			u.log.Debugf("User %v exists in db and has role: %v", user.Login, role)
-		}
-	}
-
-	volumes, err := u.svc.WebAPIClient.GetVolumes(ctx, resp.Token, resp.User.ID)
-	if err != nil {
-		u.log.WithError(err).Warningln("Unable to get volumes")
-	}
-
-	namespaces, err := u.svc.WebAPIClient.GetNamespaces(ctx, resp.Token, resp.User.ID)
-	if err != nil {
-		u.log.WithError(err).Warningln("Unable to get namespaces")
-	}
-
-	tokens, err := u.svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
-		UserAgent:   server.MustGetUserAgent(ctx),
-		Fingerprint: server.MustGetFingerprint(ctx),
-		UserId:      &common.UUID{Value: resp.User.ID},
-		UserIp:      server.MustGetClientIP(ctx),
-		UserRole:    role,
-		RwAccess:    true,
-		Access:      &auth.ResourcesAccess{Volume: volumes, Namespace: namespaces},
-		PartTokenId: nil,
-	})
-	if err != nil {
-		u.log.WithError(err)
-		return nil, cherry.ErrLoginFailed()
-	}
-
-	resp.AccessToken = tokens.AccessToken
-	resp.RefreshToken = tokens.RefreshToken
-
-	if !alreadyexist {
-		u.log.WithError(err).Warnf("Adding user to new db")
-		if _, err = u.CreateUserWebAPI(ctx, resp.User.Login, request.Password, resp.User.ID, resp.User.CreatedAt, resp.User.Data); err != nil {
-			u.log.WithError(err).Warnf("Unable to add user to new db")
-		}
-	}
-	return resp, nil
-}
-
 func (u *serverImpl) Logout(ctx context.Context) error {
 	userID := server.MustGetUserID(ctx)
 	tokenID := server.MustGetTokenID(ctx)
@@ -214,8 +165,8 @@ func (u *serverImpl) Logout(ctx context.Context) error {
 	}).Info("Logout")
 
 	_, err := u.svc.AuthClient.DeleteToken(ctx, &auth.DeleteTokenRequest{
-		UserId:  &common.UUID{Value: userID},
-		TokenId: &common.UUID{Value: tokenID},
+		UserId:  &auth.UUID{Value: userID},
+		TokenId: &auth.UUID{Value: tokenID},
 	})
 	if err != nil {
 		u.log.WithError(err)

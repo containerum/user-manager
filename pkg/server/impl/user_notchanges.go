@@ -234,6 +234,9 @@ func (u *serverImpl) LinkResend(ctx context.Context, request umtypes.UserLogin) 
 		u.log.WithError(err)
 		return err
 	}
+	if user.IsActive {
+		return cherry.ErrUserAlreadyActivated()
+	}
 
 	link, err := u.svc.DB.GetLinkForUser(ctx, umtypes.LinkTypeConfirm, user)
 	if err := u.handleDBError(err); err != nil {

@@ -5,7 +5,7 @@ import (
 
 	"io"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
+	auth "git.containerum.net/ch/auth/proto"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/clients"
 	"git.containerum.net/ch/user-manager/pkg/models"
@@ -16,7 +16,6 @@ type UserManager interface {
 	BasicLogin(ctx context.Context, request umtypes.LoginRequest) (*auth.CreateTokenResponse, error)
 	OneTimeTokenLogin(ctx context.Context, request umtypes.OneTimeTokenLoginRequest) (*auth.CreateTokenResponse, error)
 	OAuthLogin(ctx context.Context, request umtypes.OAuthLoginRequest) (*auth.CreateTokenResponse, error)
-	WebAPILogin(ctx context.Context, request umtypes.LoginRequest) (*umtypes.WebAPILoginResponse, error) // login through old web-api
 
 	ChangePassword(ctx context.Context, request umtypes.PasswordRequest) (*auth.CreateTokenResponse, error)
 	ResetPassword(ctx context.Context, request umtypes.UserLogin) error
@@ -65,6 +64,5 @@ type Services struct {
 	DB                    models.DB
 	AuthClient            clients.AuthClientCloser
 	ReCaptchaClient       clients.ReCaptchaClient
-	WebAPIClient          clients.WebAPIClient
 	ResourceServiceClient clients.ResourceServiceClient
 }

@@ -3,7 +3,7 @@ package clients
 import (
 	"context"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
+	auth "git.containerum.net/ch/auth/proto"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/kube-client/pkg/cherry"
 	"git.containerum.net/ch/user-manager/pkg/models"
