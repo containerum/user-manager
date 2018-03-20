@@ -11,6 +11,8 @@ import (
 	"git.containerum.net/ch/kube-client/pkg/cherry"
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/universal-translator"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 var headersKey = new(struct{})
@@ -28,6 +30,18 @@ func RequestHeadersMap(ctx context.Context) map[string]string {
 	for k, v := range ctx.Value(headersKey).(http.Header) {
 		if len(v) > 0 {
 			ret[textproto.CanonicalMIMEHeaderKey(k)] = v[0] // this is how MIMEHeader.Get() works actually
+		}
+	}
+	return ret
+}
+
+// RequestXHeadersMap works like RequestHeadersMap but returns only "X-" headers
+func RequestXHeadersMap(ctx context.Context) map[string]string {
+	ret := make(map[string]string)
+	for k, v := range ctx.Value(headersKey).(http.Header) {
+		k = textproto.CanonicalMIMEHeaderKey(k)
+		if len(v) > 0 && strings.HasPrefix(k, "X-") {
+			ret[k] = v[0]
 		}
 	}
 	return ret
@@ -51,7 +65,7 @@ var hdrToKey = map[string]interface{}{
 }
 
 // RequireHeaders is a gin middleware to ensure that headers is set
-func RequireHeaders(errToReturn func() *cherry.Err, headers ...string) gin.HandlerFunc {
+func RequireHeaders(errToReturn cherry.ErrConstruct, headers ...string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var notFoundHeaders []string
 		for _, v := range headers {
@@ -88,7 +102,7 @@ func PrepareContext(ctx *gin.Context) {
 }
 
 // RequireAdminRole is a gin middleware which requires admin role
-func RequireAdminRole(errToReturn func() *cherry.Err) gin.HandlerFunc {
+func RequireAdminRole(errToReturn cherry.ErrConstruct) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(umtypes.UserRoleHeader)) != "admin" {
 			err := errToReturn().AddDetails("only admin can do this")
@@ -98,10 +112,18 @@ func RequireAdminRole(errToReturn func() *cherry.Err) gin.HandlerFunc {
 }
 
 // SubstituteUserMiddleware replaces user id in context with user id from query if it set and user is admin
-func SubstituteUserMiddleware(ctx *gin.Context) {
-	role := ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(umtypes.UserRoleHeader))
-	if userID, set := ctx.GetQuery("user-id"); set && role == "admin" {
-		rctx := context.WithValue(ctx.Request.Context(), UserIDContextKey, userID)
-		ctx.Request = ctx.Request.WithContext(rctx)
+func SubstituteUserMiddleware(validate *validator.Validate, translator *ut.UniversalTranslator, validationErr cherry.ErrConstruct) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		role := ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(umtypes.UserRoleHeader))
+		if userID, set := ctx.GetQuery("user-id"); set && role == "admin" {
+			if vErr := validate.VarCtx(ctx.Request.Context(), userID, "uuid"); vErr != nil {
+				t, _ := translator.FindTranslator(GetAcceptedLanguages(ctx.Request.Context())...)
+				err := validationErr().AddDetailF("Parameter \"user-id\": %s", vErr.(validator.ValidationErrors).Translate(t))
+				gonic.Gonic(err, ctx)
+				return
+			}
+			rctx := context.WithValue(ctx.Request.Context(), UserIDContextKey, userID)
+			ctx.Request = ctx.Request.WithContext(rctx)
+		}
 	}
 }
