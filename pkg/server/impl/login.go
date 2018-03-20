@@ -7,7 +7,7 @@ import (
 
 	"fmt"
 
-	auth "git.containerum.net/ch/auth/proto"
+	"git.containerum.net/ch/auth/proto"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/clients"
@@ -17,7 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginRequest) (resp *auth.CreateTokenResponse, err error) {
+func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginRequest) (resp *authProto.CreateTokenResponse, err error) {
 	u.log.Infoln("Basic login")
 	u.log.WithFields(logrus.Fields{
 		"username": request.Login,
@@ -67,7 +67,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginReques
 	return
 }
 
-func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneTimeTokenLoginRequest) (*auth.CreateTokenResponse, error) {
+func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneTimeTokenLoginRequest) (*authProto.CreateTokenResponse, error) {
 	u.log.Info("One-time token login")
 	u.log.WithField("token", request.Token).Debug("One-time token login details")
 	token, err := u.svc.DB.GetTokenObject(ctx, request.Token)
@@ -75,19 +75,17 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneT
 		u.log.WithError(err)
 		return nil, cherry.ErrLoginFailed()
 	}
+	if err := u.loginUserChecks(ctx, token.User); err != nil {
+		return nil, err
+	}
 
-	if token != nil {
-		if err := u.loginUserChecks(ctx, token.User); err != nil {
-			return nil, err
+	var tokens *authProto.CreateTokenResponse
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+		token.IsActive = false
+		token.SessionID = server.MustGetSessionID(ctx)
+		if updErr := tx.UpdateToken(ctx, token); updErr != nil {
+			return updErr
 		}
-
-		var tokens *auth.CreateTokenResponse
-		err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-			token.IsActive = false
-			token.SessionID = server.MustGetSessionID(ctx)
-			if updErr := tx.UpdateToken(ctx, token); updErr != nil {
-				return updErr
-			}
 
 			var err error
 			tokens, err = u.createTokens(ctx, token.User)
@@ -104,7 +102,7 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneT
 }
 
 //nolint: gocyclo
-func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginRequest) (*auth.CreateTokenResponse, error) {
+func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginRequest) (*authProto.CreateTokenResponse, error) {
 	u.log.WithFields(logrus.Fields{
 		"resource": request.Resource,
 	}).Infoln("OAuth login")
@@ -164,7 +162,7 @@ func (u *serverImpl) Logout(ctx context.Context) error {
 		"session_id": sessionID,
 	}).Info("Logout")
 
-	_, err := u.svc.AuthClient.DeleteToken(ctx, &auth.DeleteTokenRequest{
+	_, err := u.svc.AuthClient.DeleteToken(ctx, &authProto.DeleteTokenRequest{
 		UserId:  userID,
 		TokenId: tokenID,
 	})

@@ -3,7 +3,7 @@ package clients
 import (
 	"io"
 
-	auth "git.containerum.net/ch/auth/proto"
+	"git.containerum.net/ch/auth/proto"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"github.com/sirupsen/logrus"
@@ -12,12 +12,12 @@ import (
 
 // AuthClientCloser is an extension of AuthClient interface with Closer interface to close connection
 type AuthClientCloser interface {
-	auth.AuthClient
+	authProto.AuthClient
 	io.Closer
 }
 
 type grpcAuthClient struct {
-	auth.AuthClient
+	authProto.AuthClient
 	clientConn *grpc.ClientConn
 }
 
@@ -32,7 +32,7 @@ func NewGRPCAuthClient(serverAddr string) (AuthClientCloser, error) {
 		return nil, err
 	}
 	return &grpcAuthClient{
-		AuthClient: auth.NewAuthClient(authConn),
+		AuthClient: authProto.NewAuthClient(authConn),
 		clientConn: authConn,
 	}, nil
 }

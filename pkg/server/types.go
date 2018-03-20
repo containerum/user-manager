@@ -5,7 +5,7 @@ import (
 
 	"io"
 
-	auth "git.containerum.net/ch/auth/proto"
+	"git.containerum.net/ch/auth/proto"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/clients"
 	"git.containerum.net/ch/user-manager/pkg/models"
@@ -13,19 +13,19 @@ import (
 
 // UserManager is an interface for server "business logic"
 type UserManager interface {
-	BasicLogin(ctx context.Context, request umtypes.LoginRequest) (*auth.CreateTokenResponse, error)
-	OneTimeTokenLogin(ctx context.Context, request umtypes.OneTimeTokenLoginRequest) (*auth.CreateTokenResponse, error)
-	OAuthLogin(ctx context.Context, request umtypes.OAuthLoginRequest) (*auth.CreateTokenResponse, error)
+	BasicLogin(ctx context.Context, request umtypes.LoginRequest) (*authProto.CreateTokenResponse, error)
+	OneTimeTokenLogin(ctx context.Context, request umtypes.OneTimeTokenLoginRequest) (*authProto.CreateTokenResponse, error)
+	OAuthLogin(ctx context.Context, request umtypes.OAuthLoginRequest) (*authProto.CreateTokenResponse, error)
 
-	ChangePassword(ctx context.Context, request umtypes.PasswordRequest) (*auth.CreateTokenResponse, error)
+	ChangePassword(ctx context.Context, request umtypes.PasswordRequest) (*authProto.CreateTokenResponse, error)
 	ResetPassword(ctx context.Context, request umtypes.UserLogin) error
-	RestorePassword(ctx context.Context, request umtypes.PasswordRequest) (*auth.CreateTokenResponse, error)
+	RestorePassword(ctx context.Context, request umtypes.PasswordRequest) (*authProto.CreateTokenResponse, error)
 
 	Logout(ctx context.Context) error
 
 	// changes DB state
 	CreateUser(ctx context.Context, request umtypes.RegisterRequest) (*umtypes.User, error)
-	ActivateUser(ctx context.Context, request umtypes.Link) (*auth.CreateTokenResponse, error)
+	ActivateUser(ctx context.Context, request umtypes.Link) (*authProto.CreateTokenResponse, error)
 	BlacklistUser(ctx context.Context, request umtypes.UserLogin) error
 	UnBlacklistUser(ctx context.Context, request umtypes.UserLogin) error
 	UpdateUser(ctx context.Context, newData map[string]interface{}) (*umtypes.User, error)

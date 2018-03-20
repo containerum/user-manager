@@ -14,7 +14,7 @@ import (
 
 	"fmt"
 
-	auth "git.containerum.net/ch/auth/proto"
+	"git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"github.com/sirupsen/logrus"
@@ -86,14 +86,14 @@ func (u *serverImpl) linkSend(ctx context.Context, link *models.Link) {
 	}
 }
 
-func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp *auth.CreateTokenResponse, err error) {
+func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp *authProto.CreateTokenResponse, err error) {
 	access, err := u.svc.ResourceServiceClient.GetUserAccess(ctx, user)
 	if err != nil {
 		u.log.WithError(err).Warning(resourceAccessGetFailed)
 		return nil, errors.New(resourceAccessGetFailed)
 	}
 
-	resp, err = u.svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
+	resp, err = u.svc.AuthClient.CreateToken(ctx, &authProto.CreateTokenRequest{
 		UserAgent:   server.MustGetUserAgent(ctx),
 		Fingerprint: server.MustGetFingerprint(ctx),
 		UserId:      user.ID,
@@ -101,7 +101,7 @@ func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp 
 		UserRole:    user.Role,
 		RwAccess:    true,
 		Access:      access,
-		PartTokenId: "",
+		PartTokenId: server.MustGetPartTokenID(ctx),
 	})
 	return
 }
