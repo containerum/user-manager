@@ -5,7 +5,7 @@
   branch = "develop"
   name = "git.containerum.net/ch/auth"
   packages = ["proto"]
-  revision = "828001d22e7e0e6a0ff1300f765a9e39ced74387"
+  revision = "ebda5563c0496e82523f17755cda8b73c33104da"
 
 [[projects]]
   branch = "master"
@@ -15,7 +15,7 @@
     "misc",
     "user-manager"
   ]
-  revision = "0e0d674f6ef0a795e03c169137ef734eb2e34883"
+  revision = "2b7a55bc8ebcc50ddcea49df46e9907c02955d18"
 
 [[projects]]
   name = "git.containerum.net/ch/kube-client"
@@ -25,8 +25,8 @@
     "pkg/cherry/adaptors/gonic",
     "pkg/cherry/user-manager"
   ]
-  revision = "e5f14992144f5589f2a0d0082e1a863e7435b72e"
-  version = "v0.2.3"
+  revision = "09a5775c1583053a2a4770025f8f8ffcf795e163"
+  version = "v0.2.4"
 
 [[projects]]
   branch = "master"
@@ -78,7 +78,6 @@
   version = "v0.16.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/golang/protobuf"
   packages = [
     "jsonpb",
@@ -90,7 +89,8 @@
     "ptypes/struct",
     "ptypes/timestamp"
   ]
-  revision = "bbd03ef6da3a115852eaf24c8a1c46aeb39aa175"
+  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/google/uuid"
@@ -105,17 +105,15 @@
   revision = "0bae9679d4e31a54efa4b1cc61dd78eadda83b1a"
 
 [[projects]]
-  branch = "master"
+  branch = "bugfix/37-panic-on-err"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
   packages = [
     ".",
     "logging",
     "logging/logrus",
-    "logging/logrus/ctxlogrus",
-    "tags",
-    "tags/logrus"
+    "tags"
   ]
-  revision = "eb23b08d08bbe930113a6512a7a829050341448c"
+  revision = "b9814e2370c8552db05c796c139b76a6ca45b34f"
 
 [[projects]]
   branch = "master"
@@ -124,6 +122,7 @@
     ".",
     "hcl/ast",
     "hcl/parser",
+    "hcl/printer",
     "hcl/scanner",
     "hcl/strconv",
     "hcl/token",
@@ -155,7 +154,7 @@
     ".",
     "oid"
   ]
-  revision = "88edab0803230a3898347e77b474f8c1820a1f20"
+  revision = "b2004221932bd6b13167ef654c81cffac36f7537"
 
 [[projects]]
   name = "github.com/magiconair/properties"
@@ -247,8 +246,8 @@
 [[projects]]
   name = "github.com/spf13/viper"
   packages = ["."]
-  revision = "25b30aa063fc18e48662b86996252eabdcf2f0c7"
-  version = "v1.0.0"
+  revision = "b5e8006cbee93ec955a89ab31e0e3ce3204f3736"
+  version = "v1.0.2"
 
 [[projects]]
   name = "github.com/ugorji/go"
@@ -278,7 +277,7 @@
     "publicsuffix",
     "trace"
   ]
-  revision = "24dd3780ca4f75fed9f321890729414a4b5d3f13"
+  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
 
 [[projects]]
   branch = "master"
@@ -287,7 +286,7 @@
     "unix",
     "windows"
   ]
-  revision = "01acb38716e021ed1fc03a602bdb5838e1358c5e"
+  revision = "d8e400bc7db4870d786864138af681469693d18c"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -355,8 +354,8 @@
 [[projects]]
   name = "gopkg.in/go-playground/validator.v9"
   packages = ["."]
-  revision = "1b8c8e19cd250435025214492d9a08411d760fdd"
-  version = "v9.12.0"
+  revision = "8ce234ff024d85b3848e485decba806385d6e276"
+  version = "v9.13.0"
 
 [[projects]]
   name = "gopkg.in/resty.v1"

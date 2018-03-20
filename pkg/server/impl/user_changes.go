@@ -187,7 +187,7 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserLogi
 	}
 
 	_, err = u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-		UserId: &auth.UUID{Value: user.ID},
+		UserId: user.ID,
 	})
 	if err != nil {
 		u.log.WithError(err)
@@ -312,7 +312,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		// TODO: send request to billing manager
 
 		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-			UserId: &auth.UUID{Value: user.ID},
+			UserId: user.ID,
 		})
 		return authErr
 	})

@@ -96,12 +96,12 @@ func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp 
 	resp, err = u.svc.AuthClient.CreateToken(ctx, &auth.CreateTokenRequest{
 		UserAgent:   server.MustGetUserAgent(ctx),
 		Fingerprint: server.MustGetFingerprint(ctx),
-		UserId:      &auth.UUID{Value: user.ID},
+		UserId:      user.ID,
 		UserIp:      server.MustGetClientIP(ctx),
 		UserRole:    user.Role,
 		RwAccess:    true,
 		Access:      access,
-		PartTokenId: nil,
+		PartTokenId: "",
 	})
 	return
 }

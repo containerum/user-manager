@@ -43,7 +43,7 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 		}
 
 		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-			UserId: &auth.UUID{Value: user.ID},
+			UserId: user.ID,
 		})
 		if authErr != nil {
 			return authErr
@@ -137,7 +137,7 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 		link.IsActive = false
 
 		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-			UserId: &auth.UUID{Value: link.User.ID},
+			UserId: link.User.ID,
 		})
 		if authErr != nil {
 			return authErr

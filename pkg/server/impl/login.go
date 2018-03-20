@@ -165,8 +165,8 @@ func (u *serverImpl) Logout(ctx context.Context) error {
 	}).Info("Logout")
 
 	_, err := u.svc.AuthClient.DeleteToken(ctx, &auth.DeleteTokenRequest{
-		UserId:  &auth.UUID{Value: userID},
-		TokenId: &auth.UUID{Value: tokenID},
+		UserId:  userID,
+		TokenId: tokenID,
 	})
 	if err != nil {
 		u.log.WithError(err)
