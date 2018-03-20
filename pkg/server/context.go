@@ -12,6 +12,7 @@ const (
 	SessionIDContextKey
 	UserIDContextKey
 	TokenIDContextKey
+	PartTokenIDContextKey
 )
 
 // MustGetFingerprint attempts to extract client fingerprint using FingerPrintContextKey from context.
@@ -70,6 +71,16 @@ func MustGetTokenID(ctx context.Context) string {
 	uid, ok := ctx.Value(TokenIDContextKey).(string)
 	if !ok {
 		panic("token id not found in context")
+	}
+	return uid
+}
+
+// MustGetTokenID attempts to extract part token ID using PartTokenIDContextKey from context.
+// It panics if value was not found in context.
+func MustGetPartTokenID(ctx context.Context) string {
+	uid, ok := ctx.Value(PartTokenIDContextKey).(string)
+	if !ok {
+		panic("part token id not found in context")
 	}
 	return uid
 }

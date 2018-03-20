@@ -21,7 +21,7 @@ import (
 
 	"errors"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
+	"git.containerum.net/ch/auth/proto"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 )
 
@@ -32,8 +32,8 @@ type WebAPIError struct {
 // WebAPIClient is an interface for web-api service from old architecture.
 type WebAPIClient interface {
 	Login(ctx context.Context, request *umtypes.LoginRequest) (ret *umtypes.WebAPILoginResponse, err error)
-	GetVolumes(ctx context.Context, token string, userID string) (ret []*auth.AccessObject, err error)
-	GetNamespaces(ctx context.Context, token string, userID string) (ret []*auth.AccessObject, err error)
+	GetVolumes(ctx context.Context, token string, userID string) (ret []*authProto.AccessObject, err error)
+	GetNamespaces(ctx context.Context, token string, userID string) (ret []*authProto.AccessObject, err error)
 }
 
 type httpWebAPIClient struct {
@@ -62,9 +62,10 @@ func NewHTTPWebAPIClient(serverURL string) WebAPIClient {
 func (c *httpWebAPIClient) Login(ctx context.Context, request *umtypes.LoginRequest) (ret *umtypes.WebAPILoginResponse, err error) {
 	c.log.WithField("login", request.Login).Infoln("Signing in through web-api")
 
-	resp, err := c.client.R().SetContext(ctx).SetBody(kube_types.Login{Username: request.Login, Password: request.Password}).SetResult(&ret).Post("/api/login")
+	resp, err := c.client.R().SetContext(ctx).SetBody(kube_types.Login{Login: request.Login, Password: request.Password}).SetResult(&ret).Post("/api/login")
 	if err != nil {
 		c.log.WithError(err).Errorln("Sign in through web-api request failed")
+
 		return nil, cherry.ErrLoginFailed()
 	}
 	if resp.Error() != nil {
@@ -79,7 +80,7 @@ func (c *httpWebAPIClient) Login(ctx context.Context, request *umtypes.LoginRequ
 	return ret, err
 }
 
-func (c *httpWebAPIClient) GetVolumes(ctx context.Context, token string, userID string) (ret []*auth.AccessObject, err error) {
+func (c *httpWebAPIClient) GetVolumes(ctx context.Context, token string, userID string) (ret []*authProto.AccessObject, err error) {
 	c.log.Infoln("Getting volumes")
 
 	var volumes []umtypes.WebAPIResource
@@ -94,13 +95,13 @@ func (c *httpWebAPIClient) GetVolumes(ctx context.Context, token string, userID 
 	}
 
 	for _, v := range volumes {
-		ret = append(ret, &auth.AccessObject{Id: fmt.Sprintf("%x", (sha256.Sum256([]byte(userID + v.Name)))), Label: v.Name, Access: "owner"})
+		ret = append(ret, &authProto.AccessObject{Id: fmt.Sprintf("%x", (sha256.Sum256([]byte(userID + v.Name)))), Label: v.Name, Access: "owner"})
 	}
 
 	return ret, nil
 }
 
-func (c *httpWebAPIClient) GetNamespaces(ctx context.Context, token string, userID string) (ret []*auth.AccessObject, err error) {
+func (c *httpWebAPIClient) GetNamespaces(ctx context.Context, token string, userID string) (ret []*authProto.AccessObject, err error) {
 	c.log.Infoln("Getting namespaces")
 
 	serverAddr := os.Getenv("CH_STORE_ADDRESS")
@@ -138,7 +139,7 @@ func (c *httpWebAPIClient) GetNamespaces(ctx context.Context, token string, user
 	}
 
 	for _, ns := range *namespaces {
-		ret = append(ret, &auth.AccessObject{
+		ret = append(ret, &authProto.AccessObject{
 			Id:     *ns.Id,
 			Label:  *ns.Label,
 			Access: "owner",

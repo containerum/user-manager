@@ -1,3 +1,8 @@
+[prune]
+    non-go = true
+    go-tests = true
+    unused-packages = true
+
 [[constraint]]
   branch = "develop"
   name = "git.containerum.net/ch/kube-client"
@@ -45,3 +50,6 @@
 [[constraint]]
   branch = "master"
   name = "git.containerum.net/ch/json-types"
+[[constraint]]
+  branch = "develop"
+  name = "git.containerum.net/ch/auth"
