@@ -70,22 +70,24 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginReques
 func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneTimeTokenLoginRequest) (*authProto.CreateTokenResponse, error) {
 	u.log.Info("One-time token login")
 	u.log.WithField("token", request.Token).Debug("One-time token login details")
+
 	token, err := u.svc.DB.GetTokenObject(ctx, request.Token)
 	if err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrLoginFailed()
 	}
-	if err := u.loginUserChecks(ctx, token.User); err != nil {
-		return nil, err
-	}
-
-	var tokens *authProto.CreateTokenResponse
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-		token.IsActive = false
-		token.SessionID = server.MustGetSessionID(ctx)
-		if updErr := tx.UpdateToken(ctx, token); updErr != nil {
-			return updErr
+	if token != nil {
+		if err := u.loginUserChecks(ctx, token.User); err != nil {
+			return nil, err
 		}
+
+		var tokens *authProto.CreateTokenResponse
+		err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+			token.IsActive = false
+			token.SessionID = server.MustGetSessionID(ctx)
+			if updErr := tx.UpdateToken(ctx, token); updErr != nil {
+				return updErr
+			}
 
 			var err error
 			tokens, err = u.createTokens(ctx, token.User)
