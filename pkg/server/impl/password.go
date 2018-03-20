@@ -7,8 +7,7 @@ import (
 
 	"fmt"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
-	"git.containerum.net/ch/grpc-proto-files/common"
+	"git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
@@ -17,7 +16,7 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/utils"
 )
 
-func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.PasswordRequest) (*auth.CreateTokenResponse, error) {
+func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.PasswordRequest) (*authProto.CreateTokenResponse, error) {
 	userID := server.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("changing password")
 
@@ -35,7 +34,7 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 		return nil, cherry.ErrInvalidLogin()
 	}
 
-	var tokens *auth.CreateTokenResponse
+	var tokens *authProto.CreateTokenResponse
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		user.PasswordHash = utils.GetKey(user.Login, request.NewPassword, user.Salt)
@@ -43,8 +42,8 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 			return updErr
 		}
 
-		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-			UserId: &common.UUID{Value: user.ID},
+		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
+			UserId: user.ID,
 		})
 		if authErr != nil {
 			return authErr
@@ -110,7 +109,7 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request umtypes.UserLogi
 	return nil
 }
 
-func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.PasswordRequest) (*auth.CreateTokenResponse, error) {
+func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.PasswordRequest) (*authProto.CreateTokenResponse, error) {
 	u.log.Info("restoring password")
 	u.log.WithField("link", request.Link).Debug("restoring password details")
 
@@ -128,7 +127,7 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 		return nil, cherry.ErrInvalidLink().AddDetailsErr(fmt.Errorf(linkNotFound, request.Link))
 	}
 
-	var tokens *auth.CreateTokenResponse
+	var tokens *authProto.CreateTokenResponse
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		link.User.PasswordHash = utils.GetKey(link.User.Login, request.NewPassword, link.User.Salt)
@@ -137,8 +136,8 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 		}
 		link.IsActive = false
 
-		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-			UserId: &common.UUID{Value: link.User.ID},
+		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
+			UserId: link.User.ID,
 		})
 		if authErr != nil {
 			return authErr

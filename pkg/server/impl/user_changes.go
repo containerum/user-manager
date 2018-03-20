@@ -8,8 +8,7 @@ import (
 
 	"database/sql"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
-	"git.containerum.net/ch/grpc-proto-files/common"
+	"git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/models"
@@ -104,7 +103,7 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterReq
 	}, nil
 }
 
-func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.Link) (*auth.CreateTokenResponse, error) {
+func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.Link) (*authProto.CreateTokenResponse, error) {
 	u.log.Info("activating user")
 	u.log.WithField("link", request.Link).Debugln("activating user details")
 	link, err := u.svc.DB.GetLinkFromString(ctx, request.Link)
@@ -120,7 +119,7 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.Link) (*a
 		return nil, cherry.ErrInvalidLink().AddDetailsErr(fmt.Errorf(linkNotFound, request.Link))
 	}
 
-	var tokens *auth.CreateTokenResponse
+	var tokens *authProto.CreateTokenResponse
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
 		link.User.IsActive = true
@@ -187,8 +186,8 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserLogi
 		return cherry.ErrUnableBlacklistUser()
 	}
 
-	_, err = u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-		UserId: &common.UUID{Value: user.ID},
+	_, err = u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
+		UserId: user.ID,
 	})
 	if err != nil {
 		u.log.WithError(err)
@@ -312,8 +311,8 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 
 		// TODO: send request to billing manager
 
-		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &auth.DeleteUserTokensRequest{
-			UserId: &common.UUID{Value: user.ID},
+		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
+			UserId: user.ID,
 		})
 		return authErr
 	})

@@ -3,7 +3,7 @@ package clients
 import (
 	"context"
 
-	"git.containerum.net/ch/grpc-proto-files/auth"
+	"git.containerum.net/ch/auth/proto"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/kube-client/pkg/cherry"
 	"git.containerum.net/ch/user-manager/pkg/models"
@@ -16,7 +16,7 @@ import (
 // ResourceServiceClient is an interface to resource-service.
 type ResourceServiceClient interface {
 	// GetUserAccess returns information about user access to resources (namespace, volumes) needed for token creation.
-	GetUserAccess(ctx context.Context, user *models.User) (*auth.ResourcesAccess, error)
+	GetUserAccess(ctx context.Context, user *models.User) (*authProto.ResourcesAccess, error)
 }
 
 type httpResourceServiceClient struct {
@@ -40,13 +40,13 @@ func NewHTTPResourceServiceClient(serverURL string) ResourceServiceClient {
 	}
 }
 
-func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *models.User) (*auth.ResourcesAccess, error) {
+func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *models.User) (*authProto.ResourcesAccess, error) {
 	c.log.WithField("user_id", user.ID).Info("Getting user access from resource service")
 	headersMap := utils.RequestHeadersMap(ctx)
 	headersMap[umtypes.UserIDHeader] = user.ID
 	headersMap[umtypes.UserRoleHeader] = user.Role
 	resp, err := c.rest.R().SetContext(ctx).
-		SetResult(auth.ResourcesAccess{}).
+		SetResult(authProto.ResourcesAccess{}).
 		SetHeaders(headersMap). // forward request headers to other our service
 		Get("/access")
 	if err != nil {
@@ -55,5 +55,5 @@ func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *mod
 	if resp.Error() != nil {
 		return nil, resp.Error().(*cherry.Err)
 	}
-	return resp.Result().(*auth.ResourcesAccess), nil
+	return resp.Result().(*authProto.ResourcesAccess), nil
 }

@@ -17,6 +17,7 @@ var hdrToKey = map[string]interface{}{
 	umtypes.SessionIDHeader:   server.SessionIDContextKey,
 	umtypes.TokenIDHeader:     server.TokenIDContextKey,
 	umtypes.ClientIPHeader:    server.ClientIPContextKey,
+	umtypes.PartTokenIDHeader: server.PartTokenIDContextKey,
 }
 
 func RequireHeaders(headers ...string) gin.HandlerFunc {
