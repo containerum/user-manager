@@ -39,7 +39,7 @@ func initMiddlewares(e *gin.Engine, um *server.UserManager) {
 // SetupRoutes sets up http router needed to handle requests from clients.
 func initRoutes(app *gin.Engine) {
 	requireIdentityHeaders := m.RequireHeaders(umtypes.UserIDHeader, umtypes.UserRoleHeader)
-	requireLoginHeaders := m.RequireHeaders(umtypes.UserAgentHeader, umtypes.FingerprintHeader, umtypes.ClientIPHeader, umtypes.PartTokenIDHeader)
+	requireLoginHeaders := m.RequireHeaders(umtypes.UserAgentHeader, umtypes.FingerprintHeader, umtypes.ClientIPHeader)
 	requireLogoutHeaders := m.RequireHeaders(umtypes.TokenIDHeader, umtypes.SessionIDHeader)
 
 	root := app.Group("/")
