@@ -101,7 +101,7 @@ func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp 
 		UserRole:    user.Role,
 		RwAccess:    true,
 		Access:      access,
-		PartTokenId: "",
+		PartTokenId: "00000000-0000-0000-0000-000000000000",
 	})
 	return
 }

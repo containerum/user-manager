@@ -30,6 +30,10 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginReques
 		return resp, cherry.ErrLoginFailed()
 	}
 
+	if err := u.loginUserChecks(ctx, user); err != nil {
+		return nil, err
+	}
+
 	if !utils.CheckPassword(request.Login, request.Password, user.Salt, user.PasswordHash) {
 		u.log.WithError(cherry.ErrInvalidLogin())
 		return resp, cherry.ErrInvalidLogin()
