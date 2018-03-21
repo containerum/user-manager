@@ -30,11 +30,15 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginReques
 		return resp, cherry.ErrLoginFailed()
 	}
 
-	if !utils.CheckPassword(request.Login, request.Password, user.Salt, user.PasswordHash) {
+	if user == nil {
 		u.log.WithError(cherry.ErrInvalidLogin())
 		return resp, cherry.ErrInvalidLogin()
 	}
 
+	if !utils.CheckPassword(request.Login, request.Password, user.Salt, user.PasswordHash) {
+		u.log.WithError(cherry.ErrInvalidLogin())
+		return resp, cherry.ErrInvalidLogin()
+	}
 	if user.IsInBlacklist {
 		return nil, cherry.ErrAccountBlocked()
 	}
