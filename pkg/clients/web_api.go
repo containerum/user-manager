@@ -17,8 +17,6 @@ import (
 	"net/http"
 	"net/rpc/jsonrpc"
 
-	kube_types "git.containerum.net/ch/kube-client/pkg/model"
-
 	"errors"
 
 	"git.containerum.net/ch/auth/proto"
@@ -27,6 +25,11 @@ import (
 
 type WebAPIError struct {
 	Error string `json:"message"`
+}
+
+type LoginWebApi struct {
+	Login     string  `json:"username"`
+	Password  string  `json:"password"`
 }
 
 // WebAPIClient is an interface for web-api service from old architecture.
@@ -62,7 +65,7 @@ func NewHTTPWebAPIClient(serverURL string) WebAPIClient {
 func (c *httpWebAPIClient) Login(ctx context.Context, request *umtypes.LoginRequest) (ret *umtypes.WebAPILoginResponse, err error) {
 	c.log.WithField("login", request.Login).Infoln("Signing in through web-api")
 
-	resp, err := c.client.R().SetContext(ctx).SetBody(kube_types.Login{Login: request.Login, Password: request.Password}).SetResult(&ret).Post("/api/login")
+	resp, err := c.client.R().SetContext(ctx).SetBody(LoginWebApi{Login: request.Login, Password: request.Password}).SetResult(&ret).Post("/api/login")
 	if err != nil {
 		c.log.WithError(err).Errorln("Sign in through web-api request failed")
 
