@@ -187,7 +187,7 @@ func (u *serverImpl) WebAPILogin(ctx context.Context, request umtypes.LoginReque
 		UserRole:    role,
 		RwAccess:    true,
 		Access:      &authProto.ResourcesAccess{Volume: volumes, Namespace: namespaces},
-		PartTokenId: server.MustGetPartTokenID(ctx),
+		PartTokenId: "00000000-0000-0000-0000-000000000000",
 	})
 	if err != nil {
 		u.log.WithError(err)
