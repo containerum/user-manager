@@ -73,7 +73,6 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginReques
 func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneTimeTokenLoginRequest) (*authProto.CreateTokenResponse, error) {
 	u.log.Info("One-time token login")
 	u.log.WithField("token", request.Token).Debug("One-time token login details")
-
 	token, err := u.svc.DB.GetTokenObject(ctx, request.Token)
 	if err != nil {
 		u.log.WithError(err)
