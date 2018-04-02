@@ -45,10 +45,25 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterReq
 		return nil, cherry.ErrUnableCreateUser().AddDetailsErr(fmt.Errorf(domainInBlacklist, domain))
 	}
 
-	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)
+	user, err := u.svc.DB.GetAnyUserByLogin(ctx, request.Login)
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableCreateUser()
+	}
+	if user != nil {
+		if user.IsDeleted {
+			user.IsDeleted = false
+			u.svc.DB.UpdateUser(ctx, user)
+			return &umtypes.User{
+				UserLogin: &umtypes.UserLogin{
+					ID:    user.ID,
+					Login: user.Login,
+				},
+				IsActive: user.IsActive,
+			}, nil
+		}
+		u.log.WithError(cherry.ErrUserAlreadyExists())
+		return nil, cherry.ErrUserAlreadyExists()
 	}
 	if user != nil {
 		u.log.WithError(cherry.ErrUserAlreadyExists())
