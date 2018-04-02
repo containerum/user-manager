@@ -53,7 +53,9 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterReq
 	if user != nil {
 		if user.IsDeleted {
 			user.IsDeleted = false
-			u.svc.DB.UpdateUser(ctx, user)
+			err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+				return u.svc.DB.UpdateUser(ctx, user)
+			})
 			return &umtypes.User{
 				UserLogin: &umtypes.UserLogin{
 					ID:    user.ID,
@@ -62,10 +64,6 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterReq
 				IsActive: user.IsActive,
 			}, nil
 		}
-		u.log.WithError(cherry.ErrUserAlreadyExists())
-		return nil, cherry.ErrUserAlreadyExists()
-	}
-	if user != nil {
 		u.log.WithError(cherry.ErrUserAlreadyExists())
 		return nil, cherry.ErrUserAlreadyExists()
 	}
