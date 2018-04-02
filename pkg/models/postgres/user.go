@@ -23,6 +23,21 @@ func (db *pgDB) GetUserByLogin(ctx context.Context, login string) (*models.User,
 	return &user, err
 }
 
+func (db *pgDB) GetAnyUserByLogin(ctx context.Context, login string) (*models.User, error) {
+	db.log.Infoln("Get user by login", login)
+	var user models.User
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE login = $1", login)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, rows.Err()
+	}
+	err = rows.StructScan(&user)
+	return &user, err
+}
+
 func (db *pgDB) GetUserByID(ctx context.Context, id string) (*models.User, error) {
 	db.log.Infoln("Get user by id", id)
 	var user models.User
