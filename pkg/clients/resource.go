@@ -17,6 +17,8 @@ import (
 type ResourceServiceClient interface {
 	// GetUserAccess returns information about user access to resources (namespace, volumes) needed for token creation.
 	GetUserAccess(ctx context.Context, user *models.User) (*authProto.ResourcesAccess, error)
+	DeleteUserNamespaces(ctx context.Context, user *models.User) error
+	DeleteUserVolumes(ctx context.Context, user *models.User) error
 }
 
 type httpResourceServiceClient struct {
@@ -56,4 +58,40 @@ func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *mod
 		return nil, resp.Error().(*cherry.Err)
 	}
 	return resp.Result().(*authProto.ResourcesAccess), nil
+}
+
+func (c *httpResourceServiceClient) DeleteUserNamespaces(ctx context.Context, user *models.User) error {
+	c.log.WithField("user_id", user.ID).Info("Deleting user namespaces")
+	headersMap := utils.RequestHeadersMap(ctx)
+	headersMap[umtypes.UserIDHeader] = user.ID
+	headersMap[umtypes.UserRoleHeader] = user.Role
+	resp, err := c.rest.R().SetContext(ctx).
+		SetResult(authProto.ResourcesAccess{}).
+		SetHeaders(headersMap). // forward request headers to other our service
+		Delete("/namespaces")
+	if err != nil {
+		return err
+	}
+	if resp.Error() != nil {
+		return resp.Error().(*cherry.Err)
+	}
+	return nil
+}
+
+func (c *httpResourceServiceClient) DeleteUserVolumes(ctx context.Context, user *models.User) error {
+	c.log.WithField("user_id", user.ID).Info("Deleting user volumes")
+	headersMap := utils.RequestHeadersMap(ctx)
+	headersMap[umtypes.UserIDHeader] = user.ID
+	headersMap[umtypes.UserRoleHeader] = user.Role
+	resp, err := c.rest.R().SetContext(ctx).
+		SetResult(authProto.ResourcesAccess{}).
+		SetHeaders(headersMap). // forward request headers to other our service
+		Delete("/volumes")
+	if err != nil {
+		return err
+	}
+	if resp.Error() != nil {
+		return resp.Error().(*cherry.Err)
+	}
+	return nil
 }
