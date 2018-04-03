@@ -98,6 +98,7 @@ var (
 // DB is an interface for persistent data storage (also sometimes called DAO).
 type DB interface {
 	GetUserByLogin(ctx context.Context, login string) (*User, error)
+	GetAnyUserByLogin(ctx context.Context, login string) (*User, error)
 	GetUserByID(ctx context.Context, id string) (*User, error)
 	GetAnyUserByID(ctx context.Context, id string) (*User, error)
 	CreateUser(ctx context.Context, user *User) error
