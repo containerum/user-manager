@@ -61,7 +61,7 @@ func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *mod
 }
 
 func (c *httpResourceServiceClient) DeleteUserNamespaces(ctx context.Context, user *models.User) error {
-	c.log.WithField("user_id", user.ID).Info("Getting user access from resource service")
+	c.log.WithField("user_id", user.ID).Info("Deleting user namespaces")
 	headersMap := utils.RequestHeadersMap(ctx)
 	headersMap[umtypes.UserIDHeader] = user.ID
 	headersMap[umtypes.UserRoleHeader] = user.Role
@@ -79,7 +79,7 @@ func (c *httpResourceServiceClient) DeleteUserNamespaces(ctx context.Context, us
 }
 
 func (c *httpResourceServiceClient) DeleteUserVolumes(ctx context.Context, user *models.User) error {
-	c.log.WithField("user_id", user.ID).Info("Getting user access from resource service")
+	c.log.WithField("user_id", user.ID).Info("Deleting user volumes")
 	headersMap := utils.RequestHeadersMap(ctx)
 	headersMap[umtypes.UserIDHeader] = user.ID
 	headersMap[umtypes.UserRoleHeader] = user.Role
