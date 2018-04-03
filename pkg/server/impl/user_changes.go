@@ -321,6 +321,13 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		return cherry.ErrUnableDeleteUser()
 	}
 
+	if err := u.svc.ResourceServiceClient.DeleteUserNamespaces(ctx, user); err != nil {
+		u.log.WithError(err)
+	}
+	if err := u.svc.ResourceServiceClient.DeleteUserVolumes(ctx, user); err != nil {
+		u.log.WithError(err)
+	}
+
 	go func() {
 		err := u.svc.MailClient.SendAccDeletedMail(ctx, &mttypes.Recipient{
 			ID:        user.ID,
