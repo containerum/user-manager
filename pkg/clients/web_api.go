@@ -28,8 +28,8 @@ type WebAPIError struct {
 }
 
 type LoginWebApi struct {
-	Login     string  `json:"username"`
-	Password  string  `json:"password"`
+	Login    string `json:"username"`
+	Password string `json:"password"`
 }
 
 // WebAPIClient is an interface for web-api service from old architecture.
@@ -52,6 +52,7 @@ func NewHTTPWebAPIClient(serverURL string) WebAPIClient {
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
 		SetDebug(true).
 		SetHeader("Content-Type", "application/json").
+		SetTimeout(3 * time.Second).
 		SetError(WebAPIError{})
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal

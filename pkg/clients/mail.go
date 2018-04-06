@@ -3,6 +3,8 @@ package clients
 import (
 	"context"
 
+	"time"
+
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"git.containerum.net/ch/kube-client/pkg/cherry"
 	"git.containerum.net/ch/utils"
@@ -35,6 +37,7 @@ func NewHTTPMailClient(serverURL string) MailClient {
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
 		SetDebug(true).
 		SetError(cherry.Err{}).
+		SetTimeout(3 * time.Second).
 		SetRedirectPolicy(resty.FlexibleRedirectPolicy(10))
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
