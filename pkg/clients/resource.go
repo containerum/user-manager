@@ -2,6 +2,7 @@ package clients
 
 import (
 	"context"
+	"time"
 
 	"git.containerum.net/ch/auth/proto"
 	umtypes "git.containerum.net/ch/json-types/user-manager"
@@ -33,6 +34,7 @@ func NewHTTPResourceServiceClient(serverURL string) ResourceServiceClient {
 		SetHostURL(serverURL).
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
 		SetDebug(true).
+		SetTimeout(3 * time.Second).
 		SetError(cherry.Err{})
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal

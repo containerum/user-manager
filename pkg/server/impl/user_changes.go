@@ -50,49 +50,61 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterReq
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableCreateUser()
 	}
+
+	reactivatingOldUser := false
+
+	newUser := &models.User{}
+
 	if user != nil {
 		if user.IsDeleted {
-			user.IsDeleted = false
-			err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-				return u.svc.DB.UpdateUser(ctx, user)
-			})
-			return &umtypes.User{
-				UserLogin: &umtypes.UserLogin{
-					ID:    user.ID,
-					Login: user.Login,
-				},
-				IsActive: user.IsActive,
-			}, nil
+			//Activating previously partially deleted user
+			reactivatingOldUser = true
+
+			newUser = user
+			newUser.IsDeleted = false
+			newUser.IsActive = false
+		} else {
+			u.log.WithError(cherry.ErrUserAlreadyExists())
+			return nil, cherry.ErrUserAlreadyExists()
 		}
-		u.log.WithError(cherry.ErrUserAlreadyExists())
-		return nil, cherry.ErrUserAlreadyExists()
 	}
 
 	salt := utils.GenSalt(request.Login, request.Login, request.Login) // compatibility with old client db
 	passwordHash := utils.GetKey(request.Login, request.Password, salt)
-	newUser := &models.User{
-		Login:        request.Login,
-		PasswordHash: passwordHash,
-		Salt:         salt,
-		Role:         "user",
-		IsActive:     false,
-		IsDeleted:    false,
+	if !reactivatingOldUser {
+		newUser = &models.User{
+			Login:        request.Login,
+			PasswordHash: passwordHash,
+			Salt:         salt,
+			Role:         "user",
+			IsActive:     false,
+			IsDeleted:    false,
+		}
+	} else {
+		newUser.Salt = salt
+		newUser.PasswordHash = passwordHash
 	}
 
 	var link *models.Link
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
-		if createErr := tx.CreateUser(ctx, newUser); createErr != nil {
-			return err
-		}
+		if !reactivatingOldUser {
+			if createErr := tx.CreateUser(ctx, newUser); createErr != nil {
+				return err
+			}
 
-		if createErr := tx.CreateProfile(ctx, &models.Profile{
-			User:      newUser,
-			Referral:  sql.NullString{String: request.Referral, Valid: true},
-			Access:    sql.NullString{String: "rw", Valid: true},
-			CreatedAt: pq.NullTime{Time: time.Now().UTC(), Valid: true},
-		}); createErr != nil {
-			return err
+			if createErr := tx.CreateProfile(ctx, &models.Profile{
+				User:      newUser,
+				Referral:  sql.NullString{String: request.Referral, Valid: true},
+				Access:    sql.NullString{String: "rw", Valid: true},
+				CreatedAt: pq.NullTime{Time: time.Now().UTC(), Valid: true},
+			}); createErr != nil {
+				return err
+			}
+		} else {
+			if createErr := tx.UpdateUser(ctx, newUser); createErr != nil {
+				return err
+			}
 		}
 
 		link, err = tx.CreateLink(ctx, umtypes.LinkTypeConfirm, 24*time.Hour, newUser)

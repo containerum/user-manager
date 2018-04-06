@@ -7,6 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 
+	"time"
+
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"github.com/json-iterator/go"
 	"gopkg.in/resty.v1"
@@ -54,6 +56,7 @@ func NewGithubOAuthClient() OAuthClient {
 		SetHostURL("https://api.github.com").
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
 		SetDebug(true).
+		SetTimeout(3*time.Second).
 		SetHeader("Content-Type", "application/json")
 
 	client.JSONMarshal = jsoniter.Marshal
@@ -116,6 +119,7 @@ func NewGoogleOAuthClient() OAuthClient {
 		SetHostURL("https://www.googleapis.com/oauth2/v2").
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
 		SetDebug(true).
+		SetTimeout(3*time.Second).
 		SetHeader("Content-Type", "application/json")
 
 	client.JSONMarshal = jsoniter.Marshal
@@ -188,6 +192,7 @@ func NewFacebookOAuthClient() OAuthClient {
 		SetHostURL("https://graph.facebook.com/v2.11").
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
 		SetDebug(true).
+		SetTimeout(3*time.Second).
 		SetHeader("Content-Type", "application/json")
 
 	client.JSONMarshal = jsoniter.Marshal
