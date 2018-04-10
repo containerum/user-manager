@@ -16,7 +16,6 @@ type UserManager interface {
 	BasicLogin(ctx context.Context, request umtypes.LoginRequest) (*authProto.CreateTokenResponse, error)
 	OneTimeTokenLogin(ctx context.Context, request umtypes.OneTimeTokenLoginRequest) (*authProto.CreateTokenResponse, error)
 	OAuthLogin(ctx context.Context, request umtypes.OAuthLoginRequest) (*authProto.CreateTokenResponse, error)
-	WebAPILogin(ctx context.Context, request umtypes.LoginRequest) (*umtypes.WebAPILoginResponse, error) // login through old web-api
 
 	ChangePassword(ctx context.Context, request umtypes.PasswordRequest) (*authProto.CreateTokenResponse, error)
 	ResetPassword(ctx context.Context, request umtypes.UserLogin) error
@@ -65,6 +64,5 @@ type Services struct {
 	DB                    models.DB
 	AuthClient            clients.AuthClientCloser
 	ReCaptchaClient       clients.ReCaptchaClient
-	WebAPIClient          clients.WebAPIClient
 	ResourceServiceClient clients.ResourceServiceClient
 }

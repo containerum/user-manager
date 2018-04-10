@@ -1,4 +1,4 @@
-package grpc_logrus
+package ctxlogrus
 
 import (
 	"io/ioutil"

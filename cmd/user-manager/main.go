@@ -45,7 +45,6 @@ func main() {
 		DB:                    getService(getDB()).(models.DB),
 		AuthClient:            getService(getAuthClient()).(clients.AuthClientCloser),
 		ReCaptchaClient:       getService(getReCaptchaClient()).(clients.ReCaptchaClient),
-		WebAPIClient:          getService(getWebAPIClient()).(clients.WebAPIClient),
 		ResourceServiceClient: getService(getResourceServiceClient()).(clients.ResourceServiceClient),
 	})
 	exitOnErr(err)

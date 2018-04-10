@@ -102,7 +102,6 @@ type DB interface {
 	GetUserByID(ctx context.Context, id string) (*User, error)
 	GetAnyUserByID(ctx context.Context, id string) (*User, error)
 	CreateUser(ctx context.Context, user *User) error
-	CreateUserWebAPI(ctx context.Context, user *User) error
 	UpdateUser(ctx context.Context, user *User) error
 	GetBlacklistedUsers(ctx context.Context, limit, offset int) ([]User, error)
 	BlacklistUser(ctx context.Context, user *User) error

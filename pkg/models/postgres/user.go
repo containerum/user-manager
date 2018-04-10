@@ -84,22 +84,6 @@ func (db *pgDB) CreateUser(ctx context.Context, user *models.User) error {
 	return err
 }
 
-func (db *pgDB) CreateUserWebAPI(ctx context.Context, user *models.User) error {
-	db.log.Infoln("Create user", user.Login)
-	rows, err := db.qLog.QueryxContext(ctx, "INSERT INTO users (login, password_hash, salt, role, is_active, id) "+
-		"VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
-		user.Login, user.PasswordHash, user.Salt, user.Role, user.IsActive, user.ID)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-	if !rows.Next() {
-		return rows.Err()
-	}
-	err = rows.Scan(&user.ID)
-	return err
-}
-
 func (db *pgDB) UpdateUser(ctx context.Context, user *models.User) error {
 	db.log.Infoln("Update user", user.Login)
 	_, err := db.eLog.ExecContext(ctx, "UPDATE users SET "+

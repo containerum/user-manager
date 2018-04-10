@@ -32,11 +32,8 @@ ENV GIN_MODE=debug \
     CH_USER_RECAPTCHA_KEY="recaptcha_key" \
     CH_USER_OAUTH_CLIENTS="http" \
     CH_USER_AUTH_GRPC_ADDR="ch-auth:1112" \
-    CH_USER_WEB_API="http" \
-    CH_USER_WEB_API_URL="http://web-api:5000" \
     CH_USER_RESOURCE_SERVICE="http" \
     CH_USER_RESOURCE_SERVICE_URL="http://resource-service:1213" \
     CH_USER_LISTEN_ADDR=":8111" \
-    CH_STORE_ADDRESS="ch-store:1212" \
     CH_USER_USER_MANAGER="impl"
 ENTRYPOINT ["/user-manager"]

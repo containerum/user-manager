@@ -79,7 +79,6 @@ func initRoutes(app *gin.Engine) {
 		login.POST("/basic", requireLoginHeaders, h.BasicLoginHandler)
 		login.POST("/token", requireLoginHeaders, h.OneTimeTokenLoginHandler)
 		login.POST("/oauth", requireLoginHeaders, h.OAuthLoginHandler)
-		login.POST("", requireLoginHeaders, h.WebAPILoginHandler) // login through old web-api
 	}
 
 	password := app.Group("/password")

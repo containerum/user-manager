@@ -110,9 +110,12 @@ func (u *serverImpl) loginUserChecks(ctx context.Context, user *models.User) err
 	if user == nil {
 		u.log.Error(cherry.ErrUserNotExist())
 		return cherry.ErrUserNotExist()
-	} else if user.IsDeleted || user.IsInBlacklist {
+	} else if user.IsDeleted {
 		u.log.Error(cherry.ErrInvalidLogin())
 		return cherry.ErrInvalidLogin()
+	} else if user.IsInBlacklist {
+		u.log.Error(cherry.ErrAccountBlocked())
+		return cherry.ErrAccountBlocked()
 	}
 	return nil
 }
