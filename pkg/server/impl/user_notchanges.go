@@ -223,6 +223,30 @@ func (u *serverImpl) GetUsers(ctx context.Context, page int, perPage int, filter
 	return &resp, nil
 }
 
+func (u *serverImpl) GetUsersLoginID(ctx context.Context) (*umtypes.UserList, error) {
+	u.log.Info("get users list")
+	users, err := u.svc.DB.GetAllUsersLoginID(ctx)
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return nil, cherry.ErrUnableGetUsersList()
+	}
+
+	resp := umtypes.UserList{
+		Users: []umtypes.User{},
+	}
+	for _, v := range users {
+		user := umtypes.User{
+			UserLogin: &umtypes.UserLogin{
+				ID:    v.ID,
+				Login: v.Login,
+			},
+		}
+		resp.Users = append(resp.Users, user)
+	}
+
+	return &resp, nil
+}
+
 func (u *serverImpl) LinkResend(ctx context.Context, request umtypes.UserLogin) error {
 	u.log.WithField("login", request.Login).Info("resending link")
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)
