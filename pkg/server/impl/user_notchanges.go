@@ -223,7 +223,7 @@ func (u *serverImpl) GetUsers(ctx context.Context, page int, perPage int, filter
 	return &resp, nil
 }
 
-func (u *serverImpl) GetUsersLoginID(ctx context.Context) (*umtypes.UserList, error) {
+func (u *serverImpl) GetUsersLoginID(ctx context.Context) (*map[string]string, error) {
 	u.log.Info("get users list")
 	users, err := u.svc.DB.GetAllUsersLoginID(ctx)
 	if err := u.handleDBError(err); err != nil {
@@ -231,17 +231,10 @@ func (u *serverImpl) GetUsersLoginID(ctx context.Context) (*umtypes.UserList, er
 		return nil, cherry.ErrUnableGetUsersList()
 	}
 
-	resp := umtypes.UserList{
-		Users: []umtypes.User{},
-	}
+	resp := make(map[string]string, 0)
+
 	for _, v := range users {
-		user := umtypes.User{
-			UserLogin: &umtypes.UserLogin{
-				ID:    v.ID,
-				Login: v.Login,
-			},
-		}
-		resp.Users = append(resp.Users, user)
+		resp[v.ID] = v.Login
 	}
 
 	return &resp, nil
