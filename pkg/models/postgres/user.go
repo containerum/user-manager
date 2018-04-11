@@ -140,3 +140,26 @@ func (db *pgDB) UnBlacklistUser(ctx context.Context, user *models.User) error {
 	user.IsInBlacklist = false
 	return nil
 }
+
+func (db *pgDB) GetAllUsersLoginID(ctx context.Context) ([]models.User, error) {
+	db.log.Infoln("Get all users")
+	users := make([]models.User, 0) // return empty slice instead of nil if no records found
+
+	rows, err := db.qLog.QueryxContext(ctx, "SELECT id, login FROM users")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		user := models.User{}
+		err := rows.Scan(
+			&user.ID, &user.Login,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, rows.Err()
+}

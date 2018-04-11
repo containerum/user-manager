@@ -101,6 +101,7 @@ type DB interface {
 	GetAnyUserByLogin(ctx context.Context, login string) (*User, error)
 	GetUserByID(ctx context.Context, id string) (*User, error)
 	GetAnyUserByID(ctx context.Context, id string) (*User, error)
+	GetAllUsersLoginID(ctx context.Context) ([]User, error)
 	CreateUser(ctx context.Context, user *User) error
 	UpdateUser(ctx context.Context, user *User) error
 	GetBlacklistedUsers(ctx context.Context, limit, offset int) ([]User, error)

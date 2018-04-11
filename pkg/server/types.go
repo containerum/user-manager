@@ -39,6 +39,7 @@ type UserManager interface {
 	GetUserInfo(ctx context.Context) (*umtypes.User, error)
 	GetUserInfoByID(ctx context.Context, userID string) (*umtypes.User, error)
 	GetUserInfoByLogin(ctx context.Context, login string) (*umtypes.User, error)
+	GetUsersLoginID(ctx context.Context) (*umtypes.UserList, error)
 	GetBlacklistedUsers(ctx context.Context, page int, perPage int) (*umtypes.UserList, error)
 	GetUsers(ctx context.Context, page int, perPage int, filters ...string) (*umtypes.UserList, error)
 	GetBoundAccounts(ctx context.Context) (map[string]string, error)

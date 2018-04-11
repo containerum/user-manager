@@ -171,6 +171,24 @@ func UserListGetHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
+func UserListLoginID(ctx *gin.Context) {
+	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
+	um := *ump
+
+	resp, err := um.GetUsersLoginID(ctx.Request.Context())
+	if err != nil {
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableGetUsersList(), ctx)
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+}
+
 func PartialDeleteHandler(ctx *gin.Context) {
 	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
 	um := *ump
