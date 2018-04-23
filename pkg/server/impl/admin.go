@@ -9,6 +9,7 @@ import (
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 	"git.containerum.net/ch/user-manager/pkg/validation"
 	"github.com/lib/pq"
@@ -84,9 +85,10 @@ func (u *serverImpl) AdminActivateUser(ctx context.Context, request umtypes.User
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableActivate()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
-		return nil, err
+	if user.IsDeleted {
+		return nil, cherry.ErrInvalidLogin()
 	}
+
 	if user.IsActive {
 		return nil, cherry.ErrUserAlreadyActivated()
 	}
@@ -112,7 +114,7 @@ func (u *serverImpl) AdminActivateUser(ctx context.Context, request umtypes.User
 func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request umtypes.UserLogin) error {
 	u.log.Info("deactivating user (admin)")
 
-	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)
+	user, err := u.svc.DB.GetAnyUserByLogin(ctx, request.Login)
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
 		return cherry.ErrUnableDeleteUser()
@@ -121,8 +123,13 @@ func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request umtypes.Us
 		return err
 	}
 
+	if user.ID == server.MustGetUserID(ctx) {
+		return cherry.ErrUnableDeleteUser()
+	}
+
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		user.IsDeleted = true
+		user.IsActive = false
 		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
 			u.log.WithError(updErr)
 			return cherry.ErrUnableDeleteUser()
@@ -176,6 +183,7 @@ func (u *serverImpl) AdminResetPassword(ctx context.Context, request umtypes.Use
 		if authErr != nil {
 			return authErr
 		}
+		return nil
 	})
 	if err = u.handleDBError(err); err != nil {
 		return nil, cherry.ErrUnableChangePassword()
