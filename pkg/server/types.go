@@ -24,7 +24,7 @@ type UserManager interface {
 	Logout(ctx context.Context) error
 
 	// changes DB state
-	CreateUser(ctx context.Context, request umtypes.RegisterRequest) (*umtypes.User, error)
+	CreateUser(ctx context.Context, request umtypes.RegisterRequest) (*umtypes.UserLogin, error)
 	ActivateUser(ctx context.Context, request umtypes.Link) (*authProto.CreateTokenResponse, error)
 	BlacklistUser(ctx context.Context, request umtypes.UserLogin) error
 	UnBlacklistUser(ctx context.Context, request umtypes.UserLogin) error
@@ -33,6 +33,13 @@ type UserManager interface {
 	CompletelyDeleteUser(ctx context.Context, userID string) error
 	AddBoundAccount(ctx context.Context, request umtypes.OAuthLoginRequest) error
 	DeleteBoundAccount(ctx context.Context, request umtypes.BoundAccountDeleteRequest) error
+
+	// admin methods
+	AdminCreateUser(ctx context.Context, request umtypes.UserLogin) (*umtypes.UserLogin, error)
+	AdminActivateUser(ctx context.Context, request umtypes.UserLogin) (*authProto.CreateTokenResponse, error)
+	AdminDeactivateUser(ctx context.Context, request umtypes.UserLogin) error
+	AdminResetPassword(ctx context.Context, request umtypes.UserLogin) (*umtypes.UserLogin, error)
+	AdminSetAdmin(ctx context.Context, request umtypes.UserLogin) error
 
 	// not changes DB state
 	GetUserLinks(ctx context.Context, userID string) (*umtypes.Links, error)

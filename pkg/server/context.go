@@ -75,7 +75,7 @@ func MustGetTokenID(ctx context.Context) string {
 	return uid
 }
 
-// MustGetTokenID attempts to extract part token ID using PartTokenIDContextKey from context.
+// MustGetPartTokenID attempts to extract part token ID using PartTokenIDContextKey from context.
 // It panics if value was not found in context.
 func MustGetPartTokenID(ctx context.Context) string {
 	uid, ok := ctx.Value(PartTokenIDContextKey).(string)

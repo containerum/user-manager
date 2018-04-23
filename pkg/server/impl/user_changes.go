@@ -8,30 +8,24 @@ import (
 
 	"database/sql"
 
+	"fmt"
+
 	"git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/utils"
-	"git.containerum.net/ch/user-manager/pkg/validation"
-
-	"fmt"
 
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"github.com/lib/pq"
 )
 
-func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterRequest) (*umtypes.User, error) {
+func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterRequest) (*umtypes.UserLogin, error) {
 	u.log.WithField("login", request.Login).Info("creating user")
 	if err := u.checkReCaptcha(ctx, request.ReCaptcha); err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrInvalidRecaptcha()
-	}
-
-	errs := validation.ValidateUserCreateRequest(request)
-	if errs != nil {
-		return nil, cherry.ErrRequestValidationFailed().AddDetailsErr(errs...)
 	}
 
 	domain := strings.Split(request.Login, "@")[1]
@@ -119,12 +113,9 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterReq
 
 	go u.linkSend(ctx, link)
 
-	return &umtypes.User{
-		UserLogin: &umtypes.UserLogin{
-			ID:    newUser.ID,
-			Login: newUser.Login,
-		},
-		IsActive: newUser.IsActive,
+	return &umtypes.UserLogin{
+		ID:    newUser.ID,
+		Login: newUser.Login,
 	}, nil
 }
 

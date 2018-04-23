@@ -72,7 +72,6 @@ func initRoutes(app *gin.Engine) {
 		user.GET("/blacklist", requireIdentityHeaders, m.RequireAdminRole, h.BlacklistGetHandler)
 		user.POST("/blacklist", requireIdentityHeaders, m.RequireAdminRole, h.UserToBlacklistHandler)
 		user.DELETE("/blacklist", requireIdentityHeaders, m.RequireAdminRole, h.UserDeleteFromBlacklistHandler)
-
 	}
 
 	login := app.Group("/login")
@@ -98,5 +97,14 @@ func initRoutes(app *gin.Engine) {
 		domainBlacklist.GET("/:domain", requireIdentityHeaders, m.RequireAdminRole, h.BlacklistDomainGetHandler)
 
 		domainBlacklist.DELETE("/:domain", requireIdentityHeaders, m.RequireAdminRole, h.BlacklistDomainDeleteHandler)
+	}
+
+	admin := app.Group("/admin", m.RequireAdminRole)
+	{
+		admin.POST("/user/sign_up", h.AdminUserCreateHandler)
+		admin.POST("/user/activation", h.AdminUserActicate)
+		admin.POST("/user/deactivation", h.AdminUserDeactivate)
+		admin.POST("/user/password/reset", h.AdminResetPassword)
+		admin.POST("/user", h.AdminSetAdmin)
 	}
 }
