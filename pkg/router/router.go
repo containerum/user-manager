@@ -101,7 +101,10 @@ func initRoutes(app *gin.Engine) {
 
 	admin := app.Group("/admin", m.RequireAdminRole)
 	{
-		user.POST("/user/sign_up", h.AdminUserCreateHandler)
-
+		admin.POST("/user/sign_up", h.AdminUserCreateHandler)
+		admin.POST("/user/activation", h.AdminUserActicate)
+		admin.POST("/user/deactivation", h.AdminUserDeactivate)
+		admin.POST("/user/password/reset", h.AdminResetPassword)
+		admin.POST("/user", h.AdminSetAdmin)
 	}
 }

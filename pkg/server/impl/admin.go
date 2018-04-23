@@ -84,7 +84,9 @@ func (u *serverImpl) AdminActivateUser(ctx context.Context, request umtypes.User
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableActivate()
 	}
-
+	if err := u.loginUserChecks(ctx, user); err != nil {
+		return nil, err
+	}
 	if user.IsActive {
 		return nil, cherry.ErrUserAlreadyActivated()
 	}
@@ -115,10 +117,8 @@ func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request umtypes.Us
 		u.log.WithError(err)
 		return cherry.ErrUnableDeleteUser()
 	}
-
-	if user == nil {
-		u.log.WithError(cherry.ErrUserNotExist())
-		return cherry.ErrUserNotExist()
+	if err := u.loginUserChecks(ctx, user); err != nil {
+		return err
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
@@ -128,10 +128,89 @@ func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request umtypes.Us
 			return cherry.ErrUnableDeleteUser()
 		}
 
+		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
+			UserId: user.ID,
+		})
+		return authErr
 	})
 	if err := u.handleDBError(err); err != nil {
-		return nil, cherry.ErrUnableActivate()
+		u.log.WithError(err)
+		return cherry.ErrUnableDeleteUser()
+	}
+	if err := u.svc.ResourceServiceClient.DeleteUserNamespaces(ctx, user); err != nil {
+		u.log.WithError(err)
+	}
+	if err := u.svc.ResourceServiceClient.DeleteUserVolumes(ctx, user); err != nil {
+		u.log.WithError(err)
+	}
+	return nil
+}
+
+func (u *serverImpl) AdminResetPassword(ctx context.Context, request umtypes.UserLogin) (*umtypes.UserLogin, error) {
+	u.log.Info("reseting user password (admin)")
+
+	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return nil, cherry.ErrUnableChangePassword()
+	}
+	if err := u.loginUserChecks(ctx, user); err != nil {
+		return nil, err
 	}
 
-	return tokens, nil
+	password, err := utils.SecureRandomString(10)
+	if err != nil {
+		u.log.WithError(err)
+		return nil, cherry.ErrUnableChangePassword()
+	}
+
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+		user.PasswordHash = utils.GetKey(user.Login, password, user.Salt)
+		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
+			return updErr
+		}
+
+		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
+			UserId: user.ID,
+		})
+		if authErr != nil {
+			return authErr
+		}
+	})
+	if err = u.handleDBError(err); err != nil {
+		return nil, cherry.ErrUnableChangePassword()
+	}
+
+	return &umtypes.UserLogin{
+		ID:       user.ID,
+		Login:    user.Login,
+		Password: password,
+	}, nil
+}
+
+func (u *serverImpl) AdminSetAdmin(ctx context.Context, request umtypes.UserLogin) error {
+	u.log.Info("giving admin permissions to user (admin)")
+
+	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return cherry.ErrUnableUpdateUserInfo()
+	}
+	if err := u.loginUserChecks(ctx, user); err != nil {
+		return err
+	}
+
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+		user.Role = "admin"
+		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
+			return updErr
+		}
+		return nil
+	})
+	if err = u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return cherry.ErrUnableUpdateUserInfo()
+	}
+
+	return nil
 }

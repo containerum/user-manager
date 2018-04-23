@@ -36,6 +36,10 @@ type UserManager interface {
 
 	// admin methods
 	AdminCreateUser(ctx context.Context, request umtypes.UserLogin) (*umtypes.UserLogin, error)
+	AdminActivateUser(ctx context.Context, request umtypes.UserLogin) (*authProto.CreateTokenResponse, error)
+	AdminDeactivateUser(ctx context.Context, request umtypes.UserLogin) error
+	AdminResetPassword(ctx context.Context, request umtypes.UserLogin) (*umtypes.UserLogin, error)
+	AdminSetAdmin(ctx context.Context, request umtypes.UserLogin) error
 
 	// not changes DB state
 	GetUserLinks(ctx context.Context, userID string) (*umtypes.Links, error)

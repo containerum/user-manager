@@ -53,7 +53,6 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 		return authErr
 	})
 	if err = u.handleDBError(err); err != nil {
-		u.log.WithError(cherry.ErrUnableChangePassword())
 		return nil, cherry.ErrUnableChangePassword()
 	}
 	go func() {
