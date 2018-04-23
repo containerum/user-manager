@@ -51,7 +51,7 @@ func initRoutes(app *gin.Engine) {
 	{
 		user.POST("/sign_up", requireLoginHeaders, h.UserCreateHandler)
 		user.POST("/sign_up/resend", h.LinkResendHandler)
-		user.POST("/activation", h.ActivateHandler)
+		user.POST("/activation", requireLoginHeaders, h.ActivateHandler)
 		user.POST("/delete/partial", requireIdentityHeaders, m.RequireUserExist, h.PartialDeleteHandler)
 		user.POST("/delete/complete", requireIdentityHeaders, m.RequireAdminRole, h.CompleteDeleteHandler)
 
