@@ -5,10 +5,10 @@ import (
 	"time"
 
 	"git.containerum.net/ch/auth/proto"
-	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/kube-client/pkg/cherry"
-	"git.containerum.net/ch/user-manager/pkg/models"
-	"git.containerum.net/ch/utils"
+	"git.containerum.net/ch/user-manager/pkg/db"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	utils "git.containerum.net/ch/utils/httputil"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
@@ -17,9 +17,9 @@ import (
 // ResourceServiceClient is an interface to resource-service.
 type ResourceServiceClient interface {
 	// GetUserAccess returns information about user access to resources (namespace, volumes) needed for token creation.
-	GetUserAccess(ctx context.Context, user *models.User) (*authProto.ResourcesAccess, error)
-	DeleteUserNamespaces(ctx context.Context, user *models.User) error
-	DeleteUserVolumes(ctx context.Context, user *models.User) error
+	GetUserAccess(ctx context.Context, user *db.User) (*authProto.ResourcesAccess, error)
+	DeleteUserNamespaces(ctx context.Context, user *db.User) error
+	DeleteUserVolumes(ctx context.Context, user *db.User) error
 }
 
 type httpResourceServiceClient struct {
@@ -44,7 +44,7 @@ func NewHTTPResourceServiceClient(serverURL string) ResourceServiceClient {
 	}
 }
 
-func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *models.User) (*authProto.ResourcesAccess, error) {
+func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *db.User) (*authProto.ResourcesAccess, error) {
 	c.log.WithField("user_id", user.ID).Info("Getting user access from resource service")
 	headersMap := utils.RequestHeadersMap(ctx)
 	headersMap[umtypes.UserIDHeader] = user.ID
@@ -62,7 +62,7 @@ func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *mod
 	return resp.Result().(*authProto.ResourcesAccess), nil
 }
 
-func (c *httpResourceServiceClient) DeleteUserNamespaces(ctx context.Context, user *models.User) error {
+func (c *httpResourceServiceClient) DeleteUserNamespaces(ctx context.Context, user *db.User) error {
 	c.log.WithField("user_id", user.ID).Info("Deleting user namespaces")
 	headersMap := utils.RequestHeadersMap(ctx)
 	headersMap[umtypes.UserIDHeader] = user.ID
@@ -80,7 +80,7 @@ func (c *httpResourceServiceClient) DeleteUserNamespaces(ctx context.Context, us
 	return nil
 }
 
-func (c *httpResourceServiceClient) DeleteUserVolumes(ctx context.Context, user *models.User) error {
+func (c *httpResourceServiceClient) DeleteUserVolumes(ctx context.Context, user *db.User) error {
 	c.log.WithField("user_id", user.ID).Info("Deleting user volumes")
 	headersMap := utils.RequestHeadersMap(ctx)
 	headersMap[umtypes.UserIDHeader] = user.ID

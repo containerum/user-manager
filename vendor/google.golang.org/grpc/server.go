@@ -40,7 +40,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/encoding"
-	"google.golang.org/grpc/encoding/proto"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/internal"
 	"google.golang.org/grpc/keepalive"
@@ -93,7 +92,11 @@ type Server struct {
 	conns  map[io.Closer]bool
 	serve  bool
 	drain  bool
-	cv     *sync.Cond          // signaled when connections close for GracefulStop
+	ctx    context.Context
+	cancel context.CancelFunc
+	// A CondVar to let GracefulStop() blocks until all the pending RPCs are finished
+	// and all the transport goes away.
+	cv     *sync.Cond
 	m      map[string]*service // service name -> service info
 	events trace.EventLog
 
@@ -101,12 +104,11 @@ type Server struct {
 	done     chan struct{}
 	quitOnce sync.Once
 	doneOnce sync.Once
-	serveWG  sync.WaitGroup // counts active Serve goroutines for GracefulStop
 }
 
 type options struct {
 	creds                 credentials.TransportCredentials
-	codec                 baseCodec
+	codec                 Codec
 	cp                    Compressor
 	dc                    Decompressor
 	unaryInt              UnaryServerInterceptor
@@ -183,8 +185,6 @@ func KeepaliveEnforcementPolicy(kep keepalive.EnforcementPolicy) ServerOption {
 }
 
 // CustomCodec returns a ServerOption that sets a codec for message marshaling and unmarshaling.
-//
-// This will override any lookups by content-subtype for Codecs registered with RegisterCodec.
 func CustomCodec(codec Codec) ServerOption {
 	return func(o *options) {
 		o.codec = codec
@@ -330,6 +330,10 @@ func NewServer(opt ...ServerOption) *Server {
 	for _, o := range opt {
 		o(&opts)
 	}
+	if opts.codec == nil {
+		// Set the default codec.
+		opts.codec = protoCodec{}
+	}
 	s := &Server{
 		lis:   make(map[net.Listener]bool),
 		opts:  opts,
@@ -339,6 +343,7 @@ func NewServer(opt ...ServerOption) *Server {
 		done:  make(chan struct{}),
 	}
 	s.cv = sync.NewCond(&s.mu)
+	s.ctx, s.cancel = context.WithCancel(context.Background())
 	if EnableTracing {
 		_, file, line, _ := runtime.Caller(1)
 		s.events = trace.NewEventLog("grpc.Server", fmt.Sprintf("%s:%d", file, line))
@@ -469,23 +474,10 @@ func (s *Server) Serve(lis net.Listener) error {
 	s.printf("serving")
 	s.serve = true
 	if s.lis == nil {
-		// Serve called after Stop or GracefulStop.
 		s.mu.Unlock()
 		lis.Close()
 		return ErrServerStopped
 	}
-
-	s.serveWG.Add(1)
-	defer func() {
-		s.serveWG.Done()
-		select {
-		// Stop or GracefulStop called; block until done and return nil.
-		case <-s.quit:
-			<-s.done
-		default:
-		}
-	}()
-
 	s.lis[lis] = true
 	s.mu.Unlock()
 	defer func() {
@@ -519,39 +511,33 @@ func (s *Server) Serve(lis net.Listener) error {
 				timer := time.NewTimer(tempDelay)
 				select {
 				case <-timer.C:
-				case <-s.quit:
-					timer.Stop()
-					return nil
+				case <-s.ctx.Done():
 				}
+				timer.Stop()
 				continue
 			}
 			s.mu.Lock()
 			s.printf("done serving; Accept = %v", err)
 			s.mu.Unlock()
 
+			// If Stop or GracefulStop is called, block until they are done and return nil
 			select {
 			case <-s.quit:
+				<-s.done
 				return nil
 			default:
 			}
 			return err
 		}
 		tempDelay = 0
-		// Start a new goroutine to deal with rawConn so we don't stall this Accept
-		// loop goroutine.
-		//
-		// Make sure we account for the goroutine so GracefulStop doesn't nil out
-		// s.conns before this conn can be added.
-		s.serveWG.Add(1)
-		go func() {
-			s.handleRawConn(rawConn)
-			s.serveWG.Done()
-		}()
+		// Start a new goroutine to deal with rawConn
+		// so we don't stall this Accept loop goroutine.
+		go s.handleRawConn(rawConn)
 	}
 }
 
-// handleRawConn forks a goroutine to handle a just-accepted connection that
-// has not had any I/O performed on it yet.
+// handleRawConn is run in its own goroutine and handles a just-accepted
+// connection that has not had any I/O performed on it yet.
 func (s *Server) handleRawConn(rawConn net.Conn) {
 	rawConn.SetDeadline(time.Now().Add(s.opts.connectionTimeout))
 	conn, authInfo, err := s.useTransportAuthenticator(rawConn)
@@ -576,28 +562,17 @@ func (s *Server) handleRawConn(rawConn net.Conn) {
 	}
 	s.mu.Unlock()
 
-	var serve func()
-	c := conn.(io.Closer)
 	if s.opts.useHandlerImpl {
-		serve = func() { s.serveUsingHandler(conn) }
+		rawConn.SetDeadline(time.Time{})
+		s.serveUsingHandler(conn)
 	} else {
-		// Finish handshaking (HTTP2)
 		st := s.newHTTP2Transport(conn, authInfo)
 		if st == nil {
 			return
 		}
-		c = st
-		serve = func() { s.serveStreams(st) }
+		rawConn.SetDeadline(time.Time{})
+		s.serveStreams(st)
 	}
-
-	rawConn.SetDeadline(time.Time{})
-	if !s.addConn(c) {
-		return
-	}
-	go func() {
-		serve()
-		s.removeConn(c)
-	}()
 }
 
 // newHTTP2Transport sets up a http/2 transport (using the
@@ -624,10 +599,15 @@ func (s *Server) newHTTP2Transport(c net.Conn, authInfo credentials.AuthInfo) tr
 		grpclog.Warningln("grpc: Server.Serve failed to create ServerTransport: ", err)
 		return nil
 	}
+	if !s.addConn(st) {
+		st.Close()
+		return nil
+	}
 	return st
 }
 
 func (s *Server) serveStreams(st transport.ServerTransport) {
+	defer s.removeConn(st)
 	defer st.Close()
 	var wg sync.WaitGroup
 	st.HandleStreams(func(stream *transport.Stream) {
@@ -661,6 +641,11 @@ var _ http.Handler = (*Server)(nil)
 //
 // conn is the *tls.Conn that's already been authenticated.
 func (s *Server) serveUsingHandler(conn net.Conn) {
+	if !s.addConn(conn) {
+		conn.Close()
+		return
+	}
+	defer s.removeConn(conn)
 	h2s := &http2.Server{
 		MaxConcurrentStreams: s.opts.maxConcurrentStreams,
 	}
@@ -694,12 +679,13 @@ func (s *Server) serveUsingHandler(conn net.Conn) {
 // available through grpc-go's HTTP/2 server, and it is currently EXPERIMENTAL
 // and subject to change.
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	st, err := transport.NewServerHandlerTransport(w, r, s.opts.statsHandler)
+	st, err := transport.NewServerHandlerTransport(w, r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if !s.addConn(st) {
+		st.Close()
 		return
 	}
 	defer s.removeConn(st)
@@ -729,14 +715,8 @@ func (s *Server) traceInfo(st transport.ServerTransport, stream *transport.Strea
 func (s *Server) addConn(c io.Closer) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.conns == nil {
-		c.Close()
+	if s.conns == nil || s.drain {
 		return false
-	}
-	if s.drain {
-		// Transport added after we drained our existing conns: drain it
-		// immediately.
-		c.(transport.ServerTransport).Drain()
 	}
 	s.conns[c] = true
 	return true
@@ -758,7 +738,7 @@ func (s *Server) sendResponse(t transport.ServerTransport, stream *transport.Str
 	if s.opts.statsHandler != nil {
 		outPayload = &stats.OutPayload{}
 	}
-	hdr, data, err := encode(s.getCodec(stream.ContentSubtype()), msg, cp, outPayload, comp)
+	hdr, data, err := encode(s.opts.codec, msg, cp, outPayload, comp)
 	if err != nil {
 		grpclog.Errorln("grpc: server failed to encode response: ", err)
 		return err
@@ -846,7 +826,7 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
 		return err
 	}
 	if err == io.ErrUnexpectedEOF {
-		err = status.Errorf(codes.Internal, io.ErrUnexpectedEOF.Error())
+		err = Errorf(codes.Internal, io.ErrUnexpectedEOF.Error())
 	}
 	if err != nil {
 		if st, ok := status.FromError(err); ok {
@@ -888,13 +868,13 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
 			if dc != nil {
 				req, err = dc.Do(bytes.NewReader(req))
 				if err != nil {
-					return status.Errorf(codes.Internal, err.Error())
+					return Errorf(codes.Internal, err.Error())
 				}
 			} else {
 				tmp, _ := decomp.Decompress(bytes.NewReader(req))
 				req, err = ioutil.ReadAll(tmp)
 				if err != nil {
-					return status.Errorf(codes.Internal, "grpc: failed to decompress the received message %v", err)
+					return Errorf(codes.Internal, "grpc: failed to decompress the received message %v", err)
 				}
 			}
 		}
@@ -903,7 +883,7 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
 			// java implementation.
 			return status.Errorf(codes.ResourceExhausted, "grpc: received message larger than max (%d vs. %d)", len(req), s.opts.maxReceiveMessageSize)
 		}
-		if err := s.getCodec(stream.ContentSubtype()).Unmarshal(req, v); err != nil {
+		if err := s.opts.codec.Unmarshal(req, v); err != nil {
 			return status.Errorf(codes.Internal, "grpc: error unmarshalling request: %v", err)
 		}
 		if inPayload != nil {
@@ -995,7 +975,7 @@ func (s *Server) processStreamingRPC(t transport.ServerTransport, stream *transp
 		t:     t,
 		s:     stream,
 		p:     &parser{r: stream},
-		codec: s.getCodec(stream.ContentSubtype()),
+		codec: s.opts.codec,
 		maxReceiveMessageSize: s.opts.maxReceiveMessageSize,
 		maxSendMessageSize:    s.opts.maxSendMessageSize,
 		trInfo:                trInfo,
@@ -1178,7 +1158,6 @@ func (s *Server) Stop() {
 	})
 
 	defer func() {
-		s.serveWG.Wait()
 		s.doneOnce.Do(func() {
 			close(s.done)
 		})
@@ -1201,6 +1180,7 @@ func (s *Server) Stop() {
 	}
 
 	s.mu.Lock()
+	s.cancel()
 	if s.events != nil {
 		s.events.Finish()
 		s.events = nil
@@ -1223,27 +1203,21 @@ func (s *Server) GracefulStop() {
 	}()
 
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	if s.conns == nil {
-		s.mu.Unlock()
 		return
 	}
 	for lis := range s.lis {
 		lis.Close()
 	}
 	s.lis = nil
+	s.cancel()
 	if !s.drain {
 		for c := range s.conns {
 			c.(transport.ServerTransport).Drain()
 		}
 		s.drain = true
 	}
-
-	// Wait for serving threads to be ready to exit.  Only then can we be sure no
-	// new conns will be created.
-	s.mu.Unlock()
-	s.serveWG.Wait()
-	s.mu.Lock()
-
 	for len(s.conns) != 0 {
 		s.cv.Wait()
 	}
@@ -1252,29 +1226,12 @@ func (s *Server) GracefulStop() {
 		s.events.Finish()
 		s.events = nil
 	}
-	s.mu.Unlock()
 }
 
 func init() {
 	internal.TestingUseHandlerImpl = func(arg interface{}) {
 		arg.(*Server).opts.useHandlerImpl = true
 	}
-}
-
-// contentSubtype must be lowercase
-// cannot return nil
-func (s *Server) getCodec(contentSubtype string) baseCodec {
-	if s.opts.codec != nil {
-		return s.opts.codec
-	}
-	if contentSubtype == "" {
-		return encoding.GetCodec(proto.Name)
-	}
-	codec := encoding.GetCodec(contentSubtype)
-	if codec == nil {
-		return encoding.GetCodec(proto.Name)
-	}
-	return codec
 }
 
 // SetHeader sets the header metadata.
@@ -1289,7 +1246,7 @@ func SetHeader(ctx context.Context, md metadata.MD) error {
 	}
 	stream, ok := transport.StreamFromContext(ctx)
 	if !ok {
-		return status.Errorf(codes.Internal, "grpc: failed to fetch the stream from the context %v", ctx)
+		return Errorf(codes.Internal, "grpc: failed to fetch the stream from the context %v", ctx)
 	}
 	return stream.SetHeader(md)
 }
@@ -1299,7 +1256,7 @@ func SetHeader(ctx context.Context, md metadata.MD) error {
 func SendHeader(ctx context.Context, md metadata.MD) error {
 	stream, ok := transport.StreamFromContext(ctx)
 	if !ok {
-		return status.Errorf(codes.Internal, "grpc: failed to fetch the stream from the context %v", ctx)
+		return Errorf(codes.Internal, "grpc: failed to fetch the stream from the context %v", ctx)
 	}
 	t := stream.ServerTransport()
 	if t == nil {
@@ -1319,7 +1276,7 @@ func SetTrailer(ctx context.Context, md metadata.MD) error {
 	}
 	stream, ok := transport.StreamFromContext(ctx)
 	if !ok {
-		return status.Errorf(codes.Internal, "grpc: failed to fetch the stream from the context %v", ctx)
+		return Errorf(codes.Internal, "grpc: failed to fetch the stream from the context %v", ctx)
 	}
 	return stream.SetTrailer(md)
 }

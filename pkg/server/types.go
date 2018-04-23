@@ -6,9 +6,9 @@ import (
 	"io"
 
 	"git.containerum.net/ch/auth/proto"
-	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/clients"
-	"git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/db"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 )
 
 // UserManager is an interface for server "business logic"
@@ -62,7 +62,7 @@ type UserManager interface {
 // Services is a collection of resources needed for server functionality.
 type Services struct {
 	MailClient            clients.MailClient
-	DB                    models.DB
+	DB                    db.DB
 	AuthClient            clients.AuthClientCloser
 	ReCaptchaClient       clients.ReCaptchaClient
 	ResourceServiceClient clients.ResourceServiceClient

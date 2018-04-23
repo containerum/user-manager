@@ -6,7 +6,7 @@ import (
 
 	"errors"
 
-	"git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/server"
 
 	"context"
@@ -52,18 +52,18 @@ func (u *serverImpl) Close() error {
 	return errors.New(strerr)
 }
 
-func (u *serverImpl) checkLinkResendTime(ctx context.Context, link *models.Link) error {
+func (u *serverImpl) checkLinkResendTime(ctx context.Context, link *db.Link) error {
 	if tdiff := time.Now().UTC().Sub(link.SentAt.Time); link.SentAt.Valid && tdiff < 5*time.Minute {
 		return fmt.Errorf(waitForResend, int(tdiff.Seconds()))
 	}
 	return nil
 }
 
-func (u *serverImpl) linkSend(ctx context.Context, link *models.Link) {
+func (u *serverImpl) linkSend(ctx context.Context, link *db.Link) {
 	if link == nil {
 		return
 	}
-	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		err := u.svc.MailClient.SendConfirmationMail(ctx, &mttypes.Recipient{
 			ID:        link.User.ID,
 			Name:      link.User.Login,
@@ -86,7 +86,7 @@ func (u *serverImpl) linkSend(ctx context.Context, link *models.Link) {
 	}
 }
 
-func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp *authProto.CreateTokenResponse, err error) {
+func (u *serverImpl) createTokens(ctx context.Context, user *db.User) (resp *authProto.CreateTokenResponse, err error) {
 	access, err := u.svc.ResourceServiceClient.GetUserAccess(ctx, user)
 	if err != nil {
 		u.log.WithError(err).Warning(resourceAccessGetFailed)
@@ -106,7 +106,7 @@ func (u *serverImpl) createTokens(ctx context.Context, user *models.User) (resp 
 	return
 }
 
-func (u *serverImpl) loginUserChecks(ctx context.Context, user *models.User) error {
+func (u *serverImpl) loginUserChecks(ctx context.Context, user *db.User) error {
 	if user == nil {
 		u.log.Error(cherry.ErrUserNotExist())
 		return cherry.ErrUserNotExist()
@@ -141,7 +141,7 @@ func (u *serverImpl) handleDBError(err error) error {
 	switch err {
 	case nil:
 		return nil
-	case models.ErrTransactionRollback, models.ErrTransactionCommit, models.ErrTransactionBegin:
+	case db.ErrTransactionRollback, db.ErrTransactionCommit, db.ErrTransactionBegin:
 		u.log.WithError(err).Error("db transaction error")
 		return err
 	default:

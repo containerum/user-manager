@@ -8,10 +8,10 @@ import (
 	"fmt"
 
 	"git.containerum.net/ch/auth/proto"
-	umtypes "git.containerum.net/ch/json-types/user-manager"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/clients"
-	"git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/db"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 	"github.com/sirupsen/logrus"
@@ -49,7 +49,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginReques
 			return nil, cherry.ErrInvalidLogin()
 		}
 		if link == nil {
-			err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+			err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 				var err error
 				link, err = tx.CreateLink(ctx, umtypes.LinkTypeConfirm, 24*time.Hour, user)
 				return err
@@ -84,7 +84,7 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneT
 		}
 
 		var tokens *authProto.CreateTokenResponse
-		err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+		err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 			token.IsActive = false
 			token.SessionID = server.MustGetSessionID(ctx)
 			if updErr := tx.UpdateToken(ctx, token); updErr != nil {
@@ -146,7 +146,7 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginR
 	}
 
 	u.log.Info("User is found by email. Binding account")
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.BindAccount(ctx, user, request.Resource, info.UserID)
 	})
 	if err := u.handleDBError(err); err != nil {
@@ -185,7 +185,7 @@ func (u *serverImpl) Logout(ctx context.Context) error {
 			u.log.WithError(cherry.ErrInvalidLink())
 			return cherry.ErrInvalidLink()
 		}
-		err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+		err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 			return u.svc.DB.DeleteToken(ctx, oneTimeToken.Token)
 		})
 		if err = u.handleDBError(err); err != nil {

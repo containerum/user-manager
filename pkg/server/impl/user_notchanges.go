@@ -5,9 +5,9 @@ import (
 
 	"time"
 
-	umtypes "git.containerum.net/ch/json-types/user-manager"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
-	"git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/db"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
 )
 
@@ -261,7 +261,7 @@ func (u *serverImpl) LinkResend(ctx context.Context, request umtypes.UserLogin) 
 		return cherry.ErrUnableResendLink()
 	}
 	if link == nil {
-		err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+		err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 			var err error
 			link, err = tx.CreateLink(ctx, umtypes.LinkTypeConfirm, 24*time.Hour, user)
 			return err

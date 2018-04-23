@@ -1,4 +1,4 @@
-package models
+package db
 
 import (
 	"time"
@@ -11,7 +11,7 @@ import (
 
 	"errors"
 
-	umtypes "git.containerum.net/ch/json-types/user-manager"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 	"github.com/lib/pq"
 )
 

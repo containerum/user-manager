@@ -5,10 +5,10 @@ import (
 
 	"fmt"
 
-	umtypes "git.containerum.net/ch/json-types/user-manager"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/clients"
-	"git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/db"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"github.com/sirupsen/logrus"
 )
@@ -41,7 +41,7 @@ func (u *serverImpl) AddBoundAccount(ctx context.Context, request umtypes.OAuthL
 		return cherry.ErrUnableBindAccount()
 	}
 
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.BindAccount(ctx, user, umtypes.OAuthResource(request.Resource), info.UserID)
 	})
 	if err := u.handleDBError(err); err != nil {
@@ -66,7 +66,7 @@ func (u *serverImpl) GetBoundAccounts(ctx context.Context) (map[string]string, e
 		return nil, err
 	}
 
-	var accounts *models.Accounts
+	var accounts *db.Accounts
 	accounts, err = u.svc.DB.GetUserBoundAccounts(ctx, user)
 	if err != nil {
 		u.log.WithError(err)
@@ -106,7 +106,7 @@ func (u *serverImpl) DeleteBoundAccount(ctx context.Context, request umtypes.Bou
 		return err
 	}
 
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.DeleteBoundAccount(ctx, user, umtypes.OAuthResource(request.Resource))
 	})
 	if err := u.handleDBError(err); err != nil {

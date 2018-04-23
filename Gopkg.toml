@@ -12,10 +12,6 @@
   name = "git.containerum.net/ch/auth"
 
 [[constraint]]
-  branch = "master"
-  name = "git.containerum.net/ch/utils"
-
-[[constraint]]
   name = "github.com/gin-gonic/gin"
   version = "1.2.0"
 
