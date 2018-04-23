@@ -5,17 +5,16 @@
   branch = "develop"
   name = "git.containerum.net/ch/auth"
   packages = ["proto"]
-  revision = "ebda5563c0496e82523f17755cda8b73c33104da"
+  revision = "065ceb791be4bf9208a89d42b41f17847d5e4d3a"
 
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/json-types"
   packages = [
     "mail-templater",
-    "misc",
     "user-manager"
   ]
-  revision = "2b7a55bc8ebcc50ddcea49df46e9907c02955d18"
+  revision = "041a989c67953d829255c2fb10985b9bc1b25e51"
 
 [[projects]]
   name = "git.containerum.net/ch/kube-client"
@@ -25,14 +24,17 @@
     "pkg/cherry/adaptors/gonic",
     "pkg/cherry/user-manager"
   ]
-  revision = "09a5775c1583053a2a4770025f8f8ffcf795e163"
-  version = "v0.2.4"
+  revision = "ecf5ddce42d2d81eb3517babd5fe427eceb898cc"
+  version = "v0.2.6"
 
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/utils"
-  packages = ["."]
-  revision = "9e2da5343a462956ff0baf54aaa56f62f9321250"
+  packages = [
+    "httputil",
+    "sqlxutil"
+  ]
+  revision = "0c31c414efa017dc1932f5e663dba8f00b3dcfe9"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -68,8 +70,8 @@
     ".",
     "currency"
   ]
-  revision = "e4cbcb5d0652150d40ad0646651076b6bd2be4f6"
-  version = "v0.11.2"
+  revision = "f63010822830b6fe52288ee52d5a1151088ce039"
+  version = "v0.12.1"
 
 [[projects]]
   name = "github.com/go-playground/universal-translator"
@@ -90,7 +92,7 @@
     "ptypes/struct",
     "ptypes/timestamp"
   ]
-  revision = "bbd03ef6da3a115852eaf24c8a1c46aeb39aa175"
+  revision = "e09c5db296004fbe3f74490e84dcd62c3c5ddb1b"
 
 [[projects]]
   name = "github.com/google/uuid"
@@ -115,7 +117,7 @@
     "tags",
     "tags/logrus"
   ]
-  revision = "eb23b08d08bbe930113a6512a7a829050341448c"
+  revision = "bc175326149c6c87ca6e2b9fe58cf6d2aa1036cd"
 
 [[projects]]
   branch = "master"
@@ -132,7 +134,7 @@
     "json/scanner",
     "json/token"
   ]
-  revision = "23c074d0eceb2b8a5bfdbb271ab780cde70f05a8"
+  revision = "ef8a98b0bbce4a65b5aa4c368430a80ddc533168"
 
 [[projects]]
   branch = "master"
@@ -141,7 +143,7 @@
     ".",
     "reflectx"
   ]
-  revision = "cf35089a197953c69420c8d0cecda90809764b1d"
+  revision = "2aeb6a910c2b94f2d5eb53d9895d80e27264ec41"
 
 [[projects]]
   name = "github.com/json-iterator/go"
@@ -156,7 +158,7 @@
     ".",
     "oid"
   ]
-  revision = "b2004221932bd6b13167ef654c81cffac36f7537"
+  revision = "d34b9ff171c21ad295489235aec8b6626023cd04"
 
 [[projects]]
   name = "github.com/magiconair/properties"
@@ -224,8 +226,8 @@
     ".",
     "mem"
   ]
-  revision = "bb8f1927f2a9d3ab41c9340aa034f6b803f4359c"
-  version = "v1.0.2"
+  revision = "63644898a8da0bc22138abf860edaf5277b6102e"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/spf13/cast"
@@ -242,8 +244,8 @@
 [[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
-  revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
-  version = "v1.0.0"
+  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/spf13/viper"
@@ -254,8 +256,8 @@
 [[projects]]
   name = "github.com/ugorji/go"
   packages = ["codec"]
-  revision = "9831f2c3ac1068a78f50999a30db84270f647af6"
-  version = "v1.1"
+  revision = "b4c50a2b199d93b13dc15e78929cfb23bfdf21ab"
+  version = "v1.1.1"
 
 [[projects]]
   branch = "master"
@@ -264,13 +266,14 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "c3a3ad6d03f7a915c0f7e194b7152974bb73d287"
+  revision = "e73bf333ef8920dbb52ad18d4bd38ad9d9bc76d7"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = [
     "context",
+    "http/httpguts",
     "http2",
     "http2/hpack",
     "idna",
@@ -279,7 +282,7 @@
     "publicsuffix",
     "trace"
   ]
-  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
+  revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
 
 [[projects]]
   branch = "master"
@@ -288,7 +291,7 @@
     "unix",
     "windows"
   ]
-  revision = "d8e400bc7db4870d786864138af681469693d18c"
+  revision = "79b0c6888797020a994db17c8510466c72fe75d9"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -315,20 +318,18 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "f8c8703595236ae70fdf8789ecb656ea0bcdcf46"
+  revision = "7fd901a49ba6a7f87732eb344f6e3c5b19d1b200"
 
 [[projects]]
   name = "google.golang.org/grpc"
   packages = [
     ".",
     "balancer",
-    "balancer/base",
     "balancer/roundrobin",
     "codes",
     "connectivity",
     "credentials",
     "encoding",
-    "encoding/proto",
     "grpclb/grpc_lb_v1/messages",
     "grpclog",
     "internal",
@@ -344,8 +345,8 @@
     "tap",
     "transport"
   ]
-  revision = "8e4536a86ab602859c20df5ebfd0bd4228d08655"
-  version = "v1.10.0"
+  revision = "e687fa4e6424368ece6e4fe727cea2c806a0fcb4"
+  version = "v1.8.2"
 
 [[projects]]
   name = "gopkg.in/go-playground/validator.v8"
@@ -356,24 +357,24 @@
 [[projects]]
   name = "gopkg.in/go-playground/validator.v9"
   packages = ["."]
-  revision = "8ce234ff024d85b3848e485decba806385d6e276"
-  version = "v9.13.0"
+  revision = "14984d91328f9612b58443cbdf4a077d4fd71091"
+  version = "v9.15.0"
 
 [[projects]]
   name = "gopkg.in/resty.v1"
   packages = ["."]
-  revision = "65798e030a35b911602b4d1d743d6f50ac93b665"
-  version = "v1.3"
+  revision = "f8815663de1e64d57cdd4ee9e2b2fa96977a030e"
+  version = "v1.4"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
-  revision = "7f97868eec74b32b0982dd158a51a446d1da7eb5"
-  version = "v2.1.1"
+  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
+  version = "v2.2.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "05f7c4459abcf37be3229ce43eb5135cd64d4bb5cfd92f662b224b5ff2ae4133"
+  inputs-digest = "3b6574cc78a87a2ca55e8e25e0b1052458981e52ce807593f26fae969841e30c"
   solver-name = "gps-cdcl"
   solver-version = 1
