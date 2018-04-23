@@ -30,7 +30,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginReques
 		return resp, cherry.ErrLoginFailed()
 	}
 
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err = u.loginUserChecks(ctx, user); err != nil {
 		return nil, err
 	}
 
@@ -100,9 +100,8 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneT
 			return nil, cherry.ErrLoginFailed()
 		}
 		return tokens, nil
-	} else {
-		return nil, cherry.ErrInvalidLogin()
 	}
+	return nil, cherry.ErrInvalidLogin()
 }
 
 //nolint: gocyclo
