@@ -9,9 +9,9 @@ import (
 
 	"git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	umtypes "git.containerum.net/ch/json-types/user-manager"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
-	"git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/db"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 )
@@ -36,7 +36,7 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 
 	var tokens *authProto.CreateTokenResponse
 
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		user.PasswordHash = utils.GetKey(user.Login, request.NewPassword, user.Salt)
 		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
 			return updErr
@@ -83,8 +83,8 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request umtypes.UserLogi
 		return err
 	}
 
-	var link *models.Link
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	var link *db.Link
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		var err error
 		link, err = tx.CreateLink(ctx, umtypes.LinkTypePwdChange, 24*time.Hour, user)
 		return err
@@ -129,7 +129,7 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 
 	var tokens *authProto.CreateTokenResponse
 
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		link.User.PasswordHash = utils.GetKey(link.User.Login, request.NewPassword, link.User.Salt)
 		if updErr := tx.UpdateUser(ctx, link.User); updErr != nil {
 			return updErr

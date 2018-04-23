@@ -10,8 +10,8 @@ import (
 
 	"git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	umtypes "git.containerum.net/ch/json-types/user-manager"
-	"git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/db"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 	"git.containerum.net/ch/user-manager/pkg/validation"
@@ -53,7 +53,7 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterReq
 
 	reactivatingOldUser := false
 
-	newUser := &models.User{}
+	newUser := &db.User{}
 
 	if user != nil {
 		if user.IsDeleted {
@@ -72,7 +72,7 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterReq
 	salt := utils.GenSalt(request.Login, request.Login, request.Login) // compatibility with old client db
 	passwordHash := utils.GetKey(request.Login, request.Password, salt)
 	if !reactivatingOldUser {
-		newUser = &models.User{
+		newUser = &db.User{
 			Login:        request.Login,
 			PasswordHash: passwordHash,
 			Salt:         salt,
@@ -85,15 +85,15 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterReq
 		newUser.PasswordHash = passwordHash
 	}
 
-	var link *models.Link
+	var link *db.Link
 
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		if !reactivatingOldUser {
 			if createErr := tx.CreateUser(ctx, newUser); createErr != nil {
 				return err
 			}
 
-			if createErr := tx.CreateProfile(ctx, &models.Profile{
+			if createErr := tx.CreateProfile(ctx, &db.Profile{
 				User:      newUser,
 				Referral:  sql.NullString{String: request.Referral, Valid: true},
 				Access:    sql.NullString{String: "rw", Valid: true},
@@ -146,7 +146,7 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.Link) (*a
 
 	var tokens *authProto.CreateTokenResponse
 
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		link.User.IsActive = true
 		if updErr := tx.UpdateUser(ctx, link.User); updErr != nil {
 			return cherry.ErrUnableActivate()
@@ -202,7 +202,7 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserLogi
 		return cherry.ErrRequestValidationFailed().AddDetails(blacklistAdmin)
 	}
 
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		// TODO: send request to resource manager
 		return tx.BlacklistUser(ctx, user)
 	})
@@ -250,7 +250,7 @@ func (u *serverImpl) UnBlacklistUser(ctx context.Context, request umtypes.UserLo
 		return cherry.ErrUserNotBlacklisted()
 	}
 
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		// TODO: send request to resource manager
 		return tx.UnBlacklistUser(ctx, user)
 	})
@@ -291,7 +291,7 @@ func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interfac
 		return nil, cherry.ErrUnableUpdateUserInfo()
 	}
 
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		profile.Data = newData
 		return tx.UpdateProfile(ctx, profile)
 	})
@@ -328,7 +328,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		return cherry.ErrUserNotExist()
 	}
 
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		user.IsDeleted = true
 		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
 			return updErr
@@ -384,7 +384,7 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 		return cherry.ErrUnableDeleteUser()
 	}
 
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		add, rngErr := utils.SecureRandomString(6)
 		if rngErr != nil {
 			return rngErr

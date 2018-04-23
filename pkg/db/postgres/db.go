@@ -7,8 +7,8 @@ import (
 
 	"context"
 
-	"git.containerum.net/ch/user-manager/pkg/models"
-	chutils "git.containerum.net/ch/utils"
+	"git.containerum.net/ch/user-manager/pkg/db"
+	sqlxutil "git.containerum.net/ch/utils/sqlxutil"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // postgresql database driver
 	"github.com/mattes/migrate"
@@ -28,7 +28,7 @@ type pgDB struct {
 // github.com/jmoiron/sqlx used to to get work with database.
 // Function tries to ping database and apply migrations using github.com/mattes/migrate.
 // If migrations applying failed database goes to dirty state and requires manual conflict resolution.
-func DBConnect(pgConnStr string, migrationsPath string) (models.DB, error) {
+func DBConnect(pgConnStr string, migrationsPath string) (db.DB, error) {
 	log := logrus.WithField("component", "db")
 	log.Infoln("Connecting to ", pgConnStr)
 	conn, err := sqlx.Open("postgres", pgConnStr)
@@ -43,8 +43,8 @@ func DBConnect(pgConnStr string, migrationsPath string) (models.DB, error) {
 	ret := &pgDB{
 		conn: conn,
 		log:  log,
-		qLog: chutils.NewSQLXContextQueryLogger(conn, log),
-		eLog: chutils.NewSQLXContextExecLogger(conn, log),
+		qLog: sqlxutil.NewSQLXContextQueryLogger(conn, log),
+		eLog: sqlxutil.NewSQLXContextExecLogger(conn, log),
 	}
 
 	m, err := ret.migrateUp(migrationsPath)
@@ -57,9 +57,9 @@ func DBConnect(pgConnStr string, migrationsPath string) (models.DB, error) {
 	return ret, nil
 }
 
-func (db *pgDB) migrateUp(path string) (*migrate.Migrate, error) {
-	db.log.Infof("Running migrations")
-	instance, err := migdrv.WithInstance(db.conn.DB, &migdrv.Config{})
+func (pgdb *pgDB) migrateUp(path string) (*migrate.Migrate, error) {
+	pgdb.log.Infof("Running migrations")
+	instance, err := migdrv.WithInstance(pgdb.conn.DB, &migdrv.Config{})
 	if err != nil {
 		return nil, err
 	}
@@ -73,21 +73,21 @@ func (db *pgDB) migrateUp(path string) (*migrate.Migrate, error) {
 	return m, nil
 }
 
-func (db *pgDB) Transactional(ctx context.Context, f func(ctx context.Context, tx models.DB) error) (err error) {
+func (pgdb *pgDB) Transactional(ctx context.Context, f func(ctx context.Context, tx db.DB) error) (err error) {
 	start := time.Now().Format(time.ANSIC)
-	e := db.log.WithField("transaction_at", start)
+	e := pgdb.log.WithField("transaction_at", start)
 	e.Debugln("Begin transaction")
-	tx, txErr := db.conn.Beginx()
+	tx, txErr := pgdb.conn.Beginx()
 	if txErr != nil {
 		e.WithError(txErr).Errorln("Begin transaction error")
-		return models.ErrTransactionBegin
+		return db.ErrTransactionBegin
 	}
 
 	arg := &pgDB{
-		conn: db.conn,
+		conn: pgdb.conn,
 		log:  e,
-		eLog: chutils.NewSQLXContextExecLogger(tx, e),
-		qLog: chutils.NewSQLXContextQueryLogger(tx, e),
+		eLog: sqlxutil.NewSQLXContextExecLogger(tx, e),
+		qLog: sqlxutil.NewSQLXContextQueryLogger(tx, e),
 	}
 
 	// needed for recovering panics in transactions.
@@ -101,7 +101,7 @@ func (db *pgDB) Transactional(ctx context.Context, f func(ctx context.Context, t
 			e.WithError(dberr).Debugln("Rollback transaction")
 			if rerr := tx.Rollback(); rerr != nil {
 				e.WithError(rerr).Errorln("Rollback error")
-				err = models.ErrTransactionRollback
+				err = db.ErrTransactionRollback
 			}
 			err = dberr // forward error with panic description
 			return
@@ -110,13 +110,13 @@ func (db *pgDB) Transactional(ctx context.Context, f func(ctx context.Context, t
 		e.Debugln("Commit transaction")
 		if cerr := tx.Commit(); cerr != nil {
 			e.WithError(cerr).Errorln("Commit error")
-			err = models.ErrTransactionCommit
+			err = db.ErrTransactionCommit
 		}
 	}(f(ctx, arg))
 
 	return
 }
 
-func (db *pgDB) Close() error {
-	return db.conn.Close()
+func (pgdb *pgDB) Close() error {
+	return pgdb.conn.Close()
 }

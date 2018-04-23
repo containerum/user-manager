@@ -3,7 +3,7 @@ package clients
 import (
 	"encoding/json"
 
-	umtypes "git.containerum.net/ch/json-types/user-manager"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 

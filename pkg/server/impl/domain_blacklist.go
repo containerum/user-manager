@@ -3,9 +3,9 @@ package impl
 import (
 	"context"
 
-	umtypes "git.containerum.net/ch/json-types/user-manager"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
-	"git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/db"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"github.com/pkg/errors"
 )
@@ -57,7 +57,7 @@ func (u *serverImpl) AddDomainToBlacklist(ctx context.Context, request umtypes.D
 
 	userID := server.MustGetUserID(ctx)
 
-	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.BlacklistDomain(ctx, request.Domain, userID)
 	})
 	if err := u.handleDBError(err); err != nil {
@@ -71,7 +71,7 @@ func (u *serverImpl) AddDomainToBlacklist(ctx context.Context, request umtypes.D
 func (u *serverImpl) RemoveDomainFromBlacklist(ctx context.Context, domain string) error {
 	u.log.WithField("domain", domain).Info("removing domain from blacklist")
 
-	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx models.DB) error {
+	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.UnBlacklistDomain(ctx, domain)
 	})
 	if err := u.handleDBError(err); err != nil {

@@ -6,10 +6,10 @@ import (
 
 	"strings"
 
-	umtypes "git.containerum.net/ch/json-types/user-manager"
 	ch "git.containerum.net/ch/kube-client/pkg/cherry"
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/validation"

@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"git.containerum.net/ch/user-manager/pkg/clients"
-	"git.containerum.net/ch/user-manager/pkg/models"
-	"git.containerum.net/ch/user-manager/pkg/models/postgres"
+	"git.containerum.net/ch/user-manager/pkg/db"
+	"git.containerum.net/ch/user-manager/pkg/db/postgres"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/server/impl"
 	"github.com/gin-gonic/gin"
@@ -38,7 +38,7 @@ func getListenAddr() string {
 	return viper.GetString("listen_addr")
 }
 
-func getDB() (models.DB, error) {
+func getDB() (db.DB, error) {
 	viper.SetDefault("db", "postgres")
 	viper.SetDefault("migrations_path", "../../pkg/migrations")
 

@@ -7,7 +7,7 @@ import (
 
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"git.containerum.net/ch/kube-client/pkg/cherry"
-	"git.containerum.net/ch/utils"
+	utils "git.containerum.net/ch/utils/httputil"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"

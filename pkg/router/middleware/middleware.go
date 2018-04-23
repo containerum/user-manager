@@ -3,9 +3,9 @@ package middleware
 import (
 	"context"
 
-	umtypes "git.containerum.net/ch/json-types/user-manager"
 	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
 	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"github.com/gin-gonic/gin"
 )

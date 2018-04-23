@@ -3,7 +3,7 @@ package validation
 import (
 	"fmt"
 
-	umtypes "git.containerum.net/ch/json-types/user-manager"
+	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 )
 
 func ValidatePasswordChangeRequest(link umtypes.PasswordRequest) []error {

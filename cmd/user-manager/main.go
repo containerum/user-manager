@@ -11,7 +11,7 @@ import (
 	"os/signal"
 
 	"git.containerum.net/ch/user-manager/pkg/clients"
-	"git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/router"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"github.com/sirupsen/logrus"
@@ -42,7 +42,7 @@ func main() {
 
 	userManager, err := getUserManager(server.Services{
 		MailClient:            getService(getMailClient()).(clients.MailClient),
-		DB:                    getService(getDB()).(models.DB),
+		DB:                    getService(getDB()).(db.DB),
 		AuthClient:            getService(getAuthClient()).(clients.AuthClientCloser),
 		ReCaptchaClient:       getService(getReCaptchaClient()).(clients.ReCaptchaClient),
 		ResourceServiceClient: getService(getResourceServiceClient()).(clients.ResourceServiceClient),
