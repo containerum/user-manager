@@ -106,5 +106,6 @@ func initRoutes(app *gin.Engine) {
 		admin.POST("/user/deactivation", h.AdminUserDeactivate)
 		admin.POST("/user/password/reset", h.AdminResetPassword)
 		admin.POST("/user", h.AdminSetAdmin)
+		admin.DELETE("/user", h.AdminUnsetAdmin)
 	}
 }

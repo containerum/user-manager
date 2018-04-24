@@ -40,6 +40,7 @@ type UserManager interface {
 	AdminDeactivateUser(ctx context.Context, request umtypes.UserLogin) error
 	AdminResetPassword(ctx context.Context, request umtypes.UserLogin) (*umtypes.UserLogin, error)
 	AdminSetAdmin(ctx context.Context, request umtypes.UserLogin) error
+	AdminUnsetAdmin(ctx context.Context, request umtypes.UserLogin) error
 
 	// not changes DB state
 	GetUserLinks(ctx context.Context, userID string) (*umtypes.Links, error)
