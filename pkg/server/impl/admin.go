@@ -222,3 +222,30 @@ func (u *serverImpl) AdminSetAdmin(ctx context.Context, request umtypes.UserLogi
 
 	return nil
 }
+
+func (u *serverImpl) AdminUnsetAdmin(ctx context.Context, request umtypes.UserLogin) error {
+	u.log.Info("removing admin permissions from user (admin)")
+
+	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return cherry.ErrUnableUpdateUserInfo()
+	}
+	if err := u.loginUserChecks(ctx, user); err != nil {
+		return err
+	}
+
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+		user.Role = "user"
+		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
+			return updErr
+		}
+		return nil
+	})
+	if err = u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return cherry.ErrUnableUpdateUserInfo()
+	}
+
+	return nil
+}

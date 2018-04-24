@@ -120,6 +120,31 @@ func AdminSetAdmin(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+func AdminUnsetAdmin(ctx *gin.Context) {
+	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
+	um := *ump
+
+	var request umtypes.UserLogin
+
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		return
+	}
+
+	err := um.AdminUnsetAdmin(ctx.Request.Context(), request)
+	if err != nil {
+		if cherr, ok := err.(*ch.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(cherry.ErrUnableDeleteUser(), ctx)
+		}
+		return
+	}
+
+	ctx.Status(http.StatusAccepted)
+}
+
 func AdminResetPassword(ctx *gin.Context) {
 	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
 	um := *ump
