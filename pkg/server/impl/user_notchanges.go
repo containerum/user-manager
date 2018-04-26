@@ -9,6 +9,7 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
+	"git.containerum.net/ch/utils/httputil"
 )
 
 func (u *serverImpl) GetUserLinks(ctx context.Context, userID string) (*models.Links, error) {
@@ -47,7 +48,7 @@ func (u *serverImpl) GetUserLinks(ctx context.Context, userID string) (*models.L
 }
 
 func (u *serverImpl) GetUserInfo(ctx context.Context) (*models.User, error) {
-	userID := server.MustGetUserID(ctx)
+	userID := httputil.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("get user info")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
 	if err := u.handleDBError(err); err != nil {

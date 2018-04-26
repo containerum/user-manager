@@ -11,9 +11,9 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/clients"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
-	"git.containerum.net/ch/user-manager/pkg/server"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"git.containerum.net/ch/user-manager/pkg/utils"
+	"git.containerum.net/ch/utils/httputil"
 	"github.com/sirupsen/logrus"
 )
 
@@ -86,7 +86,8 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request models.OneTi
 		var tokens *authProto.CreateTokenResponse
 		err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 			token.IsActive = false
-			token.SessionID = server.MustGetSessionID(ctx)
+			//TODO Do something with session ID
+			token.SessionID = ""
 			if updErr := tx.UpdateToken(ctx, token); updErr != nil {
 				return updErr
 			}
@@ -156,9 +157,10 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request models.OAuthLoginRe
 }
 
 func (u *serverImpl) Logout(ctx context.Context) error {
-	userID := server.MustGetUserID(ctx)
-	tokenID := server.MustGetTokenID(ctx)
-	sessionID := server.MustGetSessionID(ctx)
+	userID := httputil.MustGetUserID(ctx)
+	tokenID := httputil.MustGetTokenID(ctx)
+	//TODO Do something with session ID
+	sessionID := ""
 	u.log.WithFields(logrus.Fields{
 		"user_id":    userID,
 		"token_id":   tokenID,

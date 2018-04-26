@@ -17,6 +17,7 @@ import (
 	"git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
+	"git.containerum.net/ch/utils/httputil"
 	"github.com/sirupsen/logrus"
 )
 
@@ -94,14 +95,13 @@ func (u *serverImpl) createTokens(ctx context.Context, user *db.User) (resp *aut
 	}
 
 	resp, err = u.svc.AuthClient.CreateToken(ctx, &authProto.CreateTokenRequest{
-		UserAgent:   server.MustGetUserAgent(ctx),
-		Fingerprint: server.MustGetFingerprint(ctx),
+		Fingerprint: httputil.MustGetFingerprint(ctx),
+		UserAgent:   httputil.MustGetUserAgent(ctx),
 		UserId:      user.ID,
-		UserIp:      server.MustGetClientIP(ctx),
+		UserIp:      httputil.MustGetClientIP(ctx),
 		UserRole:    user.Role,
 		RwAccess:    true,
 		Access:      access,
-		PartTokenId: "00000000-0000-0000-0000-000000000000",
 	})
 	return
 }
@@ -121,7 +121,7 @@ func (u *serverImpl) loginUserChecks(ctx context.Context, user *db.User) error {
 }
 
 func (u *serverImpl) checkReCaptcha(ctx context.Context, clientResponse string) error {
-	remoteIP := server.MustGetClientIP(ctx)
+	remoteIP := httputil.MustGetClientIP(ctx)
 	u.log.WithFields(logrus.Fields{
 		"remote_ip":       remoteIP,
 		"client_response": clientResponse,

@@ -14,8 +14,8 @@ import (
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
-	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/utils"
+	"git.containerum.net/ch/utils/httputil"
 
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"github.com/lib/pq"
@@ -175,7 +175,7 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request models.Link) (*au
 func (u *serverImpl) BlacklistUser(ctx context.Context, request models.UserLogin) error {
 	u.log.WithField("user_id", request.ID).Info("blacklisting user")
 
-	userID := server.MustGetUserID(ctx)
+	userID := httputil.MustGetUserID(ctx)
 	if request.ID == userID {
 		return cherry.ErrRequestValidationFailed().AddDetails(blacklistYourself)
 	}
@@ -264,7 +264,7 @@ func (u *serverImpl) UnBlacklistUser(ctx context.Context, request models.UserLog
 }
 
 func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interface{}) (*models.User, error) {
-	userID := server.MustGetUserID(ctx)
+	userID := httputil.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("updating user profile data")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
 	if err := u.handleDBError(err); err != nil {
@@ -306,7 +306,7 @@ func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interfac
 }
 
 func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
-	userID := server.MustGetUserID(ctx)
+	userID := httputil.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("partially deleting user")
 
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
