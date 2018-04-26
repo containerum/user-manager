@@ -9,14 +9,14 @@ import (
 
 	"git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/db"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
+	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 )
 
-func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.PasswordRequest) (*authProto.CreateTokenResponse, error) {
+func (u *serverImpl) ChangePassword(ctx context.Context, request models.PasswordRequest) (*authProto.CreateTokenResponse, error) {
 	userID := server.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("changing password")
 
@@ -70,7 +70,7 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request umtypes.Passwor
 	return tokens, nil
 }
 
-func (u *serverImpl) ResetPassword(ctx context.Context, request umtypes.UserLogin) error {
+func (u *serverImpl) ResetPassword(ctx context.Context, request models.UserLogin) error {
 	u.log.WithField("login", request.Login).Info("resetting password")
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)
 
@@ -85,7 +85,7 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request umtypes.UserLogi
 	var link *db.Link
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		var err error
-		link, err = tx.CreateLink(ctx, umtypes.LinkTypePwdChange, 24*time.Hour, user)
+		link, err = tx.CreateLink(ctx, models.LinkTypePwdChange, 24*time.Hour, user)
 		return err
 	})
 	if err := u.handleDBError(err); err != nil {
@@ -108,7 +108,7 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request umtypes.UserLogi
 	return nil
 }
 
-func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.PasswordRequest) (*authProto.CreateTokenResponse, error) {
+func (u *serverImpl) RestorePassword(ctx context.Context, request models.PasswordRequest) (*authProto.CreateTokenResponse, error) {
 	u.log.Info("restoring password")
 	u.log.WithField("link", request.Link).Debug("restoring password details")
 
@@ -121,7 +121,7 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request umtypes.Passwo
 		u.log.WithError(fmt.Errorf(linkNotFound, request.Link))
 		return nil, cherry.ErrInvalidLink().AddDetailsErr(fmt.Errorf(linkNotFound, request.Link))
 	}
-	if link.Type != umtypes.LinkTypePwdChange {
+	if link.Type != models.LinkTypePwdChange {
 		u.log.WithError(fmt.Errorf(linkNotFound, request.Link))
 		return nil, cherry.ErrInvalidLink().AddDetailsErr(fmt.Errorf(linkNotFound, request.Link))
 	}

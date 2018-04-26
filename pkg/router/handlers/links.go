@@ -3,41 +3,40 @@ package handlers
 import (
 	"net/http"
 
-	ch "git.containerum.net/ch/kube-client/pkg/cherry"
-	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/cherry"
+	"git.containerum.net/ch/cherry/adaptors/gonic"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"github.com/gin-gonic/gin"
 
+	"git.containerum.net/ch/user-manager/pkg/umErrors"
 	"git.containerum.net/ch/user-manager/pkg/validation"
 	"github.com/gin-gonic/gin/binding"
 )
 
 func LinkResendHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	var request umtypes.UserLogin
+	var request models.UserLogin
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateUserLogin(request)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	err := um.LinkResend(ctx.Request.Context(), request)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableResendLink(), ctx)
+			gonic.Gonic(umErrors.ErrUnableResendLink(), ctx)
 		}
 		return
 	}
@@ -46,28 +45,27 @@ func LinkResendHandler(ctx *gin.Context) {
 }
 
 func ActivateHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	var request umtypes.Link
+	var request models.Link
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateLink(request)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	tokens, err := um.ActivateUser(ctx.Request.Context(), request)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableActivate(), ctx)
+			gonic.Gonic(umErrors.ErrUnableActivate(), ctx)
 		}
 		return
 	}
@@ -76,16 +74,15 @@ func ActivateHandler(ctx *gin.Context) {
 }
 
 func LinksGetHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetUserLinks(ctx.Request.Context(), ctx.Param("user_id"))
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetUserInfo(), ctx)
+			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
 		}
 		return
 	}

@@ -3,12 +3,12 @@ package validation
 import (
 	"fmt"
 
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"github.com/goware/emailx"
 )
 
 //ValidateUserCreateRequest validates simple send mail request
-func ValidateUserCreateRequest(user umtypes.RegisterRequest) []error {
+func ValidateUserCreateRequest(user models.RegisterRequest) []error {
 	errs := []error{}
 	if user.Login == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Login"))
@@ -30,7 +30,7 @@ func ValidateUserCreateRequest(user umtypes.RegisterRequest) []error {
 	return nil
 }
 
-func ValidateUserID(user umtypes.UserLogin) []error {
+func ValidateUserID(user models.UserLogin) []error {
 	errs := []error{}
 	if user.ID == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "ID"))
@@ -45,7 +45,7 @@ func ValidateUserID(user umtypes.UserLogin) []error {
 	return nil
 }
 
-func ValidateUserLogin(user umtypes.UserLogin) []error {
+func ValidateUserLogin(user models.UserLogin) []error {
 	errs := []error{}
 	if user.Login == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Login"))

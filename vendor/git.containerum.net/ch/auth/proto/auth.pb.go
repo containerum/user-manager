@@ -51,6 +51,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
+// swagger:ignore
 type CreateTokenRequest struct {
 	UserAgent   string `protobuf:"bytes,1,opt,name=user_agent,json=userAgent" json:"user_agent,omitempty"`
 	Fingerprint string `protobuf:"bytes,2,opt,name=fingerprint" json:"fingerprint,omitempty"`
@@ -61,8 +62,8 @@ type CreateTokenRequest struct {
 	UserRole string           `protobuf:"bytes,5,opt,name=user_role,json=userRole" json:"user_role,omitempty"`
 	RwAccess bool             `protobuf:"varint,6,opt,name=rw_access,json=rwAccess" json:"rw_access,omitempty"`
 	Access   *ResourcesAccess `protobuf:"bytes,7,opt,name=access" json:"access,omitempty"`
-	// @inject_tag: binding:"uuid"
-	PartTokenId string `protobuf:"bytes,8,opt,name=part_token_id,json=partTokenId" json:"part_token_id,omitempty" binding:"uuid"`
+	// @inject_tag: binding:"omitempty,uuid"
+	PartTokenId string `protobuf:"bytes,8,opt,name=part_token_id,json=partTokenId" json:"part_token_id,omitempty" binding:"omitempty,uuid"`
 }
 
 func (m *CreateTokenRequest) Reset()                    { *m = CreateTokenRequest{} }
@@ -126,6 +127,9 @@ func (m *CreateTokenRequest) GetPartTokenId() string {
 	return ""
 }
 
+// CreateTokenResponse contains access and refresh token.
+//
+// swagger:model
 type CreateTokenResponse struct {
 	AccessToken  string `protobuf:"bytes,1,opt,name=access_token,json=accessToken" json:"access_token,omitempty"`
 	RefreshToken string `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken" json:"refresh_token,omitempty"`
@@ -150,6 +154,7 @@ func (m *CreateTokenResponse) GetRefreshToken() string {
 	return ""
 }
 
+// swagger:ignore
 type CheckTokenRequest struct {
 	AccessToken string `protobuf:"bytes,1,opt,name=access_token,json=accessToken" json:"access_token,omitempty"`
 	UserAgent   string `protobuf:"bytes,2,opt,name=user_agent,json=userAgent" json:"user_agent,omitempty"`
@@ -191,6 +196,7 @@ func (m *CheckTokenRequest) GetUserIp() string {
 	return ""
 }
 
+// swagger:ignore
 type CheckTokenResponse struct {
 	Access *ResourcesAccess `protobuf:"bytes,1,opt,name=access" json:"access,omitempty"`
 	// @inject_tag: binding:"uuid"
@@ -198,8 +204,8 @@ type CheckTokenResponse struct {
 	UserRole string `protobuf:"bytes,3,opt,name=user_role,json=userRole" json:"user_role,omitempty"`
 	// @inject_tag: binding:"uuid"
 	TokenId string `protobuf:"bytes,4,opt,name=token_id,json=tokenId" json:"token_id,omitempty" binding:"uuid"`
-	// @inject_tag: binding:"uuid"
-	PartTokenId string `protobuf:"bytes,5,opt,name=part_token_id,json=partTokenId" json:"part_token_id,omitempty" binding:"uuid"`
+	// @inject_tag: binding:"omitempty,uuid"
+	PartTokenId string `protobuf:"bytes,5,opt,name=part_token_id,json=partTokenId" json:"part_token_id,omitempty" binding:"omitempty,uuid"`
 }
 
 func (m *CheckTokenResponse) Reset()                    { *m = CheckTokenResponse{} }
@@ -242,6 +248,7 @@ func (m *CheckTokenResponse) GetPartTokenId() string {
 	return ""
 }
 
+// swagger:ignore
 type ExtendTokenRequest struct {
 	RefreshToken string `protobuf:"bytes,1,opt,name=refresh_token,json=refreshToken" json:"refresh_token,omitempty"`
 	Fingerprint  string `protobuf:"bytes,2,opt,name=fingerprint" json:"fingerprint,omitempty"`
@@ -266,6 +273,9 @@ func (m *ExtendTokenRequest) GetFingerprint() string {
 	return ""
 }
 
+// ExtendTokenResponse contains new access and refresh tokens
+//
+// swagger:model
 type ExtendTokenResponse struct {
 	AccessToken  string `protobuf:"bytes,1,opt,name=access_token,json=accessToken" json:"access_token,omitempty"`
 	RefreshToken string `protobuf:"bytes,2,opt,name=refresh_token,json=refreshToken" json:"refresh_token,omitempty"`
@@ -290,6 +300,9 @@ func (m *ExtendTokenResponse) GetRefreshToken() string {
 	return ""
 }
 
+// UpdateAccessRequestElement describes element for updating user resources accesses.
+//
+// swagger:model
 type UpdateAccessRequestElement struct {
 	// @inject_tag: binding:"uuid"
 	UserId string           `protobuf:"bytes,1,opt,name=user_id,json=userId" json:"user_id,omitempty" binding:"uuid"`
@@ -315,6 +328,9 @@ func (m *UpdateAccessRequestElement) GetAccess() *ResourcesAccess {
 	return nil
 }
 
+// UpdateAccessRequest describes request for updating user resources accesses.
+//
+// swagger:model
 type UpdateAccessRequest struct {
 	Users []*UpdateAccessRequestElement `protobuf:"bytes,1,rep,name=users" json:"users,omitempty"`
 }
@@ -331,6 +347,7 @@ func (m *UpdateAccessRequest) GetUsers() []*UpdateAccessRequestElement {
 	return nil
 }
 
+// swagger:ignore
 type GetUserTokensRequest struct {
 	// @inject_tag: binding:"uuid"
 	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId" json:"user_id,omitempty" binding:"uuid"`
@@ -348,6 +365,9 @@ func (m *GetUserTokensRequest) GetUserId() string {
 	return ""
 }
 
+// GetUserTokensResponse contains user tokens
+//
+// swagger:model
 type GetUserTokensResponse struct {
 	Tokens []*StoredTokenForUser `protobuf:"bytes,1,rep,name=tokens" json:"tokens,omitempty"`
 }
@@ -364,6 +384,7 @@ func (m *GetUserTokensResponse) GetTokens() []*StoredTokenForUser {
 	return nil
 }
 
+// swagger:ignore
 type DeleteTokenRequest struct {
 	// @inject_tag: binding:"uuid"
 	TokenId string `protobuf:"bytes,1,opt,name=token_id,json=tokenId" json:"token_id,omitempty" binding:"uuid"`
@@ -390,6 +411,7 @@ func (m *DeleteTokenRequest) GetUserId() string {
 	return ""
 }
 
+// swagger:ignore
 type DeleteUserTokensRequest struct {
 	// @inject_tag: binding:"uuid"
 	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId" json:"user_id,omitempty" binding:"uuid"`
@@ -407,6 +429,7 @@ func (m *DeleteUserTokensRequest) GetUserId() string {
 	return ""
 }
 
+// swagger:ignore
 type AccessTokenByIDRequest struct {
 	// @inject_tag: binding:"uuid"
 	TokenId  string `protobuf:"bytes,1,opt,name=token_id,json=tokenId" json:"token_id,omitempty" binding:"uuid"`
@@ -432,6 +455,9 @@ func (m *AccessTokenByIDRequest) GetUserRole() string {
 	return ""
 }
 
+// AccessTokenByIDResponse contains access token get by ID.
+//
+// swagger:model
 type AccessTokenByIDResponse struct {
 	AccessToken string `protobuf:"bytes,1,opt,name=access_token,json=accessToken" json:"access_token,omitempty"`
 }

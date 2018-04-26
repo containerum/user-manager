@@ -3,13 +3,13 @@ package clients
 import (
 	"encoding/json"
 
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 
 	"time"
 
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
+	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"github.com/json-iterator/go"
 	"gopkg.in/resty.v1"
 )
@@ -23,14 +23,14 @@ type OAuthUserInfo struct {
 // OAuthClient is an interface to 3rd-party resource for fetching information needed for login
 type OAuthClient interface {
 	GetUserInfo(ctx context.Context, authCode string) (*OAuthUserInfo, error)
-	GetResource() umtypes.OAuthResource
+	GetResource() models.OAuthResource
 }
 
-var oAuthClients = make(map[umtypes.OAuthResource]OAuthClient)
+var oAuthClients = make(map[models.OAuthResource]OAuthClient)
 
 // OAuthClientByResource returns oauth client for service by it`s name.
 // Client for resource must be registered using RegisterOAuthClient
-func OAuthClientByResource(resource umtypes.OAuthResource) (client OAuthClient, exists bool) {
+func OAuthClientByResource(resource models.OAuthResource) (client OAuthClient, exists bool) {
 	client, exists = oAuthClients[resource]
 	return
 }
@@ -70,8 +70,8 @@ func NewGithubOAuthClient() OAuthClient {
 	}
 }
 
-func (gh *githubOAuthClient) GetResource() umtypes.OAuthResource {
-	return umtypes.GitHubOAuth
+func (gh *githubOAuthClient) GetResource() models.OAuthResource {
+	return models.GitHubOAuth
 }
 
 type githubError struct {
@@ -133,8 +133,8 @@ func NewGoogleOAuthClient() OAuthClient {
 	}
 }
 
-func (gc *googleOAuthClient) GetResource() umtypes.OAuthResource {
-	return umtypes.GoogleOAuth
+func (gc *googleOAuthClient) GetResource() models.OAuthResource {
+	return models.GoogleOAuth
 }
 
 type googleError struct {
@@ -206,8 +206,8 @@ func NewFacebookOAuthClient() OAuthClient {
 	}
 }
 
-func (fb *facebookOAuthClient) GetResource() umtypes.OAuthResource {
-	return umtypes.FacebookOAuth
+func (fb *facebookOAuthClient) GetResource() models.OAuthResource {
+	return models.FacebookOAuth
 }
 
 type facebookError struct {

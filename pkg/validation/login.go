@@ -3,10 +3,10 @@ package validation
 import (
 	"fmt"
 
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 )
 
-func ValidateLoginRequest(login umtypes.LoginRequest) []error {
+func ValidateLoginRequest(login models.LoginRequest) []error {
 	errs := []error{}
 	if login.Login == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Login"))
@@ -20,7 +20,7 @@ func ValidateLoginRequest(login umtypes.LoginRequest) []error {
 	return nil
 }
 
-func ValidateOAuthLoginRequest(login umtypes.OAuthLoginRequest) []error {
+func ValidateOAuthLoginRequest(login models.OAuthLoginRequest) []error {
 	errs := []error{}
 	if login.Resource == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Resource"))
@@ -35,7 +35,7 @@ func ValidateOAuthLoginRequest(login umtypes.OAuthLoginRequest) []error {
 }
 
 //ValidateLink validates simple send mail request
-func ValidateLink(link umtypes.Link) []error {
+func ValidateLink(link models.Link) []error {
 	errs := []error{}
 	if link.Link == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Link"))

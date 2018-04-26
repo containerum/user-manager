@@ -3,7 +3,7 @@ package httputil
 import (
 	"github.com/gin-gonic/gin"
 
-	umtypes "git.containerum.net/ch/json-types/user-manager"
+	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
 )
 
 type Masker interface {
@@ -11,7 +11,7 @@ type Masker interface {
 }
 
 func MaskForNonAdmin(ctx *gin.Context, m Masker) {
-	if ctx.GetHeader(umtypes.UserRoleHeader) != "admin" {
+	if ctx.GetHeader(headers.UserRoleXHeader) != "admin" {
 		m.Mask()
 	}
 }

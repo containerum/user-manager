@@ -8,16 +8,16 @@ import (
 	"fmt"
 
 	"git.containerum.net/ch/auth/proto"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/clients"
 	"git.containerum.net/ch/user-manager/pkg/db"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
+	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 	"github.com/sirupsen/logrus"
 )
 
-func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginRequest) (resp *authProto.CreateTokenResponse, err error) {
+func (u *serverImpl) BasicLogin(ctx context.Context, request models.LoginRequest) (resp *authProto.CreateTokenResponse, err error) {
 	u.log.Infoln("Basic login")
 	u.log.WithFields(logrus.Fields{
 		"username": request.Login,
@@ -43,7 +43,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginReques
 	}
 
 	if !user.IsActive {
-		link, err := u.svc.DB.GetLinkForUser(ctx, umtypes.LinkTypeConfirm, user)
+		link, err := u.svc.DB.GetLinkForUser(ctx, models.LinkTypeConfirm, user)
 		if err != nil {
 			u.log.WithError(err)
 			return nil, cherry.ErrInvalidLogin()
@@ -51,7 +51,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginReques
 		if link == nil {
 			err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 				var err error
-				link, err = tx.CreateLink(ctx, umtypes.LinkTypeConfirm, 24*time.Hour, user)
+				link, err = tx.CreateLink(ctx, models.LinkTypeConfirm, 24*time.Hour, user)
 				return err
 			})
 			if err := u.handleDBError(err); err != nil {
@@ -70,7 +70,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request umtypes.LoginReques
 	return
 }
 
-func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneTimeTokenLoginRequest) (*authProto.CreateTokenResponse, error) {
+func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request models.OneTimeTokenLoginRequest) (*authProto.CreateTokenResponse, error) {
 	u.log.Info("One-time token login")
 	u.log.WithField("token", request.Token).Debug("One-time token login details")
 	token, err := u.svc.DB.GetTokenObject(ctx, request.Token)
@@ -105,7 +105,7 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request umtypes.OneT
 }
 
 //nolint: gocyclo
-func (u *serverImpl) OAuthLogin(ctx context.Context, request umtypes.OAuthLoginRequest) (*authProto.CreateTokenResponse, error) {
+func (u *serverImpl) OAuthLogin(ctx context.Context, request models.OAuthLoginRequest) (*authProto.CreateTokenResponse, error) {
 	u.log.WithFields(logrus.Fields{
 		"resource": request.Resource,
 	}).Infoln("OAuth login")

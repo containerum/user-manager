@@ -16,7 +16,7 @@ import (
 
 	"git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
+	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"github.com/sirupsen/logrus"
 )
 

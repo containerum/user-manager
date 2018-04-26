@@ -1,0 +1,239 @@
+# File for noice errors generation
+
+Name = "umErrors"
+SID = "UserManager"
+
+# errors
+[[error]]
+    Name = "ErrAdminRequired"
+    StatusHTTP = 403
+    Message = "Admin access required"
+    Comment = "User is not admin and has no permissions"
+    Kind = 1
+
+[[error]]
+    Name = "ErrPermissionsError"
+    StatusHTTP = 403
+    Message = "Unable to verify permissions"
+    Comment = "Unable to verify if user has required permissions, so don't give access"
+    Kind = 2
+
+[[error]]
+    Name = "ErrRequiredHeadersNotProvided"
+    StatusHTTP = 400
+    Message = "Required headers not provided"
+    Comment = "Required headers is not found in context"
+    Kind = 3
+
+[[error]]
+    Name = "ErrRequestValidationFailed"
+    StatusHTTP = 400
+    Message = "Request validation failed"
+    Comment = "Validation error when parsing request"
+    Kind = 4
+
+[[error]]
+    Name = "ErrInvalidRecaptcha"
+    StatusHTTP = 403
+    Message = "Recaptcha validation failed"
+    Comment = "Invalid Recaptcha. Or you are a robot"
+    Kind = 5
+
+[[error]]
+    Name = "ErrInvalidLogin"
+    StatusHTTP = 403
+    Message = "Invalid login credentials"
+    Comment = "Invalid login/password/token"
+    Kind = 6
+
+[[error]]
+    Name = "ErrLoginFailed"
+    StatusHTTP = 500
+    Message = "Login failed"
+    Comment = "Unable to login"
+    Kind = 7
+
+[[error]]
+    Name = "ErrLogoutFailed"
+    StatusHTTP = 500
+    Message = "Logout failed"
+    Comment = "Unable to logout"
+    Kind = 8
+
+[[error]]
+    Name = "ErrNotActivated"
+    StatusHTTP = 403
+    Message = "Account is not activated"
+    Comment = "User should activate his account first"
+    Kind = 9
+
+[[error]]
+    Name = "ErrUnableActivate"
+    StatusHTTP = 500
+    Message = "Unable to activate user account"
+    Kind = 10
+
+
+[[error]]
+    Name = "ErrUnableResetPassword"
+    StatusHTTP = 500
+    Message = "Unable to reset password"
+    Kind = 11
+
+
+[[error]]
+    Name = "ErrUnableChangePassword"
+    StatusHTTP = 500
+    Message = "Unable to change password"
+    Kind = 12
+
+[[error]]
+    Name = "ErrUnableGetUsersList"
+    StatusHTTP = 500
+    Message = "Unable to get users list"
+    Kind = 13
+
+[[error]]
+    Name = "ErrUnableGetUserInfo"
+    StatusHTTP = 500
+    Message = "Unable to get user"
+    Kind = 14
+
+[[error]]
+    Name = "ErrUnableCreateUser"
+    StatusHTTP = 500
+    Message = "Unable to create user"
+    Kind = 15
+
+[[error]]
+    Name = "ErrUnableUpdateUserInfo"
+    StatusHTTP = 500
+    Message = "Unable to update user"
+    Kind = 16
+
+[[error]]
+    Name = "ErrUnableDeleteUser"
+    StatusHTTP = 500
+    Message = "Unable to delete user"
+    Kind = 17
+
+[[error]]
+    Name = "ErrUserAlreadyExists"
+    StatusHTTP = 409
+    Message = "User with such credentials already exists"
+    Kind = 18
+
+[[error]]
+    Name = "ErrUserNotExist"
+    StatusHTTP = 404
+    Message = "User with such credentials doesn't exist"
+    Kind = 19
+
+[[error]]
+    Name = "ErrUnableGetUserLinks"
+    StatusHTTP = 500
+    Message = "Unable to get user links"
+    Kind = 20
+
+#messages errors
+[[error]]
+    Name = "ErrUnableBindAccount"
+    StatusHTTP = 500
+    Message = "Unable to bind account"
+    Kind = 21
+
+[[error]]
+    Name = "ErrUnableUnbindAccount"
+    StatusHTTP = 500
+    Message = "Unable to unbind account"
+    Kind = 22
+
+[[error]]
+    Name = "ErrUnableBlacklistUser"
+    StatusHTTP = 500
+    Message = "Unable to add user to blacklist"
+    Kind = 23
+
+[[error]]
+    Name = "ErrUnableUnblacklistUser"
+    StatusHTTP = 500
+    Message = "Unable to remove user from blacklist"
+    Kind = 24
+
+[[error]]
+    Name = "ErrUserAlreadyBlacklisted"
+    StatusHTTP = 409
+    Message = "User is already blacklisted"
+    Kind = 25
+
+[[error]]
+    Name = "ErrUserNotBlacklisted"
+    StatusHTTP = 404
+    Message = "User is not blacklisted"
+    Kind = 26
+
+[[error]]
+    Name = "ErrUnableBlacklistDomain"
+    StatusHTTP = 500
+    Message = "User is already blacklisted"
+    Kind = 27
+
+[[error]]
+    Name = "ErrUnableUnblacklistDomain"
+    StatusHTTP = 500
+    Message = "User is not blacklisted"
+    Kind = 28
+
+[[error]]
+    Name = "ErrDomainAlreadyBlacklisted"
+    StatusHTTP = 409
+    Message = "User is already blacklisted"
+    Kind = 29
+
+[[error]]
+    Name = "ErrDomainNotBlacklisted"
+    StatusHTTP = 404
+    Message = "User is not blacklisted"
+    Kind = 30
+
+[[error]]
+    Name = "ErrUnableResendLink"
+    StatusHTTP = 500
+    Message = "Unable to resend link"
+    Kind = 31
+
+[[error]]
+    Name = "ErrInvalidLink"
+    StatusHTTP = 400
+    Message = "Invalid link"
+    Kind = 32
+
+[[error]]
+    Name = "ErrUnableGetUserBlacklist"
+    StatusHTTP = 500
+    Message = "Unable to get blacklisted users"
+    Kind = 33
+
+[[error]]
+    Name = "ErrUnableGetDomainBlacklist"
+    StatusHTTP = 500
+    Message = "Unable to get blacklisted domains"
+    Kind = 34
+
+[[error]]
+    Name = "ErrInternalError"
+    StatusHTTP = 500
+    Message = "Internal error"
+    Kind = 35
+
+[[error]]
+    Name = "ErrAccountBlocked"
+    StatusHTTP = 403
+    Message = "Account is blocked"
+    Kind = 36
+
+[[error]]
+    Name = "ErrUserAlreadyActivated"
+    StatusHTTP = 400
+    Message = "User is already activated"
+    Kind = 37

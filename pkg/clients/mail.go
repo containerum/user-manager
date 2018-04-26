@@ -5,8 +5,8 @@ import (
 
 	"time"
 
+	"git.containerum.net/ch/cherry"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	"git.containerum.net/ch/kube-client/pkg/cherry"
 	utils "git.containerum.net/ch/utils/httputil"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"

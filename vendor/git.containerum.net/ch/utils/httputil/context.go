@@ -9,11 +9,10 @@ const (
 	FingerPrintContextKey contextKey = iota
 	ClientIPContextKey
 	UserAgentContextKey
-	SessionIDContextKey
+	RequestIDContextKey
 	UserIDContextKey
 	TokenIDContextKey
 	UserRoleContextKey
-	PartTokenIDContextKey
 
 	AcceptLanguageContextKey
 )
@@ -48,17 +47,17 @@ func MustGetUserAgent(ctx context.Context) string {
 	return ip
 }
 
-// MustGetSessionID attempts to extract session ID using SessionIDContextKey from context.
+// MustGetSessionID attempts to extract session ID using RequestIDContextKey from context.
 // It panics if value was not found in context.
-func MustGetSessionID(ctx context.Context) string {
-	sid, ok := ctx.Value(SessionIDContextKey).(string)
+func MustGetRequestID(ctx context.Context) string {
+	sid, ok := ctx.Value(RequestIDContextKey).(string)
 	if !ok {
 		panic("session id not found in context")
 	}
 	return sid
 }
 
-// MustGetUserID attempts to extract user ID using SessionIDContextKey from context.
+// MustGetUserID attempts to extract user ID using RequestIDContextKey from context.
 // It panics if value was not found in context.
 func MustGetUserID(ctx context.Context) string {
 	uid, ok := ctx.Value(UserIDContextKey).(string)
@@ -86,22 +85,6 @@ func MustGetUserRole(ctx context.Context) string {
 		panic("user role not found in context")
 	}
 	return role
-}
-
-// MustGetPartTokenID attempts to extract part token ID using PartTokenIDContextKey from context
-// It panics if value was not found in context.
-func MustGetPartTokenID(ctx context.Context) string {
-	ptid, ok := ctx.Value(PartTokenIDContextKey).(string)
-	if !ok {
-		panic("part token id not found in context")
-	}
-	return ptid
-}
-
-// GetPartTokenID attempts to extract part token ID using PartTokenIDContextKey from context
-func GetPartTokenID(ctx context.Context) (string, bool) {
-	ptid, ok := ctx.Value(PartTokenIDContextKey).(string)
-	return ptid, ok
 }
 
 // GetAcceptedLanguages extracts accepted languages from context

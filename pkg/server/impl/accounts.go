@@ -5,15 +5,15 @@ import (
 
 	"fmt"
 
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/clients"
 	"git.containerum.net/ch/user-manager/pkg/db"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
+	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"github.com/sirupsen/logrus"
 )
 
-func (u *serverImpl) AddBoundAccount(ctx context.Context, request umtypes.OAuthLoginRequest) error {
+func (u *serverImpl) AddBoundAccount(ctx context.Context, request models.OAuthLoginRequest) error {
 	userID := server.MustGetUserID(ctx)
 	u.log.WithFields(logrus.Fields{
 		"userID":       userID,
@@ -42,7 +42,7 @@ func (u *serverImpl) AddBoundAccount(ctx context.Context, request umtypes.OAuthL
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		return tx.BindAccount(ctx, user, umtypes.OAuthResource(request.Resource), info.UserID)
+		return tx.BindAccount(ctx, user, models.OAuthResource(request.Resource), info.UserID)
 	})
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
@@ -90,7 +90,7 @@ func (u *serverImpl) GetBoundAccounts(ctx context.Context) (map[string]string, e
 	return accs, nil
 }
 
-func (u *serverImpl) DeleteBoundAccount(ctx context.Context, request umtypes.BoundAccountDeleteRequest) error {
+func (u *serverImpl) DeleteBoundAccount(ctx context.Context, request models.BoundAccountDeleteRequest) error {
 	userID := server.MustGetUserID(ctx)
 	u.log.WithField("userId", userID).WithFields(logrus.Fields{
 		"resource": request.Resource,
@@ -107,7 +107,7 @@ func (u *serverImpl) DeleteBoundAccount(ctx context.Context, request umtypes.Bou
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		return tx.DeleteBoundAccount(ctx, user, umtypes.OAuthResource(request.Resource))
+		return tx.DeleteBoundAccount(ctx, user, models.OAuthResource(request.Resource))
 	})
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)

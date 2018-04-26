@@ -14,22 +14,29 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+// StoredToken is a representaion of token database record
+//
+// swagger:model
 type StoredToken struct {
+	// swagger:strfmt uuid
 	// @inject_tag: binding:"uuid"
 	TokenId     string `protobuf:"bytes,1,opt,name=token_id,json=tokenId" json:"token_id,omitempty" binding:"uuid"`
 	UserAgent   string `protobuf:"bytes,2,opt,name=user_agent,json=userAgent" json:"user_agent,omitempty"`
 	Platform    string `protobuf:"bytes,3,opt,name=platform" json:"platform,omitempty"`
 	Fingerprint string `protobuf:"bytes,4,opt,name=fingerprint" json:"fingerprint,omitempty"`
+	// swagger:strfmt uuid
 	// @inject_tag: binding:"uuid"
 	UserId        string `protobuf:"bytes,5,opt,name=user_id,json=userId" json:"user_id,omitempty" binding:"uuid"`
 	UserRole      string `protobuf:"bytes,6,opt,name=user_role,json=userRole" json:"user_role,omitempty"`
 	UserNamespace string `protobuf:"bytes,7,opt,name=user_namespace,json=userNamespace" json:"user_namespace,omitempty"`
 	UserVolume    string `protobuf:"bytes,8,opt,name=user_volume,json=userVolume" json:"user_volume,omitempty"`
 	RwAccess      bool   `protobuf:"varint,9,opt,name=rw_access,json=rwAccess" json:"rw_access,omitempty"`
+	// swagger:strfmt ip
 	// @inject_tag: binding:"ip"
 	UserIp string `protobuf:"bytes,10,opt,name=user_ip,json=userIp" json:"user_ip,omitempty" binding:"ip"`
-	// @inject_tag: binding:"uuid"
-	PartTokenId     string                     `protobuf:"bytes,11,opt,name=part_token_id,json=partTokenId" json:"part_token_id,omitempty" binding:"uuid"`
+	// swagger:strfmt uuid
+	// @inject_tag: binding:"omitempty,uuid"
+	PartTokenId     string                     `protobuf:"bytes,11,opt,name=part_token_id,json=partTokenId" json:"part_token_id,omitempty" binding:"omitempty,uuid"`
 	CreatedAt       *google_protobuf.Timestamp `protobuf:"bytes,12,opt,name=created_at,json=createdAt" json:"created_at,omitempty"`
 	LifeTime        *google_protobuf1.Duration `protobuf:"bytes,13,opt,name=life_time,json=lifeTime" json:"life_time,omitempty"`
 	RawRefreshToken string                     `protobuf:"bytes,14,opt,name=raw_refresh_token,json=rawRefreshToken" json:"raw_refresh_token,omitempty"`
@@ -138,8 +145,12 @@ func (m *StoredToken) GetRawRefreshToken() string {
 	return ""
 }
 
+// AccessObject represents user access to resource
+//
+// swagger:model
 type AccessObject struct {
 	Label string `protobuf:"bytes,1,opt,name=label" json:"label,omitempty"`
+	// swagger:strfmt uuid
 	// @inject_tag: binding:"uuid"
 	Id     string `protobuf:"bytes,2,opt,name=id" json:"id,omitempty" binding:"uuid"`
 	Access string `protobuf:"bytes,3,opt,name=access" json:"access,omitempty"`
@@ -171,6 +182,9 @@ func (m *AccessObject) GetAccess() string {
 	return ""
 }
 
+// ResourceAccesses contains user accesses to resources
+//
+// swagger:model
 type ResourcesAccess struct {
 	Namespace []*AccessObject `protobuf:"bytes,1,rep,name=namespace" json:"namespace,omitempty"`
 	Volume    []*AccessObject `protobuf:"bytes,2,rep,name=volume" json:"volume,omitempty"`
@@ -195,11 +209,16 @@ func (m *ResourcesAccess) GetVolume() []*AccessObject {
 	return nil
 }
 
+// StoredTokenForUser is an information about token sent to user
+//
+// swagger:model
 type StoredTokenForUser struct {
 	// @inject_tag: binding:"uuid"
+	// swagger:strfmt uuid
 	TokenId   string `protobuf:"bytes,1,opt,name=token_id,json=tokenId" json:"token_id,omitempty" binding:"uuid"`
 	UserAgent string `protobuf:"bytes,2,opt,name=user_agent,json=userAgent" json:"user_agent,omitempty"`
 	// @inject_tag: binding:"ip"
+	// swagger:strfmt ip
 	Ip        string `protobuf:"bytes,3,opt,name=ip" json:"ip,omitempty" binding:"ip"`
 	CreatedAt string `protobuf:"bytes,4,opt,name=created_at,json=createdAt" json:"created_at,omitempty"`
 }

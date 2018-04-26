@@ -6,41 +6,40 @@ import (
 
 	"strings"
 
-	ch "git.containerum.net/ch/kube-client/pkg/cherry"
-	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/cherry"
+	"git.containerum.net/ch/cherry/adaptors/gonic"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
+	"git.containerum.net/ch/user-manager/pkg/umErrors"
 	"git.containerum.net/ch/user-manager/pkg/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
 
 func UserCreateHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	var request umtypes.RegisterRequest
+	var request models.RegisterRequest
 
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateUserCreateRequest(request)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	resp, err := um.CreateUser(ctx.Request.Context(), request)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableCreateUser(), ctx)
+			gonic.Gonic(umErrors.ErrUnableCreateUser(), ctx)
 		}
 		return
 	}
@@ -49,16 +48,15 @@ func UserCreateHandler(ctx *gin.Context) {
 }
 
 func UserInfoGetHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetUserInfo(ctx.Request.Context())
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetUserInfo(), ctx)
+			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
 		}
 		return
 	}
@@ -67,16 +65,15 @@ func UserInfoGetHandler(ctx *gin.Context) {
 }
 
 func UserGetByIDHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetUserInfoByID(ctx.Request.Context(), ctx.Param("user_id"))
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetUserInfo(), ctx)
+			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
 		}
 		return
 	}
@@ -85,16 +82,15 @@ func UserGetByIDHandler(ctx *gin.Context) {
 }
 
 func UserGetByLoginHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetUserInfoByLogin(ctx.Request.Context(), ctx.Param("login"))
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetUserInfo(), ctx)
+			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
 		}
 		return
 	}
@@ -103,28 +99,27 @@ func UserGetByLoginHandler(ctx *gin.Context) {
 }
 
 func UserInfoUpdateHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var newData map[string]interface{}
 	if err := ctx.ShouldBindWith(&newData, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateUserData(newData)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	resp, err := um.UpdateUser(ctx.Request.Context(), newData)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableUpdateUserInfo(), ctx)
+			gonic.Gonic(umErrors.ErrUnableUpdateUserInfo(), ctx)
 		}
 		return
 	}
@@ -133,8 +128,7 @@ func UserInfoUpdateHandler(ctx *gin.Context) {
 }
 
 func UserListGetHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	page := int64(1)
 	pagestr, ok := ctx.GetQuery("page")
@@ -159,11 +153,11 @@ func UserListGetHandler(ctx *gin.Context) {
 	filters := strings.Split(ctx.Query("filters"), ",")
 	resp, err := um.GetUsers(ctx.Request.Context(), int(page), int(perPage), filters...)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetUsersList(), ctx)
+			gonic.Gonic(umErrors.ErrUnableGetUsersList(), ctx)
 		}
 		return
 	}
@@ -172,16 +166,15 @@ func UserListGetHandler(ctx *gin.Context) {
 }
 
 func UserListLoginID(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetUsersLoginID(ctx.Request.Context())
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableGetUsersList(), ctx)
+			gonic.Gonic(umErrors.ErrUnableGetUsersList(), ctx)
 		}
 		return
 	}
@@ -190,16 +183,15 @@ func UserListLoginID(ctx *gin.Context) {
 }
 
 func PartialDeleteHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	err := um.PartiallyDeleteUser(ctx.Request.Context())
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableDeleteUser(), ctx)
+			gonic.Gonic(umErrors.ErrUnableDeleteUser(), ctx)
 		}
 		return
 	}
@@ -208,28 +200,27 @@ func PartialDeleteHandler(ctx *gin.Context) {
 }
 
 func CompleteDeleteHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	var request umtypes.UserLogin
+	var request models.UserLogin
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateUserID(request)
 	if errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	err := um.CompletelyDeleteUser(ctx.Request.Context(), request.ID)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrUnableDeleteUser(), ctx)
+			gonic.Gonic(umErrors.ErrUnableDeleteUser(), ctx)
 		}
 		return
 	}

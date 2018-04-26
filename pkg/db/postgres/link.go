@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"git.containerum.net/ch/user-manager/pkg/db"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -18,7 +18,7 @@ const linkQueryColumnsWithUser = "links.link, links.type, links.created_at, link
 	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist"
 const linkQueryColumns = "link, type, created_at, expired_at, is_active, sent_at"
 
-func (pgdb *pgDB) CreateLink(ctx context.Context, linkType umtypes.LinkType, lifeTime time.Duration, user *db.User) (*db.Link, error) {
+func (pgdb *pgDB) CreateLink(ctx context.Context, linkType models.LinkType, lifeTime time.Duration, user *db.User) (*db.Link, error) {
 	now := time.Now().UTC()
 
 	pgdb.log.WithFields(logrus.Fields{
@@ -54,7 +54,7 @@ func (pgdb *pgDB) CreateLink(ctx context.Context, linkType umtypes.LinkType, lif
 	return ret, err
 }
 
-func (pgdb *pgDB) GetLinkForUser(ctx context.Context, linkType umtypes.LinkType, user *db.User) (*db.Link, error) {
+func (pgdb *pgDB) GetLinkForUser(ctx context.Context, linkType models.LinkType, user *db.User) (*db.Link, error) {
 	pgdb.log.Infoln("Get link", linkType, "for", user.Login)
 	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT "+linkQueryColumns+" FROM links "+
 		"WHERE user_id = $1 AND type = $2 AND is_active AND expired_at > NOW()", user.ID, linkType)
