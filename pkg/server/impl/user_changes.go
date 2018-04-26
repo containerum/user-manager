@@ -13,15 +13,15 @@ import (
 	"git.containerum.net/ch/auth/proto"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"git.containerum.net/ch/user-manager/pkg/db"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
+	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"github.com/lib/pq"
 )
 
-func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterRequest) (*umtypes.UserLogin, error) {
+func (u *serverImpl) CreateUser(ctx context.Context, request models.RegisterRequest) (*models.UserLogin, error) {
 	u.log.WithField("login", request.Login).Info("creating user")
 	if err := u.checkReCaptcha(ctx, request.ReCaptcha); err != nil {
 		u.log.WithError(err)
@@ -101,7 +101,7 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterReq
 			}
 		}
 
-		link, err = tx.CreateLink(ctx, umtypes.LinkTypeConfirm, 24*time.Hour, newUser)
+		link, err = tx.CreateLink(ctx, models.LinkTypeConfirm, 24*time.Hour, newUser)
 		if err != nil {
 			return err
 		}
@@ -113,13 +113,13 @@ func (u *serverImpl) CreateUser(ctx context.Context, request umtypes.RegisterReq
 
 	go u.linkSend(ctx, link)
 
-	return &umtypes.UserLogin{
+	return &models.UserLogin{
 		ID:    newUser.ID,
 		Login: newUser.Login,
 	}, nil
 }
 
-func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.Link) (*authProto.CreateTokenResponse, error) {
+func (u *serverImpl) ActivateUser(ctx context.Context, request models.Link) (*authProto.CreateTokenResponse, error) {
 	u.log.Info("activating user")
 	u.log.WithField("link", request.Link).Debugln("activating user details")
 	link, err := u.svc.DB.GetLinkFromString(ctx, request.Link)
@@ -130,7 +130,7 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.Link) (*a
 	if link == nil {
 		u.log.WithError(fmt.Errorf(linkNotFound, request.Link))
 		return nil, cherry.ErrInvalidLink().AddDetailsErr(fmt.Errorf(linkNotFound, request.Link))
-	} else if link.Type != umtypes.LinkTypeConfirm {
+	} else if link.Type != models.LinkTypeConfirm {
 		u.log.WithError(fmt.Errorf(linkNotFound, request.Link))
 		return nil, cherry.ErrInvalidLink().AddDetailsErr(fmt.Errorf(linkNotFound, request.Link))
 	}
@@ -172,7 +172,7 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request umtypes.Link) (*a
 	return tokens, nil
 }
 
-func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserLogin) error {
+func (u *serverImpl) BlacklistUser(ctx context.Context, request models.UserLogin) error {
 	u.log.WithField("user_id", request.ID).Info("blacklisting user")
 
 	userID := server.MustGetUserID(ctx)
@@ -224,7 +224,7 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request umtypes.UserLogi
 	return nil
 }
 
-func (u *serverImpl) UnBlacklistUser(ctx context.Context, request umtypes.UserLogin) error {
+func (u *serverImpl) UnBlacklistUser(ctx context.Context, request models.UserLogin) error {
 	u.log.WithField("user_id", request.ID).Info("unblacklisting user")
 
 	user, err := u.svc.DB.GetUserByID(ctx, request.ID)
@@ -263,7 +263,7 @@ func (u *serverImpl) UnBlacklistUser(ctx context.Context, request umtypes.UserLo
 	return nil
 }
 
-func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interface{}) (*umtypes.User, error) {
+func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interface{}) (*models.User, error) {
 	userID := server.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("updating user profile data")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
@@ -291,12 +291,12 @@ func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interfac
 		return nil, cherry.ErrUnableUpdateUserInfo()
 	}
 
-	return &umtypes.User{
-		UserLogin: &umtypes.UserLogin{
+	return &models.User{
+		UserLogin: &models.UserLogin{
 			ID:    user.ID,
 			Login: user.Login,
 		},
-		Profile: &umtypes.Profile{
+		Profile: &models.Profile{
 			Data:      profile.Data,
 			CreatedAt: profile.CreatedAt.Time.String(),
 		},

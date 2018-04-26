@@ -3,29 +3,31 @@
 
 [[projects]]
   branch = "develop"
+  name = "git.containerum.net/ch/api-gateway"
+  packages = ["pkg/utils/headers"]
+  revision = "25814d45e36ce93606bac69f89a92c9f9f1eecf9"
+
+[[projects]]
+  branch = "develop"
   name = "git.containerum.net/ch/auth"
   packages = ["proto"]
-  revision = "065ceb791be4bf9208a89d42b41f17847d5e4d3a"
+  revision = "4c10cb2261e42b159fb7c120382414e82aec1d90"
+
+[[projects]]
+  name = "git.containerum.net/ch/cherry"
+  packages = [
+    ".",
+    "adaptors/cherrylog",
+    "adaptors/gonic"
+  ]
+  revision = "82e4d22be24efe6d9e6925376119a24f789bddc7"
+  version = "v1.0.1-rc2"
 
 [[projects]]
   branch = "master"
   name = "git.containerum.net/ch/json-types"
-  packages = [
-    "mail-templater",
-    "user-manager"
-  ]
+  packages = ["mail-templater"]
   revision = "041a989c67953d829255c2fb10985b9bc1b25e51"
-
-[[projects]]
-  name = "git.containerum.net/ch/kube-client"
-  packages = [
-    "pkg/cherry",
-    "pkg/cherry/adaptors/cherrylog",
-    "pkg/cherry/adaptors/gonic",
-    "pkg/cherry/user-manager"
-  ]
-  revision = "ecf5ddce42d2d81eb3517babd5fe427eceb898cc"
-  version = "v0.2.6"
 
 [[projects]]
   branch = "master"
@@ -34,7 +36,7 @@
     "httputil",
     "sqlxutil"
   ]
-  revision = "0c31c414efa017dc1932f5e663dba8f00b3dcfe9"
+  revision = "47fc480749a3e137a621f1b95263f61cc5febcf8"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -266,7 +268,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "e73bf333ef8920dbb52ad18d4bd38ad9d9bc76d7"
+  revision = "b0697eccbea9adec5b7ba8008f4c33d98d733388"
 
 [[projects]]
   branch = "master"
@@ -291,7 +293,7 @@
     "unix",
     "windows"
   ]
-  revision = "79b0c6888797020a994db17c8510466c72fe75d9"
+  revision = "bb9c189858d91f42db229b04d45a4c3d23a7662a"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -325,11 +327,13 @@
   packages = [
     ".",
     "balancer",
+    "balancer/base",
     "balancer/roundrobin",
     "codes",
     "connectivity",
     "credentials",
     "encoding",
+    "encoding/proto",
     "grpclb/grpc_lb_v1/messages",
     "grpclog",
     "internal",
@@ -345,8 +349,8 @@
     "tap",
     "transport"
   ]
-  revision = "e687fa4e6424368ece6e4fe727cea2c806a0fcb4"
-  version = "v1.8.2"
+  revision = "d11072e7ca9811b1100b80ca0269ac831f06d024"
+  version = "v1.11.3"
 
 [[projects]]
   name = "gopkg.in/go-playground/validator.v8"
@@ -375,6 +379,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3b6574cc78a87a2ca55e8e25e0b1052458981e52ce807593f26fae969841e30c"
+  inputs-digest = "381ae869a9575bf7e2c844722178b78bc6310fefc7c40537aca5f95c498d26c5"
   solver-name = "gps-cdcl"
   solver-version = 1

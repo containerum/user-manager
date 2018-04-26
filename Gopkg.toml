@@ -4,10 +4,6 @@
     unused-packages = true
 
 [[constraint]]
-  name = "git.containerum.net/ch/kube-client"
-  version = "~0.2.3"
-
-[[constraint]]
   branch = "develop"
   name = "git.containerum.net/ch/auth"
 
@@ -50,3 +46,15 @@
 [[constraint]]
   branch = "master"
   name = "git.containerum.net/ch/json-types"
+
+[[constraint]]
+  branch = "develop"
+  name = "git.containerum.net/ch/api-gateway"
+
+[[constraint]]
+  branch = "master"
+  name = "git.containerum.net/ch/utils"
+
+[[constraint]]
+  name = "git.containerum.net/ch/cherry"
+  version = "~1.0.1-rc2"

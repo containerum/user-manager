@@ -3,14 +3,14 @@ package impl
 import (
 	"context"
 
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/db"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
+	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"github.com/pkg/errors"
 )
 
-func (u *serverImpl) GetBlacklistedDomain(ctx context.Context, domain string) (*umtypes.Domain, error) {
+func (u *serverImpl) GetBlacklistedDomain(ctx context.Context, domain string) (*models.Domain, error) {
 	u.log.WithField("domain", domain).Info("get domain info")
 	blacklistedDomain, err := u.svc.DB.GetBlacklistedDomain(ctx, domain)
 	if err := u.handleDBError(err); err != nil {
@@ -23,14 +23,14 @@ func (u *serverImpl) GetBlacklistedDomain(ctx context.Context, domain string) (*
 		return nil, cherry.ErrDomainNotBlacklisted()
 	}
 
-	return &umtypes.Domain{
+	return &models.Domain{
 		Domain:    blacklistedDomain.Domain,
 		AddedBy:   blacklistedDomain.AddedBy.String,
 		CreatedAt: blacklistedDomain.CreatedAt,
 	}, nil
 }
 
-func (u *serverImpl) GetBlacklistedDomainsList(ctx context.Context) (*umtypes.DomainListResponse, error) {
+func (u *serverImpl) GetBlacklistedDomainsList(ctx context.Context) (*models.DomainListResponse, error) {
 	u.log.Info("get domains list")
 	blacklistedDomains, err := u.svc.DB.GetBlacklistedDomainsList(ctx)
 	if err := u.handleDBError(err); err != nil {
@@ -38,11 +38,11 @@ func (u *serverImpl) GetBlacklistedDomainsList(ctx context.Context) (*umtypes.Do
 		return nil, cherry.ErrUnableGetDomainBlacklist()
 	}
 
-	resp := umtypes.DomainListResponse{
-		DomainList: []umtypes.Domain{},
+	resp := models.DomainListResponse{
+		DomainList: []models.Domain{},
 	}
 	for _, v := range blacklistedDomains {
-		resp.DomainList = append(resp.DomainList, umtypes.Domain{
+		resp.DomainList = append(resp.DomainList, models.Domain{
 			Domain:    v.Domain,
 			AddedBy:   v.AddedBy.String,
 			CreatedAt: v.CreatedAt,
@@ -52,7 +52,7 @@ func (u *serverImpl) GetBlacklistedDomainsList(ctx context.Context) (*umtypes.Do
 	return &resp, nil
 }
 
-func (u *serverImpl) AddDomainToBlacklist(ctx context.Context, request umtypes.Domain) error {
+func (u *serverImpl) AddDomainToBlacklist(ctx context.Context, request models.Domain) error {
 	u.log.WithField("domain", request.Domain).Info("adding domain to blacklist")
 
 	userID := server.MustGetUserID(ctx)

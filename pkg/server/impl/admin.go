@@ -6,16 +6,16 @@ import (
 	"time"
 
 	"git.containerum.net/ch/auth/proto"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/db"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
+	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 	"git.containerum.net/ch/user-manager/pkg/validation"
 	"github.com/lib/pq"
 )
 
-func (u *serverImpl) AdminCreateUser(ctx context.Context, request umtypes.UserLogin) (*umtypes.UserLogin, error) {
+func (u *serverImpl) AdminCreateUser(ctx context.Context, request models.UserLogin) (*models.UserLogin, error) {
 	u.log.WithField("login", request.Login).Info("creating user (admin)")
 
 	password, err := utils.SecureRandomString(10)
@@ -68,14 +68,14 @@ func (u *serverImpl) AdminCreateUser(ctx context.Context, request umtypes.UserLo
 		return nil, cherry.ErrUnableCreateUser()
 	}
 
-	return &umtypes.UserLogin{
+	return &models.UserLogin{
 		ID:       newUser.ID,
 		Login:    newUser.Login,
 		Password: password,
 	}, nil
 }
 
-func (u *serverImpl) AdminActivateUser(ctx context.Context, request umtypes.UserLogin) (*authProto.CreateTokenResponse, error) {
+func (u *serverImpl) AdminActivateUser(ctx context.Context, request models.UserLogin) (*authProto.CreateTokenResponse, error) {
 	u.log.Info("activating user (admin)")
 
 	var tokens *authProto.CreateTokenResponse
@@ -111,7 +111,7 @@ func (u *serverImpl) AdminActivateUser(ctx context.Context, request umtypes.User
 	return tokens, nil
 }
 
-func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request umtypes.UserLogin) error {
+func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request models.UserLogin) error {
 	u.log.Info("deactivating user (admin)")
 
 	user, err := u.svc.DB.GetAnyUserByLogin(ctx, request.Login)
@@ -153,7 +153,7 @@ func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request umtypes.Us
 	return nil
 }
 
-func (u *serverImpl) AdminResetPassword(ctx context.Context, request umtypes.UserLogin) (*umtypes.UserLogin, error) {
+func (u *serverImpl) AdminResetPassword(ctx context.Context, request models.UserLogin) (*models.UserLogin, error) {
 	u.log.Info("reseting user password (admin)")
 
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)
@@ -189,14 +189,14 @@ func (u *serverImpl) AdminResetPassword(ctx context.Context, request umtypes.Use
 		return nil, cherry.ErrUnableChangePassword()
 	}
 
-	return &umtypes.UserLogin{
+	return &models.UserLogin{
 		ID:       user.ID,
 		Login:    user.Login,
 		Password: password,
 	}, nil
 }
 
-func (u *serverImpl) AdminSetAdmin(ctx context.Context, request umtypes.UserLogin) error {
+func (u *serverImpl) AdminSetAdmin(ctx context.Context, request models.UserLogin) error {
 	u.log.Info("giving admin permissions to user (admin)")
 
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)
@@ -223,7 +223,7 @@ func (u *serverImpl) AdminSetAdmin(ctx context.Context, request umtypes.UserLogi
 	return nil
 }
 
-func (u *serverImpl) AdminUnsetAdmin(ctx context.Context, request umtypes.UserLogin) error {
+func (u *serverImpl) AdminUnsetAdmin(ctx context.Context, request models.UserLogin) error {
 	u.log.Info("removing admin permissions from user (admin)")
 
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)

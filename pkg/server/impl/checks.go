@@ -3,8 +3,8 @@ package impl
 import (
 	"context"
 
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/server"
+	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 )
 
 func (u *serverImpl) CheckUserExist(ctx context.Context) error {

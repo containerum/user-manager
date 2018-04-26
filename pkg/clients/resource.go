@@ -4,10 +4,10 @@ import (
 	"context"
 	"time"
 
+	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
 	"git.containerum.net/ch/auth/proto"
-	"git.containerum.net/ch/kube-client/pkg/cherry"
+	"git.containerum.net/ch/cherry"
 	"git.containerum.net/ch/user-manager/pkg/db"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
 	utils "git.containerum.net/ch/utils/httputil"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
@@ -47,8 +47,8 @@ func NewHTTPResourceServiceClient(serverURL string) ResourceServiceClient {
 func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *db.User) (*authProto.ResourcesAccess, error) {
 	c.log.WithField("user_id", user.ID).Info("Getting user access from resource service")
 	headersMap := utils.RequestHeadersMap(ctx)
-	headersMap[umtypes.UserIDHeader] = user.ID
-	headersMap[umtypes.UserRoleHeader] = user.Role
+	headersMap[headers.UserIDXHeader] = user.ID
+	headersMap[headers.UserRoleXHeader] = user.Role
 	resp, err := c.rest.R().SetContext(ctx).
 		SetResult(authProto.ResourcesAccess{}).
 		SetHeaders(headersMap). // forward request headers to other our service
@@ -65,8 +65,8 @@ func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *db.
 func (c *httpResourceServiceClient) DeleteUserNamespaces(ctx context.Context, user *db.User) error {
 	c.log.WithField("user_id", user.ID).Info("Deleting user namespaces")
 	headersMap := utils.RequestHeadersMap(ctx)
-	headersMap[umtypes.UserIDHeader] = user.ID
-	headersMap[umtypes.UserRoleHeader] = user.Role
+	headersMap[headers.UserIDXHeader] = user.ID
+	headersMap[headers.UserRoleXHeader] = user.Role
 	resp, err := c.rest.R().SetContext(ctx).
 		SetResult(authProto.ResourcesAccess{}).
 		SetHeaders(headersMap). // forward request headers to other our service
@@ -83,8 +83,8 @@ func (c *httpResourceServiceClient) DeleteUserNamespaces(ctx context.Context, us
 func (c *httpResourceServiceClient) DeleteUserVolumes(ctx context.Context, user *db.User) error {
 	c.log.WithField("user_id", user.ID).Info("Deleting user volumes")
 	headersMap := utils.RequestHeadersMap(ctx)
-	headersMap[umtypes.UserIDHeader] = user.ID
-	headersMap[umtypes.UserRoleHeader] = user.Role
+	headersMap[headers.UserIDXHeader] = user.ID
+	headersMap[headers.UserRoleXHeader] = user.Role
 	resp, err := c.rest.R().SetContext(ctx).
 		SetResult(authProto.ResourcesAccess{}).
 		SetHeaders(headersMap). // forward request headers to other our service

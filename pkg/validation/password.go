@@ -3,10 +3,10 @@ package validation
 import (
 	"fmt"
 
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 )
 
-func ValidatePasswordChangeRequest(link umtypes.PasswordRequest) []error {
+func ValidatePasswordChangeRequest(link models.PasswordRequest) []error {
 	errs := []error{}
 	if link.CurrentPassword == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Current password"))
@@ -20,7 +20,7 @@ func ValidatePasswordChangeRequest(link umtypes.PasswordRequest) []error {
 	return nil
 }
 
-func ValidatePasswordRestoreRequest(link umtypes.PasswordRequest) []error {
+func ValidatePasswordRestoreRequest(link models.PasswordRequest) []error {
 	errs := []error{}
 	if link.Link == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Link"))

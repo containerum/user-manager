@@ -3,12 +3,12 @@ package handlers
 import (
 	"net/http"
 
-	ch "git.containerum.net/ch/kube-client/pkg/cherry"
-	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/cherry"
+	"git.containerum.net/ch/cherry/adaptors/gonic"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
+	"git.containerum.net/ch/user-manager/pkg/umErrors"
 	"git.containerum.net/ch/user-manager/pkg/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -17,24 +17,24 @@ import (
 func BasicLoginHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	var request umtypes.LoginRequest
+	var request models.LoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	if errs := validation.ValidateLoginRequest(request); errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	tokens, err := um.BasicLogin(ctx.Request.Context(), request)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrLoginFailed(), ctx)
+			gonic.Gonic(umErrors.ErrLoginFailed(), ctx)
 		}
 		return
 	}
@@ -45,19 +45,19 @@ func BasicLoginHandler(ctx *gin.Context) {
 func OneTimeTokenLoginHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	var request umtypes.OneTimeTokenLoginRequest
+	var request models.OneTimeTokenLoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	tokens, err := um.OneTimeTokenLogin(ctx.Request.Context(), request)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrLoginFailed(), ctx)
+			gonic.Gonic(umErrors.ErrLoginFailed(), ctx)
 		}
 		return
 	}
@@ -68,24 +68,24 @@ func OneTimeTokenLoginHandler(ctx *gin.Context) {
 func OAuthLoginHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	var request umtypes.OAuthLoginRequest
+	var request models.OAuthLoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	if errs := validation.ValidateOAuthLoginRequest(request); errs != nil {
-		gonic.Gonic(cherry.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	tokens, err := um.OAuthLogin(ctx.Request.Context(), request)
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrLoginFailed(), ctx)
+			gonic.Gonic(umErrors.ErrLoginFailed(), ctx)
 		}
 		return
 	}
@@ -98,11 +98,11 @@ func LogoutHandler(ctx *gin.Context) {
 
 	err := um.Logout(ctx.Request.Context())
 	if err != nil {
-		if cherr, ok := err.(*ch.Err); ok {
+		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(cherry.ErrLogoutFailed(), ctx)
+			gonic.Gonic(umErrors.ErrLogoutFailed(), ctx)
 		}
 		return
 	}

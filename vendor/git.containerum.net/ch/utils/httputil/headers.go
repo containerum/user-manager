@@ -7,9 +7,9 @@ import (
 
 	"strings"
 
-	umtypes "git.containerum.net/ch/json-types/user-manager"
-	"git.containerum.net/ch/kube-client/pkg/cherry"
-	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
+	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
+	"git.containerum.net/ch/cherry"
+	"git.containerum.net/ch/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/universal-translator"
 	"gopkg.in/go-playground/validator.v9"
@@ -54,14 +54,13 @@ func RequestHeaders(ctx context.Context) http.Header {
 }
 
 var hdrToKey = map[string]interface{}{
-	textproto.CanonicalMIMEHeaderKey(umtypes.UserIDHeader):      UserIDContextKey,
-	textproto.CanonicalMIMEHeaderKey(umtypes.UserAgentHeader):   UserAgentContextKey,
-	textproto.CanonicalMIMEHeaderKey(umtypes.FingerprintHeader): FingerPrintContextKey,
-	textproto.CanonicalMIMEHeaderKey(umtypes.SessionIDHeader):   SessionIDContextKey,
-	textproto.CanonicalMIMEHeaderKey(umtypes.TokenIDHeader):     TokenIDContextKey,
-	textproto.CanonicalMIMEHeaderKey(umtypes.ClientIPHeader):    ClientIPContextKey,
-	textproto.CanonicalMIMEHeaderKey(umtypes.UserRoleHeader):    UserRoleContextKey,
-	textproto.CanonicalMIMEHeaderKey(umtypes.PartTokenIDHeader): PartTokenIDContextKey,
+	textproto.CanonicalMIMEHeaderKey(headers.UserIDXHeader):     UserIDContextKey,
+	textproto.CanonicalMIMEHeaderKey(headers.UserAgentXHeader):  UserAgentContextKey,
+	textproto.CanonicalMIMEHeaderKey(headers.UserClientXHeader): FingerPrintContextKey,
+	textproto.CanonicalMIMEHeaderKey(headers.RequestIDXHeader):  RequestIDContextKey,
+	textproto.CanonicalMIMEHeaderKey(headers.TokenIDXHeader):    TokenIDContextKey,
+	textproto.CanonicalMIMEHeaderKey(headers.UserIPXHeader):     ClientIPContextKey,
+	textproto.CanonicalMIMEHeaderKey(headers.UserRoleXHeader):   UserRoleContextKey,
 }
 
 // RequireHeaders is a gin middleware to ensure that headers is set
@@ -104,7 +103,7 @@ func PrepareContext(ctx *gin.Context) {
 // RequireAdminRole is a gin middleware which requires admin role
 func RequireAdminRole(errToReturn cherry.ErrConstruct) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(umtypes.UserRoleHeader)) != "admin" {
+		if ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(headers.UserRoleXHeader)) != "admin" {
 			err := errToReturn().AddDetails("only admin can do this")
 			gonic.Gonic(err, ctx)
 		}
@@ -114,7 +113,7 @@ func RequireAdminRole(errToReturn cherry.ErrConstruct) gin.HandlerFunc {
 // SubstituteUserMiddleware replaces user id in context with user id from query if it set and user is admin
 func SubstituteUserMiddleware(validate *validator.Validate, translator *ut.UniversalTranslator, validationErr cherry.ErrConstruct) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		role := ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(umtypes.UserRoleHeader))
+		role := ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(headers.UserRoleXHeader))
 		if userID, set := ctx.GetQuery("user-id"); set && role == "admin" {
 			if vErr := validate.VarCtx(ctx.Request.Context(), userID, "uuid"); vErr != nil {
 				t, _ := translator.FindTranslator(GetAcceptedLanguages(ctx.Request.Context())...)

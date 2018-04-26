@@ -8,18 +8,18 @@ import (
 	"fmt"
 
 	"git.containerum.net/ch/user-manager/pkg/db"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"github.com/sirupsen/logrus"
 )
 
-func (pgdb *pgDB) GetUserByBoundAccount(ctx context.Context, service umtypes.OAuthResource, accountID string) (*db.User, error) {
+func (pgdb *pgDB) GetUserByBoundAccount(ctx context.Context, service models.OAuthResource, accountID string) (*db.User, error) {
 	pgdb.log.WithFields(logrus.Fields{
 		"service":    service,
 		"account_id": accountID,
 	}).Infoln("Get bound account")
 
 	switch service {
-	case umtypes.GitHubOAuth, umtypes.FacebookOAuth, umtypes.GoogleOAuth:
+	case models.GitHubOAuth, models.FacebookOAuth, models.GoogleOAuth:
 	default:
 		return nil, errors.New("unrecognised service " + string(service))
 	}
@@ -56,20 +56,20 @@ func (pgdb *pgDB) GetUserBoundAccounts(ctx context.Context, user *db.User) (*db.
 	return &ret, err
 }
 
-func (pgdb *pgDB) BindAccount(ctx context.Context, user *db.User, service umtypes.OAuthResource, accountID string) error {
+func (pgdb *pgDB) BindAccount(ctx context.Context, user *db.User, service models.OAuthResource, accountID string) error {
 	pgdb.log.Infof("Bind account %s (%s) for user %s", service, accountID, user.Login)
 	switch service {
-	case umtypes.GitHubOAuth:
+	case models.GitHubOAuth:
 		_, err := pgdb.eLog.ExecContext(ctx, `INSERT INTO accounts (user_id, github, facebook, google) 
 													VALUES ($1, $2, '', '')
 													ON CONFLICT (user_id) DO UPDATE SET github = $2`, user.ID, accountID)
 		return err
-	case umtypes.FacebookOAuth:
+	case models.FacebookOAuth:
 		_, err := pgdb.eLog.ExecContext(ctx, `INSERT INTO accounts (user_id, github, facebook, google) 
 													VALUES ($1, '', $2, '')
 													ON CONFLICT (user_id) DO UPDATE SET facebook = $2`, user.ID, accountID)
 		return err
-	case umtypes.GoogleOAuth:
+	case models.GoogleOAuth:
 		_, err := pgdb.eLog.ExecContext(ctx, `INSERT INTO accounts (user_id, github, facebook, google) 
 													VALUES ($1, '', '', $2)
 													ON CONFLICT (user_id) DO UPDATE SET google = $2`, user.ID, accountID)
@@ -80,10 +80,10 @@ func (pgdb *pgDB) BindAccount(ctx context.Context, user *db.User, service umtype
 	// see migrations/1515872648_accounts_constraint.up.sql
 }
 
-func (pgdb *pgDB) DeleteBoundAccount(ctx context.Context, user *db.User, service umtypes.OAuthResource) error {
+func (pgdb *pgDB) DeleteBoundAccount(ctx context.Context, user *db.User, service models.OAuthResource) error {
 	pgdb.log.Infof("Deleting account %s for user %s", service, user.Login)
 	switch service {
-	case umtypes.GitHubOAuth, umtypes.FacebookOAuth, umtypes.GoogleOAuth:
+	case models.GitHubOAuth, models.FacebookOAuth, models.GoogleOAuth:
 	default:
 		return errors.New("unrecognised service " + string(service))
 	}

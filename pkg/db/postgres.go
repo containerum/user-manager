@@ -11,7 +11,7 @@ import (
 
 	"errors"
 
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"github.com/lib/pq"
 )
 
@@ -61,7 +61,7 @@ type Accounts struct {
 // Link describes link (for activation, password change, etc.) model. It should be used only inside this project.
 type Link struct {
 	Link      string
-	Type      umtypes.LinkType
+	Type      models.LinkType
 	CreatedAt time.Time
 	ExpiredAt time.Time
 	IsActive  bool
@@ -114,10 +114,10 @@ type DB interface {
 	UpdateProfile(ctx context.Context, profile *Profile) error
 	GetAllProfiles(ctx context.Context, perPage, offset int) ([]UserProfileAccounts, error)
 
-	GetUserByBoundAccount(ctx context.Context, service umtypes.OAuthResource, accountID string) (*User, error)
+	GetUserByBoundAccount(ctx context.Context, service models.OAuthResource, accountID string) (*User, error)
 	GetUserBoundAccounts(ctx context.Context, user *User) (*Accounts, error)
-	BindAccount(ctx context.Context, user *User, service umtypes.OAuthResource, accountID string) error
-	DeleteBoundAccount(ctx context.Context, user *User, service umtypes.OAuthResource) error
+	BindAccount(ctx context.Context, user *User, service models.OAuthResource, accountID string) error
+	DeleteBoundAccount(ctx context.Context, user *User, service models.OAuthResource) error
 
 	BlacklistDomain(ctx context.Context, domain string, userID string) error
 	UnBlacklistDomain(ctx context.Context, domain string) error
@@ -125,8 +125,8 @@ type DB interface {
 	GetBlacklistedDomain(ctx context.Context, domain string) (*DomainBlacklistEntry, error)
 	GetBlacklistedDomainsList(ctx context.Context) ([]DomainBlacklistEntry, error)
 
-	CreateLink(ctx context.Context, linkType umtypes.LinkType, lifeTime time.Duration, user *User) (*Link, error)
-	GetLinkForUser(ctx context.Context, linkType umtypes.LinkType, user *User) (*Link, error)
+	CreateLink(ctx context.Context, linkType models.LinkType, lifeTime time.Duration, user *User) (*Link, error)
+	GetLinkForUser(ctx context.Context, linkType models.LinkType, user *User) (*Link, error)
 	GetLinkFromString(ctx context.Context, strLink string) (*Link, error)
 	UpdateLink(ctx context.Context, link *Link) error
 	GetUserLinks(ctx context.Context, user *User) ([]Link, error)

@@ -5,13 +5,13 @@ import (
 
 	"time"
 
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
 	"git.containerum.net/ch/user-manager/pkg/db"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
+	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 )
 
-func (u *serverImpl) GetUserLinks(ctx context.Context, userID string) (*umtypes.Links, error) {
+func (u *serverImpl) GetUserLinks(ctx context.Context, userID string) (*models.Links, error) {
 	u.log.WithField("user_id", userID).Info("get user links")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
 	if err := u.handleDBError(err); err != nil {
@@ -27,13 +27,13 @@ func (u *serverImpl) GetUserLinks(ctx context.Context, userID string) (*umtypes.
 		return nil, cherry.ErrUnableGetUserLinks()
 	}
 
-	resp := umtypes.Links{Links: []umtypes.Link{}}
+	resp := models.Links{Links: []models.Link{}}
 	for _, v := range links {
 		var sentAt time.Time
 		if v.SentAt.Valid {
 			sentAt = v.SentAt.Time
 		}
-		resp.Links = append(resp.Links, umtypes.Link{
+		resp.Links = append(resp.Links, models.Link{
 			Link:      v.Link,
 			Type:      v.Type,
 			CreatedAt: v.CreatedAt,
@@ -46,7 +46,7 @@ func (u *serverImpl) GetUserLinks(ctx context.Context, userID string) (*umtypes.
 	return &resp, nil
 }
 
-func (u *serverImpl) GetUserInfo(ctx context.Context) (*umtypes.User, error) {
+func (u *serverImpl) GetUserInfo(ctx context.Context) (*models.User, error) {
 	userID := server.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("get user info")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
@@ -66,12 +66,12 @@ func (u *serverImpl) GetUserInfo(ctx context.Context) (*umtypes.User, error) {
 		return nil, cherry.ErrUnableGetUserInfo()
 	}
 
-	return &umtypes.User{
-		UserLogin: &umtypes.UserLogin{
+	return &models.User{
+		UserLogin: &models.UserLogin{
 			Login: user.Login,
 			ID:    user.ID,
 		},
-		Profile: &umtypes.Profile{
+		Profile: &models.Profile{
 			Data:      profile.Data,
 			CreatedAt: profile.CreatedAt.Time.String(),
 		},
@@ -80,7 +80,7 @@ func (u *serverImpl) GetUserInfo(ctx context.Context) (*umtypes.User, error) {
 	}, nil
 }
 
-func (u *serverImpl) GetUserInfoByID(ctx context.Context, userID string) (*umtypes.User, error) {
+func (u *serverImpl) GetUserInfoByID(ctx context.Context, userID string) (*models.User, error) {
 	u.log.WithField("user_id", userID).Info("get user info by id")
 	user, err := u.svc.DB.GetUserByID(ctx, userID)
 	if err := u.handleDBError(err); err != nil {
@@ -97,18 +97,18 @@ func (u *serverImpl) GetUserInfoByID(ctx context.Context, userID string) (*umtyp
 		return nil, cherry.ErrUnableGetUserInfo()
 	}
 
-	return &umtypes.User{
-		UserLogin: &umtypes.UserLogin{
+	return &models.User{
+		UserLogin: &models.UserLogin{
 			Login: user.Login,
 		},
-		Profile: &umtypes.Profile{
+		Profile: &models.Profile{
 			Data: profile.Data,
 		},
 		Role: user.Role,
 	}, nil
 }
 
-func (u *serverImpl) GetUserInfoByLogin(ctx context.Context, login string) (*umtypes.User, error) {
+func (u *serverImpl) GetUserInfoByLogin(ctx context.Context, login string) (*models.User, error) {
 	u.log.WithField("login", login).Info("get user info by login")
 	user, err := u.svc.DB.GetUserByLogin(ctx, login)
 	if err := u.handleDBError(err); err != nil {
@@ -125,27 +125,27 @@ func (u *serverImpl) GetUserInfoByLogin(ctx context.Context, login string) (*umt
 		return nil, cherry.ErrUnableGetUserInfo()
 	}
 
-	return &umtypes.User{
-		UserLogin: &umtypes.UserLogin{
+	return &models.User{
+		UserLogin: &models.UserLogin{
 			ID: user.ID,
 		},
 		Role: user.Role,
-		Profile: &umtypes.Profile{
+		Profile: &models.Profile{
 			Data: profile.Data,
 		},
 	}, nil
 }
 
-func (u *serverImpl) GetBlacklistedUsers(ctx context.Context, page int, perPage int) (*umtypes.UserList, error) {
+func (u *serverImpl) GetBlacklistedUsers(ctx context.Context, page int, perPage int) (*models.UserList, error) {
 	u.log.WithField("per_page", perPage).WithField("page", page).Info("get blacklisted users")
 	blacklisted, err := u.svc.DB.GetBlacklistedUsers(ctx, perPage, (page-1)*perPage)
 	if err := u.handleDBError(err); err != nil {
 		return nil, cherry.ErrUnableGetUsersList()
 	}
-	var resp umtypes.UserList
+	var resp models.UserList
 	for _, v := range blacklisted {
-		resp.Users = append(resp.Users, umtypes.User{
-			UserLogin: &umtypes.UserLogin{
+		resp.Users = append(resp.Users, models.User{
+			UserLogin: &models.UserLogin{
 				Login: v.Login,
 				ID:    v.ID,
 			},
@@ -154,7 +154,7 @@ func (u *serverImpl) GetBlacklistedUsers(ctx context.Context, page int, perPage 
 	return &resp, nil
 }
 
-func (u *serverImpl) GetUsers(ctx context.Context, page int, perPage int, filters ...string) (*umtypes.UserList, error) {
+func (u *serverImpl) GetUsers(ctx context.Context, page int, perPage int, filters ...string) (*models.UserList, error) {
 	u.log.WithField("per_page", perPage).WithField("page", page).Info("get users")
 	profiles, err := u.svc.DB.GetAllProfiles(ctx, perPage, (page-1)*perPage)
 	if err := u.handleDBError(err); err != nil {
@@ -164,8 +164,8 @@ func (u *serverImpl) GetUsers(ctx context.Context, page int, perPage int, filter
 
 	satisfiesFilter := server.CreateFilterFunc(filters...)
 
-	resp := umtypes.UserList{
-		Users: []umtypes.User{},
+	resp := models.UserList{
+		Users: []models.User{},
 	}
 	for _, v := range profiles {
 		if !satisfiesFilter(v) {
@@ -186,17 +186,17 @@ func (u *serverImpl) GetUsers(ctx context.Context, page int, perPage int, filter
 			accs["github"] = v.Accounts.Github.String
 		}
 
-		user := umtypes.User{
-			UserLogin: &umtypes.UserLogin{
+		user := models.User{
+			UserLogin: &models.UserLogin{
 				ID:    v.User.ID,
 				Login: v.User.Login,
 			},
-			Profile: &umtypes.Profile{
+			Profile: &models.Profile{
 				Access:   v.Profile.Access.String,
 				Data:     v.Profile.Data,
 				Referral: v.Profile.Referral.String,
 			},
-			Accounts: &umtypes.Accounts{
+			Accounts: &models.Accounts{
 				Accounts: accs,
 			},
 			Role:          v.User.Role,
@@ -240,7 +240,7 @@ func (u *serverImpl) GetUsersLoginID(ctx context.Context) (*map[string]string, e
 	return &resp, nil
 }
 
-func (u *serverImpl) LinkResend(ctx context.Context, request umtypes.UserLogin) error {
+func (u *serverImpl) LinkResend(ctx context.Context, request models.UserLogin) error {
 	u.log.WithField("login", request.Login).Info("resending link")
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)
 	if err := u.handleDBError(err); err != nil {
@@ -255,7 +255,7 @@ func (u *serverImpl) LinkResend(ctx context.Context, request umtypes.UserLogin) 
 		return cherry.ErrUserAlreadyActivated()
 	}
 
-	link, err := u.svc.DB.GetLinkForUser(ctx, umtypes.LinkTypeConfirm, user)
+	link, err := u.svc.DB.GetLinkForUser(ctx, models.LinkTypeConfirm, user)
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
 		return cherry.ErrUnableResendLink()
@@ -263,7 +263,7 @@ func (u *serverImpl) LinkResend(ctx context.Context, request umtypes.UserLogin) 
 	if link == nil {
 		err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 			var err error
-			link, err = tx.CreateLink(ctx, umtypes.LinkTypeConfirm, 24*time.Hour, user)
+			link, err = tx.CreateLink(ctx, models.LinkTypeConfirm, 24*time.Hour, user)
 			return err
 		})
 		if err := u.handleDBError(err); err != nil {

@@ -4,18 +4,18 @@ import (
 	"net/http"
 	"time"
 
-	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/cherrylog"
-	"git.containerum.net/ch/kube-client/pkg/cherry/adaptors/gonic"
-	umtypes "git.containerum.net/ch/user-manager/pkg/models"
+	"git.containerum.net/ch/cherry/adaptors/cherrylog"
+	"git.containerum.net/ch/cherry/adaptors/gonic"
 	h "git.containerum.net/ch/user-manager/pkg/router/handlers"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
+	"git.containerum.net/ch/user-manager/pkg/umErrors"
 	utils "git.containerum.net/ch/utils/httputil"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	cherry "git.containerum.net/ch/kube-client/pkg/cherry/user-manager"
+	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
 )
 
 //CreateRouter initialises router and middlewares
@@ -29,18 +29,19 @@ func CreateRouter(um *server.UserManager) http.Handler {
 func initMiddlewares(e *gin.Engine, um *server.UserManager) {
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
-	e.Use(gonic.Recovery(cherry.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
+	e.Use(gonic.Recovery(umErrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
 	/* Custom */
 	e.Use(m.RegisterServices(um))
-	e.Use(m.PrepareContext)
+	e.Use(utils.PrepareContext)
 	e.Use(utils.SaveHeaders)
 }
 
 // SetupRoutes sets up http router needed to handle requests from clients.
 func initRoutes(app *gin.Engine) {
-	requireIdentityHeaders := m.RequireHeaders(umtypes.UserIDHeader, umtypes.UserRoleHeader)
-	requireLoginHeaders := m.RequireHeaders(umtypes.UserAgentHeader, umtypes.FingerprintHeader, umtypes.ClientIPHeader)
-	requireLogoutHeaders := m.RequireHeaders(umtypes.TokenIDHeader, umtypes.SessionIDHeader)
+	requireIdentityHeaders := utils.RequireHeaders(umErrors.ErrRequiredHeadersNotProvided, headers.UserIDXHeader, headers.UserRoleXHeader)
+	requireLoginHeaders := utils.RequireHeaders(umErrors.ErrRequiredHeadersNotProvided, headers.UserAgentXHeader, headers.UserClientXHeader, headers.UserIPXHeader)
+	//TODO
+	requireLogoutHeaders := utils.RequireHeaders(umErrors.ErrRequiredHeadersNotProvided, headers.TokenIDXHeader, "X-Session-ID")
 
 	root := app.Group("/")
 	{
