@@ -11,13 +11,13 @@ import (
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
-	"git.containerum.net/ch/user-manager/pkg/server"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"git.containerum.net/ch/user-manager/pkg/utils"
+	"git.containerum.net/ch/utils/httputil"
 )
 
 func (u *serverImpl) ChangePassword(ctx context.Context, request models.PasswordRequest) (*authProto.CreateTokenResponse, error) {
-	userID := server.MustGetUserID(ctx)
+	userID := httputil.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("changing password")
 
 	user, err := u.svc.DB.GetUserByID(ctx, userID)

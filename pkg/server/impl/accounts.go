@@ -8,13 +8,13 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/clients"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
-	"git.containerum.net/ch/user-manager/pkg/server"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
+	"git.containerum.net/ch/utils/httputil"
 	"github.com/sirupsen/logrus"
 )
 
 func (u *serverImpl) AddBoundAccount(ctx context.Context, request models.OAuthLoginRequest) error {
-	userID := server.MustGetUserID(ctx)
+	userID := httputil.MustGetUserID(ctx)
 	u.log.WithFields(logrus.Fields{
 		"userID":       userID,
 		"resource":     request.Resource,
@@ -52,7 +52,7 @@ func (u *serverImpl) AddBoundAccount(ctx context.Context, request models.OAuthLo
 }
 
 func (u *serverImpl) GetBoundAccounts(ctx context.Context) (map[string]string, error) {
-	userID := server.MustGetUserID(ctx)
+	userID := httputil.MustGetUserID(ctx)
 
 	u.log.WithField("userId", userID).Infof("getting bound accounts")
 
@@ -91,7 +91,7 @@ func (u *serverImpl) GetBoundAccounts(ctx context.Context) (map[string]string, e
 }
 
 func (u *serverImpl) DeleteBoundAccount(ctx context.Context, request models.BoundAccountDeleteRequest) error {
-	userID := server.MustGetUserID(ctx)
+	userID := httputil.MustGetUserID(ctx)
 	u.log.WithField("userId", userID).WithFields(logrus.Fields{
 		"resource": request.Resource,
 	}).Infof("deleting bound account: %#v", request)

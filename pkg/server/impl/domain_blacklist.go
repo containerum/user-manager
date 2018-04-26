@@ -5,8 +5,8 @@ import (
 
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
-	"git.containerum.net/ch/user-manager/pkg/server"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
+	"git.containerum.net/ch/utils/httputil"
 	"github.com/pkg/errors"
 )
 
@@ -55,7 +55,7 @@ func (u *serverImpl) GetBlacklistedDomainsList(ctx context.Context) (*models.Dom
 func (u *serverImpl) AddDomainToBlacklist(ctx context.Context, request models.Domain) error {
 	u.log.WithField("domain", request.Domain).Info("adding domain to blacklist")
 
-	userID := server.MustGetUserID(ctx)
+	userID := httputil.MustGetUserID(ctx)
 
 	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.BlacklistDomain(ctx, request.Domain, userID)

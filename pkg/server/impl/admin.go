@@ -8,10 +8,10 @@ import (
 	"git.containerum.net/ch/auth/proto"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
-	"git.containerum.net/ch/user-manager/pkg/server"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 	"git.containerum.net/ch/user-manager/pkg/validation"
+	"git.containerum.net/ch/utils/httputil"
 	"github.com/lib/pq"
 )
 
@@ -123,7 +123,7 @@ func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request models.Use
 		return err
 	}
 
-	if user.ID == server.MustGetUserID(ctx) {
+	if user.ID == httputil.MustGetUserID(ctx) {
 		return cherry.ErrUnableDeleteUser()
 	}
 
