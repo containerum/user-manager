@@ -7,7 +7,7 @@ import (
 
 	"git.containerum.net/ch/cherry"
 	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	utils "git.containerum.net/ch/utils/httputil"
+	"git.containerum.net/ch/utils/httputil"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
@@ -53,10 +53,10 @@ func (mc *httpMailClient) sendOneTemplate(ctx context.Context, tmplName string, 
 	req.UserID = recipient.ID
 	req.Variables = recipient.Variables
 	resp, err := mc.rest.R().
-		SetHeaders(utils.RequestHeadersMap(ctx)). // forward request headers to other our service
+		SetHeaders(httputil.RequestHeadersMap(ctx)). // forward request headers to other our service
 		SetBody(req).
 		SetResult(mttypes.SendResponse{}).
-		Post("/send/")
+		Post("/send")
 	if err != nil {
 		return err
 	}
