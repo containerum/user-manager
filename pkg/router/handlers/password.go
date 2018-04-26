@@ -15,8 +15,7 @@ import (
 )
 
 func PasswordChangeHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.PasswordRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -45,8 +44,7 @@ func PasswordChangeHandler(ctx *gin.Context) {
 }
 
 func PasswordResetHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.UserLogin
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -75,8 +73,7 @@ func PasswordResetHandler(ctx *gin.Context) {
 }
 
 func PasswordRestoreHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.PasswordRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {

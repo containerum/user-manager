@@ -16,8 +16,7 @@ import (
 )
 
 func UserToBlacklistHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.UserLogin
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -46,8 +45,7 @@ func UserToBlacklistHandler(ctx *gin.Context) {
 }
 
 func UserDeleteFromBlacklistHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.UserLogin
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -76,8 +74,7 @@ func UserDeleteFromBlacklistHandler(ctx *gin.Context) {
 }
 
 func BlacklistGetHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	page := int64(1)
 	pagestr, ok := ctx.GetQuery("page")

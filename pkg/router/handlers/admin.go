@@ -15,8 +15,7 @@ import (
 )
 
 func AdminUserCreateHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.UserLogin
 
@@ -46,8 +45,7 @@ func AdminUserCreateHandler(ctx *gin.Context) {
 }
 
 func AdminUserActicate(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.UserLogin
 
@@ -71,8 +69,7 @@ func AdminUserActicate(ctx *gin.Context) {
 }
 
 func AdminUserDeactivate(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.UserLogin
 
@@ -96,8 +93,7 @@ func AdminUserDeactivate(ctx *gin.Context) {
 }
 
 func AdminSetAdmin(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.UserLogin
 
@@ -121,8 +117,7 @@ func AdminSetAdmin(ctx *gin.Context) {
 }
 
 func AdminUnsetAdmin(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.UserLogin
 
@@ -146,8 +141,7 @@ func AdminUnsetAdmin(ctx *gin.Context) {
 }
 
 func AdminResetPassword(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.UserLogin
 

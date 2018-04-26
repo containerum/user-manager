@@ -15,8 +15,7 @@ import (
 )
 
 func AddBoundAccountHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.OAuthLoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -44,8 +43,7 @@ func AddBoundAccountHandler(ctx *gin.Context) {
 }
 
 func GetBoundAccountsHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetBoundAccounts(ctx.Request.Context())
 	if err != nil {
@@ -62,8 +60,7 @@ func GetBoundAccountsHandler(ctx *gin.Context) {
 }
 
 func DeleteBoundAccountHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.BoundAccountDeleteRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {

@@ -43,7 +43,7 @@ func PrepareContext(ctx *gin.Context) {
 	}
 }
 
-// needs role header
+// RequireAdminRole
 func RequireAdminRole(ctx *gin.Context) {
 	if ctx.GetHeader(umtypes.UserRoleHeader) != "admin" {
 		gonic.Gonic(cherry.ErrAdminRequired(), ctx)

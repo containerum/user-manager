@@ -18,8 +18,7 @@ import (
 )
 
 func UserCreateHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.RegisterRequest
 
@@ -49,8 +48,7 @@ func UserCreateHandler(ctx *gin.Context) {
 }
 
 func UserInfoGetHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetUserInfo(ctx.Request.Context())
 	if err != nil {
@@ -67,8 +65,7 @@ func UserInfoGetHandler(ctx *gin.Context) {
 }
 
 func UserGetByIDHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetUserInfoByID(ctx.Request.Context(), ctx.Param("user_id"))
 	if err != nil {
@@ -85,8 +82,7 @@ func UserGetByIDHandler(ctx *gin.Context) {
 }
 
 func UserGetByLoginHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetUserInfoByLogin(ctx.Request.Context(), ctx.Param("login"))
 	if err != nil {
@@ -103,8 +99,7 @@ func UserGetByLoginHandler(ctx *gin.Context) {
 }
 
 func UserInfoUpdateHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var newData map[string]interface{}
 	if err := ctx.ShouldBindWith(&newData, binding.JSON); err != nil {
@@ -133,8 +128,7 @@ func UserInfoUpdateHandler(ctx *gin.Context) {
 }
 
 func UserListGetHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	page := int64(1)
 	pagestr, ok := ctx.GetQuery("page")
@@ -172,8 +166,7 @@ func UserListGetHandler(ctx *gin.Context) {
 }
 
 func UserListLoginID(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetUsersLoginID(ctx.Request.Context())
 	if err != nil {
@@ -190,8 +183,7 @@ func UserListLoginID(ctx *gin.Context) {
 }
 
 func PartialDeleteHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	err := um.PartiallyDeleteUser(ctx.Request.Context())
 	if err != nil {
@@ -208,8 +200,7 @@ func PartialDeleteHandler(ctx *gin.Context) {
 }
 
 func CompleteDeleteHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.UserLogin
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {

@@ -16,8 +16,7 @@ import (
 )
 
 func LinkResendHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.UserLogin
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -46,8 +45,7 @@ func LinkResendHandler(ctx *gin.Context) {
 }
 
 func ActivateHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.Link
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -76,8 +74,7 @@ func ActivateHandler(ctx *gin.Context) {
 }
 
 func LinksGetHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetUserLinks(ctx.Request.Context(), ctx.Param("user_id"))
 	if err != nil {

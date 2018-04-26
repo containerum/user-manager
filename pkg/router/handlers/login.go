@@ -15,8 +15,7 @@ import (
 )
 
 func BasicLoginHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.LoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -44,8 +43,7 @@ func BasicLoginHandler(ctx *gin.Context) {
 }
 
 func OneTimeTokenLoginHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.OneTimeTokenLoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -68,8 +66,7 @@ func OneTimeTokenLoginHandler(ctx *gin.Context) {
 }
 
 func OAuthLoginHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.OAuthLoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -97,8 +94,7 @@ func OAuthLoginHandler(ctx *gin.Context) {
 }
 
 func LogoutHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	err := um.Logout(ctx.Request.Context())
 	if err != nil {

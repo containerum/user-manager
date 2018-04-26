@@ -15,8 +15,7 @@ import (
 )
 
 func BlacklistDomainAddHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request umtypes.Domain
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
@@ -45,8 +44,7 @@ func BlacklistDomainAddHandler(ctx *gin.Context) {
 }
 
 func BlacklistDomainDeleteHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	err := um.RemoveDomainFromBlacklist(ctx.Request.Context(), ctx.Param("domain"))
 	if err != nil {
@@ -63,8 +61,7 @@ func BlacklistDomainDeleteHandler(ctx *gin.Context) {
 }
 
 func BlacklistDomainGetHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetBlacklistedDomain(ctx.Request.Context(), ctx.Param("domain"))
 	if err != nil {
@@ -81,8 +78,7 @@ func BlacklistDomainGetHandler(ctx *gin.Context) {
 }
 
 func BlacklistDomainsListGetHandler(ctx *gin.Context) {
-	ump := ctx.MustGet(m.UMServices).(*server.UserManager)
-	um := *ump
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	resp, err := um.GetBlacklistedDomainsList(ctx.Request.Context())
 	if err != nil {
