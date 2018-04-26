@@ -44,10 +44,6 @@
   version = "1.3.0"
 
 [[constraint]]
-  branch = "master"
-  name = "git.containerum.net/ch/json-types"
-
-[[constraint]]
   branch = "develop"
   name = "git.containerum.net/ch/api-gateway"
 
