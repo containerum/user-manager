@@ -13,6 +13,6 @@ const (
 // RegisterServices adds services to context
 func RegisterServices(svc *server.UserManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Set(UMServices, &svc)
+		c.Set(UMServices, *svc)
 	}
 }
