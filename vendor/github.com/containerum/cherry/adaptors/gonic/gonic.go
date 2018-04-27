@@ -3,7 +3,7 @@ package gonic
 import (
 	"fmt"
 
-	"git.containerum.net/ch/cherry"
+	"github.com/containerum/cherry"
 	"github.com/gin-gonic/gin"
 )
 

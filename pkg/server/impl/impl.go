@@ -15,9 +15,9 @@ import (
 	"fmt"
 
 	"git.containerum.net/ch/auth/proto"
-	mttypes "git.containerum.net/ch/json-types/mail-templater"
+	mttypes "git.containerum.net/ch/mail-templater/pkg/models"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
-	"git.containerum.net/ch/utils/httputil"
+	"github.com/containerum/utils/httputil"
 	"github.com/sirupsen/logrus"
 )
 

@@ -11,7 +11,7 @@ import (
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 	"git.containerum.net/ch/user-manager/pkg/validation"
-	"git.containerum.net/ch/utils/httputil"
+	"github.com/containerum/utils/httputil"
 	"github.com/lib/pq"
 )
 

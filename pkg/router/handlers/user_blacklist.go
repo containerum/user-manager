@@ -4,13 +4,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"git.containerum.net/ch/cherry"
-	"git.containerum.net/ch/cherry/adaptors/gonic"
 	"git.containerum.net/ch/user-manager/pkg/models"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/umErrors"
 	"git.containerum.net/ch/user-manager/pkg/validation"
+	"github.com/containerum/cherry"
+	"github.com/containerum/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )

@@ -2,18 +2,48 @@ package httputil
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/textproto"
-
 	"strings"
 
-	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
-	"git.containerum.net/ch/cherry"
-	"git.containerum.net/ch/cherry/adaptors/gonic"
+	"github.com/containerum/cherry"
+	"github.com/containerum/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/universal-translator"
 	"gopkg.in/go-playground/validator.v9"
 )
+
+//Extrernal headers
+const (
+	UserClientHeader    = "User-Client"
+	AuthorizationHeader = "User-Token"
+)
+
+//Internal headers
+const (
+	RequestIDXHeader      = "X-Request-ID"
+	RequestNameXHeader    = "X-Request-Name"
+	UserIDXHeader         = "X-User-ID"
+	UserClientXHeader     = "X-User-Client"
+	UserAgentXHeader      = "X-User-Agent"
+	UserIPXHeader         = "X-Client-IP"
+	TokenIDXHeader        = "X-Token-ID"
+	UserRoleXHeader       = "X-User-Role"
+	UserNamespacesXHeader = "X-User-Namespace"
+	UserVolumesXHeader    = "X-User-Volume"
+	UserHideDataXHeader   = "X-User-Hide-Data"
+)
+
+//ErrHeaderRequired return if header not required
+func ErrHeaderRequired(name string) error {
+	return fmt.Errorf("Header %s required", name)
+}
+
+//ErrInvalidFormat return if header has invalid format
+func ErrInvalidFormat(name string) error {
+	return fmt.Errorf("Header %s has invalid format", name)
+}
 
 var headersKey = new(struct{})
 
@@ -54,13 +84,13 @@ func RequestHeaders(ctx context.Context) http.Header {
 }
 
 var hdrToKey = map[string]interface{}{
-	textproto.CanonicalMIMEHeaderKey(headers.UserIDXHeader):     UserIDContextKey,
-	textproto.CanonicalMIMEHeaderKey(headers.UserAgentXHeader):  UserAgentContextKey,
-	textproto.CanonicalMIMEHeaderKey(headers.UserClientXHeader): FingerPrintContextKey,
-	textproto.CanonicalMIMEHeaderKey(headers.RequestIDXHeader):  RequestIDContextKey,
-	textproto.CanonicalMIMEHeaderKey(headers.TokenIDXHeader):    TokenIDContextKey,
-	textproto.CanonicalMIMEHeaderKey(headers.UserIPXHeader):     ClientIPContextKey,
-	textproto.CanonicalMIMEHeaderKey(headers.UserRoleXHeader):   UserRoleContextKey,
+	textproto.CanonicalMIMEHeaderKey(UserIDXHeader):     UserIDContextKey,
+	textproto.CanonicalMIMEHeaderKey(UserAgentXHeader):  UserAgentContextKey,
+	textproto.CanonicalMIMEHeaderKey(UserClientXHeader): FingerPrintContextKey,
+	textproto.CanonicalMIMEHeaderKey(RequestIDXHeader):  RequestIDContextKey,
+	textproto.CanonicalMIMEHeaderKey(TokenIDXHeader):    TokenIDContextKey,
+	textproto.CanonicalMIMEHeaderKey(UserIPXHeader):     ClientIPContextKey,
+	textproto.CanonicalMIMEHeaderKey(UserRoleXHeader):   UserRoleContextKey,
 }
 
 // RequireHeaders is a gin middleware to ensure that headers is set
@@ -103,7 +133,7 @@ func PrepareContext(ctx *gin.Context) {
 // RequireAdminRole is a gin middleware which requires admin role
 func RequireAdminRole(errToReturn cherry.ErrConstruct) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(headers.UserRoleXHeader)) != "admin" {
+		if ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(UserRoleXHeader)) != "admin" {
 			err := errToReturn().AddDetails("only admin can do this")
 			gonic.Gonic(err, ctx)
 		}
@@ -113,7 +143,7 @@ func RequireAdminRole(errToReturn cherry.ErrConstruct) gin.HandlerFunc {
 // SubstituteUserMiddleware replaces user id in context with user id from query if it set and user is admin
 func SubstituteUserMiddleware(validate *validator.Validate, translator *ut.UniversalTranslator, validationErr cherry.ErrConstruct) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		role := ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(headers.UserRoleXHeader))
+		role := ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(UserRoleXHeader))
 		if userID, set := ctx.GetQuery("user-id"); set && role == "admin" {
 			if vErr := validate.VarCtx(ctx.Request.Context(), userID, "uuid"); vErr != nil {
 				t, _ := translator.FindTranslator(GetAcceptedLanguages(ctx.Request.Context())...)

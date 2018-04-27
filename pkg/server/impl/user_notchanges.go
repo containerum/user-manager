@@ -9,7 +9,7 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
-	"git.containerum.net/ch/utils/httputil"
+	"github.com/containerum/utils/httputil"
 )
 
 func (u *serverImpl) GetUserLinks(ctx context.Context, userID string) (*models.Links, error) {

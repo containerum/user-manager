@@ -5,9 +5,9 @@ import (
 
 	"time"
 
-	"git.containerum.net/ch/cherry"
-	mttypes "git.containerum.net/ch/json-types/mail-templater"
-	"git.containerum.net/ch/utils/httputil"
+	mttypes "git.containerum.net/ch/mail-templater/pkg/models"
+	"github.com/containerum/cherry"
+	"github.com/containerum/utils/httputil"
 	"github.com/json-iterator/go"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/resty.v1"
