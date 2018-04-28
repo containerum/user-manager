@@ -1,7 +1,7 @@
 package cherrylog
 
 import (
-	"git.containerum.net/ch/cherry"
+	"github.com/containerum/cherry"
 	"github.com/sirupsen/logrus"
 	"strings"
 )

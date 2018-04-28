@@ -3,10 +3,10 @@ package middleware
 import (
 	"net/textproto"
 
-	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
-	"git.containerum.net/ch/cherry/adaptors/gonic"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/umErrors"
+	"github.com/containerum/cherry/adaptors/gonic"
+	headers "github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"
 )
 

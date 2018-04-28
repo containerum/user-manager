@@ -9,7 +9,7 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
-	"git.containerum.net/ch/utils/httputil"
+	"github.com/containerum/utils/httputil"
 	"github.com/sirupsen/logrus"
 )
 

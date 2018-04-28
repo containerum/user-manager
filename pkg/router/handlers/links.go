@@ -3,11 +3,11 @@ package handlers
 import (
 	"net/http"
 
-	"git.containerum.net/ch/cherry"
-	"git.containerum.net/ch/cherry/adaptors/gonic"
 	"git.containerum.net/ch/user-manager/pkg/models"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
+	"github.com/containerum/cherry"
+	"github.com/containerum/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 
 	"git.containerum.net/ch/user-manager/pkg/umErrors"

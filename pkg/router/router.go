@@ -4,18 +4,18 @@ import (
 	"net/http"
 	"time"
 
-	"git.containerum.net/ch/cherry/adaptors/cherrylog"
-	"git.containerum.net/ch/cherry/adaptors/gonic"
 	h "git.containerum.net/ch/user-manager/pkg/router/handlers"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/umErrors"
-	utils "git.containerum.net/ch/utils/httputil"
+	"github.com/containerum/cherry/adaptors/cherrylog"
+	"github.com/containerum/cherry/adaptors/gonic"
+	utils "github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	"git.containerum.net/ch/api-gateway/pkg/utils/headers"
+	headers "github.com/containerum/utils/httputil"
 )
 
 //CreateRouter initialises router and middlewares

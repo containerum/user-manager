@@ -3,40 +3,34 @@
 
 [[projects]]
   branch = "develop"
-  name = "git.containerum.net/ch/api-gateway"
-  packages = ["pkg/utils/headers"]
-  revision = "25814d45e36ce93606bac69f89a92c9f9f1eecf9"
+  name = "git.containerum.net/ch/auth"
+  packages = ["proto"]
+  revision = "7430ec8f101b19886808585f9cef3ff6e6c33016"
 
 [[projects]]
   branch = "develop"
-  name = "git.containerum.net/ch/auth"
-  packages = ["proto"]
-  revision = "4c10cb2261e42b159fb7c120382414e82aec1d90"
+  name = "git.containerum.net/ch/mail-templater"
+  packages = ["pkg/models"]
+  revision = "57b7107d831d6574d6b59ce1de49dc1e9e440595"
 
 [[projects]]
-  name = "git.containerum.net/ch/cherry"
+  name = "github.com/containerum/cherry"
   packages = [
     ".",
     "adaptors/cherrylog",
     "adaptors/gonic"
   ]
-  revision = "82e4d22be24efe6d9e6925376119a24f789bddc7"
+  revision = "3076e36aee79538b125d060e5b671649cbb2db4e"
   version = "v1.0.1-rc2"
 
 [[projects]]
-  branch = "master"
-  name = "git.containerum.net/ch/json-types"
-  packages = ["mail-templater"]
-  revision = "041a989c67953d829255c2fb10985b9bc1b25e51"
-
-[[projects]]
-  branch = "master"
-  name = "git.containerum.net/ch/utils"
+  name = "github.com/containerum/utils"
   packages = [
     "httputil",
     "sqlxutil"
   ]
-  revision = "47fc480749a3e137a621f1b95263f61cc5febcf8"
+  revision = "5e922affb542eaeb55ab395ff3c7161179df54b3"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -97,10 +91,10 @@
   revision = "e09c5db296004fbe3f74490e84dcd62c3c5ddb1b"
 
 [[projects]]
+  branch = "master"
   name = "github.com/google/uuid"
   packages = ["."]
-  revision = "064e2069ce9c359c118179501254f67d7d37ba24"
-  version = "0.2"
+  revision = "dec09d789f3dba190787f8b4454c7d3c936fed9e"
 
 [[projects]]
   branch = "master"
@@ -268,7 +262,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "b0697eccbea9adec5b7ba8008f4c33d98d733388"
+  revision = "b49d69b5da943f7ef3c9cf91c8777c1f78a0cc3c"
 
 [[projects]]
   branch = "master"
@@ -379,6 +373,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "381ae869a9575bf7e2c844722178b78bc6310fefc7c40537aca5f95c498d26c5"
+  inputs-digest = "64fa3e13191b1ea675a8ff30d25b46d1e6e28af236afecf973da9eb99e909eef"
   solver-name = "gps-cdcl"
   solver-version = 1

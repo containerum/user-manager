@@ -3,6 +3,14 @@
     go-tests = true
     unused-packages = true
 
+  [[prune.project]]
+    name = "github.com/containerum/utils"
+    non-go = false
+
+  [[prune.project]]
+    name = "github.com/containerum/cherry"
+    non-go = false
+
 [[constraint]]
   branch = "develop"
   name = "git.containerum.net/ch/auth"
@@ -45,16 +53,12 @@
 
 [[constraint]]
   branch = "master"
-  name = "git.containerum.net/ch/json-types"
+  name = "github.com/google/uuid"
 
 [[constraint]]
-  branch = "develop"
-  name = "git.containerum.net/ch/api-gateway"
+  name = "github.com/containerum/cherry"
+  version = "1.0.1-rc2"
 
 [[constraint]]
-  branch = "master"
-  name = "git.containerum.net/ch/utils"
-
-[[constraint]]
-  name = "git.containerum.net/ch/cherry"
-  version = "~1.0.1-rc2"
+  name = "github.com/containerum/utils"
+  version = "1.0.0"

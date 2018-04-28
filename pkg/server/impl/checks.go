@@ -4,7 +4,7 @@ import (
 	"context"
 
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
-	"git.containerum.net/ch/utils/httputil"
+	"github.com/containerum/utils/httputil"
 )
 
 func (u *serverImpl) CheckUserExist(ctx context.Context) error {
