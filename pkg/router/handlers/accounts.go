@@ -14,6 +14,57 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
+// swagger:operation GET /user/bound_accounts BoundAccounts GetBoundAccountsHandler
+// Get users bound accounts.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-bound-accounts
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+// responses:
+//  '200':
+//    description: bound accounts list
+//    schema:
+//      $ref: '#/definitions/BoundAccounts'
+//  default:
+//    $ref: '#/responses/error'
+func GetBoundAccountsHandler(ctx *gin.Context) {
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
+
+	resp, err := um.GetBoundAccounts(ctx.Request.Context())
+	if err != nil {
+		if cherr, ok := err.(*cherry.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// swagger:operation POST /user/bound_accounts BoundAccounts GetBoundAccountsHandler
+// Bind account.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-bound-accounts
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/OAuthLoginRequest'
+// responses:
+//  '202':
+//    description: account added
+//  default:
+//    $ref: '#/responses/error'
 func AddBoundAccountHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -42,23 +93,24 @@ func AddBoundAccountHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-func GetBoundAccountsHandler(ctx *gin.Context) {
-	um := ctx.MustGet(m.UMServices).(server.UserManager)
-
-	resp, err := um.GetBoundAccounts(ctx.Request.Context())
-	if err != nil {
-		if cherr, ok := err.(*cherry.Err); ok {
-			gonic.Gonic(cherr, ctx)
-		} else {
-			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
-		}
-		return
-	}
-
-	ctx.JSON(http.StatusOK, resp)
-}
-
+// swagger:operation DELETE /user/bound_accounts BoundAccounts DeleteBoundAccountHandler
+// Unbind account.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-bound-account
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/BoundAccountDeleteRequest'
+// responses:
+//  '202':
+//    description: account deleted
+//  default:
+//    $ref: '#/responses/error'
 func DeleteBoundAccountHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 

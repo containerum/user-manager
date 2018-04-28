@@ -18,6 +18,8 @@ import (
 	"github.com/spf13/viper"
 )
 
+//go:generate swagger generate spec -m -i ../../swagger-basic.yml -o ../../swagger.json
+
 func exitOnErr(err error) {
 	if err != nil {
 		fmt.Println(err)

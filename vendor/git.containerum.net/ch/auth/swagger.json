@@ -1,0 +1,618 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "swagger": "3.0",
+  "info": {
+    "description": "Auth service is an OAuth authentication server that is used to authenticate users.",
+    "title": "Auth API"
+  },
+  "paths": {
+    "/access": {
+      "put": {
+        "summary": "Rewrite user-namespace and user-volume accesses in DB for each user.",
+        "operationId": "UpdateUserAccesses",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateAccessRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "accesses updated"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/byid/access/{token_id}": {
+      "get": {
+        "summary": "Get access token by ID.",
+        "operationId": "GetAccessTokenByID",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "type": "string",
+            "format": "uuid",
+            "name": "token_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "access token",
+            "schema": {
+              "$ref": "#/definitions/AccessTokenByIDResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        }
+      }
+    },
+    "/token": {
+      "get": {
+        "summary": "Get user tokens.",
+        "operationId": "GetUserTokens",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user tokens",
+            "schema": {
+              "$ref": "#/definitions/GetUserTokensResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-authorization-required": true,
+        "x-method-visibility": "public"
+      },
+      "post": {
+        "summary": "Creates token for user.",
+        "operationId": "CreateToken",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserAgentHeader"
+          },
+          {
+            "$ref": "#/parameters/FingerprintHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/ClientIPHeader"
+          },
+          {
+            "name": "resources_accesses",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "access": {
+                  "$ref": "#/definitions/ResourcesAccess"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "access and refresh tokens created",
+            "schema": {
+              "$ref": "#/definitions/CreateTokenResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/token/{access_token}": {
+      "get": {
+        "summary": "Checks token and returns resources accesses.",
+        "operationId": "CheckToken",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserAgentHeader"
+          },
+          {
+            "$ref": "#/parameters/FingerprintHeader"
+          },
+          {
+            "$ref": "#/parameters/ClientIPHeader"
+          },
+          {
+            "type": "string",
+            "name": "access_token",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "token valid",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "access": {
+                  "$ref": "#/definitions/ResourcesAccess"
+                }
+              }
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/token/{refresh_token}": {
+      "put": {
+        "summary": "Get new access/refresh token pair using refresh token.",
+        "operationId": "ExtendToken",
+        "parameters": [
+          {
+            "$ref": "#/parameters/FingerprintHeader"
+          },
+          {
+            "type": "string",
+            "description": "valid refresh token",
+            "name": "refresh_token",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "access and refresh tokens extended",
+            "schema": {
+              "$ref": "#/definitions/ExtendTokenResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-authorization-required": false,
+        "x-method-visibility": "public"
+      }
+    },
+    "/token/{token_id}": {
+      "delete": {
+        "summary": "Delete token (record) by id.",
+        "operationId": "DeleteTokenByID",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "type": "string",
+            "format": "uuid",
+            "name": "token_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "token deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-authorization-required": true,
+        "x-method-visibility": "public"
+      }
+    },
+    "/user/{user_id}/tokens": {
+      "delete": {
+        "summary": "Delete user (refresh) tokens. Also makes access tokens invalid.",
+        "operationId": "DeleteUserTokens",
+        "parameters": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "name": "user_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "tokens deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    }
+  },
+  "definitions": {
+    "AccessObject": {
+      "description": "AccessObject represents user access to resource",
+      "type": "object",
+      "properties": {
+        "access": {
+          "type": "string",
+          "x-go-name": "Access"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "Id"
+        },
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "AccessTokenByIDResponse": {
+      "type": "object",
+      "title": "AccessTokenByIDResponse contains access token get by ID.",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "x-go-name": "AccessToken"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "AuthClient": {
+      "type": "object",
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "AuthServer": {
+      "type": "object",
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "CreateTokenResponse": {
+      "type": "object",
+      "title": "CreateTokenResponse contains access and refresh token.",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "x-go-name": "AccessToken"
+        },
+        "refresh_token": {
+          "type": "string",
+          "x-go-name": "RefreshToken"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "Duration": {
+      "description": "# Examples\n\nExample 1: Compute Duration from two Timestamps in pseudo code.\n\nTimestamp start = ...;\nTimestamp end = ...;\nDuration duration = ...;\n\nduration.seconds = end.seconds - start.seconds;\nduration.nanos = end.nanos - start.nanos;\n\nif (duration.seconds \u003c 0 \u0026\u0026 duration.nanos \u003e 0) {\nduration.seconds += 1;\nduration.nanos -= 1000000000;\n} else if (durations.seconds \u003e 0 \u0026\u0026 duration.nanos \u003c 0) {\nduration.seconds -= 1;\nduration.nanos += 1000000000;\n}\n\nExample 2: Compute Timestamp from Timestamp + Duration in pseudo code.\n\nTimestamp start = ...;\nDuration duration = ...;\nTimestamp end = ...;\n\nend.seconds = start.seconds + duration.seconds;\nend.nanos = start.nanos + duration.nanos;\n\nif (end.nanos \u003c 0) {\nend.seconds -= 1;\nend.nanos += 1000000000;\n} else if (end.nanos \u003e= 1000000000) {\nend.seconds += 1;\nend.nanos -= 1000000000;\n}\n\nExample 3: Compute Duration from datetime.timedelta in Python.\n\ntd = datetime.timedelta(days=3, minutes=10)\nduration = Duration()\nduration.FromTimedelta(td)\n\n# JSON Mapping\n\nIn JSON format, the Duration type is encoded as a string rather than an\nobject, where the string ends in the suffix \"s\" (indicating seconds) and\nis preceded by the number of seconds, with nanoseconds expressed as\nfractional seconds. For example, 3 seconds with 0 nanoseconds should be\nencoded in JSON format as \"3s\", while 3 seconds and 1 nanosecond should\nbe expressed in JSON format as \"3.000000001s\", and 3 seconds and 1\nmicrosecond should be expressed in JSON format as \"3.000001s\".",
+      "type": "object",
+      "title": "A Duration represents a signed, fixed-length span of time represented\nas a count of seconds and fractions of seconds at nanosecond\nresolution. It is independent of any calendar and concepts like \"day\"\nor \"month\". It is related to Timestamp in that the difference between\ntwo Timestamp values is a Duration and it can be added or subtracted\nfrom a Timestamp. Range is approximately +-10,000 years.",
+      "properties": {
+        "nanos": {
+          "description": "Signed fractions of a second at nanosecond resolution of the span\nof time. Durations less than one second are represented with a 0\n`seconds` field and a positive or negative `nanos` field. For durations\nof one second or more, a non-zero value for the `nanos` field must be\nof the same sign as the `seconds` field. Must be from -999,999,999\nto +999,999,999 inclusive.",
+          "type": "integer",
+          "format": "int32",
+          "x-go-name": "Nanos"
+        },
+        "seconds": {
+          "description": "Signed seconds of the span of time. Must be from -315,576,000,000\nto +315,576,000,000 inclusive. Note: these bounds are computed from:\n60 sec/min * 60 min/hr * 24 hr/day * 365.25 days/year * 10000 years",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Seconds"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/vendor/github.com/golang/protobuf/ptypes/duration"
+    },
+    "Err": {
+      "description": "Err -- standard serializable API error\nMessage -- constant error message:\n+ \"invalid username\"\n+ \"quota exceeded\"\n+ \"validation error\"\n...etc...\nID -- unique error identification code\nDetails -- optional context error messages kinda\n+ \"field 'Replicas' must be non-zero value\"\n+ \"not enough tights to feed gopher\"\n+ \"resource 'God' does't exist\"\nFields -- optional set of key-value pairs",
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Details"
+        },
+        "fields": {
+          "$ref": "#/definitions/Fields"
+        },
+        "id": {
+          "$ref": "#/definitions/ErrID"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "status_http": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "StatusHTTP"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/vendor/github.com/containerum/cherry"
+    },
+    "ErrID": {
+      "description": "ErrID -- represents unique error ID",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/ErrKind"
+        },
+        "sid": {
+          "$ref": "#/definitions/ErrSID"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/vendor/github.com/containerum/cherry"
+    },
+    "ErrKind": {
+      "description": "ErrKind -- represents kind of error",
+      "type": "integer",
+      "format": "uint64",
+      "x-go-package": "git.containerum.net/ch/auth/vendor/github.com/containerum/cherry"
+    },
+    "ErrSID": {
+      "description": "ErrSID -- represents service ID of error",
+      "type": "string",
+      "x-go-package": "git.containerum.net/ch/auth/vendor/github.com/containerum/cherry"
+    },
+    "ExtendTokenResponse": {
+      "description": "ExtendTokenResponse contains new access and refresh tokens",
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "x-go-name": "AccessToken"
+        },
+        "refresh_token": {
+          "type": "string",
+          "x-go-name": "RefreshToken"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "Fields": {
+      "description": "Fields -- represents additional key-value fields of error",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-go-package": "git.containerum.net/ch/auth/vendor/github.com/containerum/cherry"
+    },
+    "GetUserTokensResponse": {
+      "description": "GetUserTokensResponse contains user tokens",
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StoredTokenForUser"
+          },
+          "x-go-name": "Tokens"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "ResourcesAccess": {
+      "description": "ResourceAccesses contains user accesses to resources",
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AccessObject"
+          },
+          "x-go-name": "Namespace"
+        },
+        "volume": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AccessObject"
+          },
+          "x-go-name": "Volume"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "StoredToken": {
+      "description": "StoredToken is a representaion of token database record",
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "$ref": "#/definitions/Timestamp"
+        },
+        "fingerprint": {
+          "type": "string",
+          "x-go-name": "Fingerprint"
+        },
+        "life_time": {
+          "$ref": "#/definitions/Duration"
+        },
+        "part_token_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "PartTokenId"
+        },
+        "platform": {
+          "type": "string",
+          "x-go-name": "Platform"
+        },
+        "raw_refresh_token": {
+          "type": "string",
+          "x-go-name": "RawRefreshToken"
+        },
+        "rw_access": {
+          "type": "boolean",
+          "x-go-name": "RwAccess"
+        },
+        "token_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "TokenId"
+        },
+        "user_agent": {
+          "type": "string",
+          "x-go-name": "UserAgent"
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "UserId"
+        },
+        "user_ip": {
+          "type": "string",
+          "format": "ip",
+          "x-go-name": "UserIp"
+        },
+        "user_namespace": {
+          "type": "string",
+          "x-go-name": "UserNamespace"
+        },
+        "user_role": {
+          "type": "string",
+          "x-go-name": "UserRole"
+        },
+        "user_volume": {
+          "type": "string",
+          "x-go-name": "UserVolume"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "StoredTokenForUser": {
+      "description": "StoredTokenForUser is an information about token sent to user",
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "ip": {
+          "description": "@inject_tag: binding:\"ip\"",
+          "type": "string",
+          "format": "ip",
+          "x-go-name": "Ip"
+        },
+        "token_id": {
+          "description": "@inject_tag: binding:\"uuid\"",
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "TokenId"
+        },
+        "user_agent": {
+          "type": "string",
+          "x-go-name": "UserAgent"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "Timestamp": {
+      "description": "# Examples\n\nExample 1: Compute Timestamp from POSIX `time()`.\n\nTimestamp timestamp;\ntimestamp.set_seconds(time(NULL));\ntimestamp.set_nanos(0);\n\nExample 2: Compute Timestamp from POSIX `gettimeofday()`.\n\nstruct timeval tv;\ngettimeofday(\u0026tv, NULL);\n\nTimestamp timestamp;\ntimestamp.set_seconds(tv.tv_sec);\ntimestamp.set_nanos(tv.tv_usec * 1000);\n\nExample 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.\n\nFILETIME ft;\nGetSystemTimeAsFileTime(\u0026ft);\nUINT64 ticks = (((UINT64)ft.dwHighDateTime) \u003c\u003c 32) | ft.dwLowDateTime;\n\nA Windows tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z\nis 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.\nTimestamp timestamp;\ntimestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));\ntimestamp.set_nanos((INT32) ((ticks % 10000000) * 100));\n\nExample 4: Compute Timestamp from Java `System.currentTimeMillis()`.\n\nlong millis = System.currentTimeMillis();\n\nTimestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)\n.setNanos((int) ((millis % 1000) * 1000000)).build();\n\n\nExample 5: Compute Timestamp from current time in Python.\n\ntimestamp = Timestamp()\ntimestamp.GetCurrentTime()\n\n# JSON Mapping\n\nIn JSON format, the Timestamp type is encoded as a string in the\n[RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the\nformat is \"{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z\"\nwhere {year} is always expressed using four digits while {month}, {day},\n{hour}, {min}, and {sec} are zero-padded to two digits each. The fractional\nseconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),\nare optional. The \"Z\" suffix indicates the timezone (\"UTC\"); the timezone\nis required, though only UTC (as indicated by \"Z\") is presently supported.\n\nFor example, \"2017-01-15T01:30:15.01Z\" encodes 15.01 seconds past\n01:30 UTC on January 15, 2017.\n\nIn JavaScript, one can convert a Date object to this format using the\nstandard [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString]\nmethod. In Python, a standard `datetime.datetime` object can be converted\nto this format using [`strftime`](https://docs.python.org/2/library/time.html#time.strftime)\nwith the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one\ncan use the Joda Time's [`ISODateTimeFormat.dateTime()`](\nhttp://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime())\nto obtain a formatter capable of generating timestamps in this format.",
+      "type": "object",
+      "title": "A Timestamp represents a point in time independent of any time zone\nor calendar, represented as seconds and fractions of seconds at\nnanosecond resolution in UTC Epoch time. It is encoded using the\nProleptic Gregorian Calendar which extends the Gregorian calendar\nbackwards to year one. It is encoded assuming all minutes are 60\nseconds long, i.e. leap seconds are \"smeared\" so that no leap second\ntable is needed for interpretation. Range is from\n0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z.\nBy restricting to that range, we ensure that we can convert to\nand from  RFC 3339 date strings.\nSee [https://www.ietf.org/rfc/rfc3339.txt](https://www.ietf.org/rfc/rfc3339.txt).",
+      "properties": {
+        "nanos": {
+          "description": "Non-negative fractions of a second at nanosecond resolution. Negative\nsecond values with fractions must still have non-negative nanos values\nthat count forward in time. Must be from 0 to 999,999,999\ninclusive.",
+          "type": "integer",
+          "format": "int32",
+          "x-go-name": "Nanos"
+        },
+        "seconds": {
+          "description": "Represents seconds of UTC time since Unix epoch\n1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to\n9999-12-31T23:59:59Z inclusive.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Seconds"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/vendor/github.com/golang/protobuf/ptypes/timestamp"
+    },
+    "UpdateAccessRequest": {
+      "type": "object",
+      "title": "UpdateAccessRequest describes request for updating user resources accesses.",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UpdateAccessRequestElement"
+          },
+          "x-go-name": "Users"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "UpdateAccessRequestElement": {
+      "type": "object",
+      "title": "UpdateAccessRequestElement describes element for updating user resources accesses.",
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/ResourcesAccess"
+        },
+        "user_id": {
+          "description": "@inject_tag: binding:\"uuid\"",
+          "type": "string",
+          "x-go-name": "UserId"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "authClient": {
+      "type": "object",
+      "x-go-package": "git.containerum.net/ch/auth/proto"
+    }
+  },
+  "parameters": {
+    "ClientIPHeader": {
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/ClientIPHeader"
+    },
+    "FingerprintHeader": {
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserClientHeader"
+    },
+    "UserAgentHeader": {
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserAgentHeader"
+    },
+    "UserIDHeader": {
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserIDHeader"
+    },
+    "UserRoleHeader": {
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserRoleHeader"
+    }
+  },
+  "responses": {
+    "error": {
+      "description": "cherry error",
+      "schema": {
+        "$ref": "vendor/github.com/containerum/cherry/swagger.json#/definitions/Err"
+      }
+    }
+  }
+}

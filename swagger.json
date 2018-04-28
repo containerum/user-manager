@@ -1,0 +1,2270 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "User-Manager service is service for managing users.",
+    "title": "User-Manager"
+  },
+  "paths": {
+    "/admin": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#set-admin",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Make user admin.",
+        "operationId": "AdminSetAdmin",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "user becomes admin"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "delete": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Make admin user.",
+        "operationId": "AdminSetAdmin",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "admin becomes user"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/admin/user/activation": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-user-activation",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Activate user.",
+        "operationId": "AdminUserActivate",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "user activated"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/admin/user/deactivation": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-user-deactivation",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Deactivate user.",
+        "operationId": "AdminUserDeactivate",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "user deactivated"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/admin/user/password/reset": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-reset-password",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Make admin user.",
+        "operationId": "AdminResetPassword",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "user new credentials",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/admin/user/sign_up": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-create-user",
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Create user.",
+        "operationId": "AdminUserCreateHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "account created",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/domain": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-blacklist-domain-list",
+        "tags": [
+          "DomainBlacklist"
+        ],
+        "summary": "Get blacklisted domains list.",
+        "operationId": "BlacklistDomainsListGetHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "blacklisted domains",
+            "schema": {
+              "$ref": "#/definitions/DomainListResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-domain-to-blacklist",
+        "tags": [
+          "DomainBlacklist"
+        ],
+        "summary": "Add domain to blacklist.",
+        "operationId": "BlacklistDomainAddHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Domain"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "domain added to blacklist"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/domain/{domain}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-blacklist-domain",
+        "tags": [
+          "DomainBlacklist"
+        ],
+        "summary": "Check if domain is in blacklist.",
+        "operationId": "BlacklistDomainGetHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "type": "string",
+            "name": "domain",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "blacklisted domain",
+            "schema": {
+              "$ref": "#/definitions/Domain"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "delete": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-domain-from-blacklist",
+        "tags": [
+          "DomainBlacklist"
+        ],
+        "summary": "Remove domain from blacklist.",
+        "operationId": "BlacklistDomainDeleteHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "type": "string",
+            "name": "domain",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "domain removed from blacklist"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/login/basic": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-in-with-login-and-password",
+        "tags": [
+          "Login"
+        ],
+        "summary": "Basic login.",
+        "operationId": "BasicLoginHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserAgentHeader"
+          },
+          {
+            "$ref": "#/parameters/FingerprintHeader"
+          },
+          {
+            "$ref": "#/parameters/ClientIPHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/LoginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user logged in",
+            "schema": {
+              "$ref": "#/definitions/CreateTokenResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/login/oauth": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-in-with-third-party-resource-oauth",
+        "tags": [
+          "Login"
+        ],
+        "summary": "Login using oauth service.",
+        "operationId": "OAuthLoginRequest",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserAgentHeader"
+          },
+          {
+            "$ref": "#/parameters/FingerprintHeader"
+          },
+          {
+            "$ref": "#/parameters/ClientIPHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/OAuthLoginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user logged in",
+            "schema": {
+              "$ref": "#/definitions/CreateTokenResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/login/token": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-in-with-one-time-token",
+        "tags": [
+          "Login"
+        ],
+        "summary": "Login with one-time token.",
+        "operationId": "OneTimeTokenLoginHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserAgentHeader"
+          },
+          {
+            "$ref": "#/parameters/FingerprintHeader"
+          },
+          {
+            "$ref": "#/parameters/ClientIPHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/OneTimeTokenLoginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user logged in",
+            "schema": {
+              "$ref": "#/definitions/CreateTokenResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/logout": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-out",
+        "tags": [
+          "Login"
+        ],
+        "summary": "Logout for users who used one-time token login.",
+        "operationId": "LogoutHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/TokenIDHeader"
+          },
+          {
+            "$ref": "#/parameters/SessionIDHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user logged out"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/password/change": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#change-password",
+        "tags": [
+          "Password"
+        ],
+        "summary": "Change password.",
+        "operationId": "PasswordChangeHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PasswordChangeRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "password changed",
+            "schema": {
+              "$ref": "#/definitions/CreateTokenResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/password/reset": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#reset-password",
+        "tags": [
+          "Password"
+        ],
+        "summary": "Reset password.",
+        "operationId": "PasswordResetHandler",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "password reset link sent"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/password/restore": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#reseted-password-change",
+        "tags": [
+          "Password"
+        ],
+        "summary": "Change password with token from email.",
+        "operationId": "PasswordRestoreHandler",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/PasswordRestoreRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "password changed",
+            "schema": {
+              "$ref": "#/definitions/CreateTokenResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/user/activation": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#activate-user",
+        "tags": [
+          "User"
+        ],
+        "summary": "Activate user.",
+        "operationId": "ActivateHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Link"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user activated",
+            "schema": {
+              "$ref": "#/definitions/CreateTokenResponse"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/user/blacklist": {
+      "get": {
+        "description": "Users blacklist\nhttps://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#blacklist-users",
+        "tags": [
+          "UsersBlacklist"
+        ],
+        "operationId": "BlacklistGetHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "type": "string",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "per_page",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "blacklisted users list",
+            "schema": {
+              "$ref": "#/definitions/UserList"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#user-to-blacklist",
+        "tags": [
+          "UsersBlacklist"
+        ],
+        "summary": "Add user to blacklist.",
+        "operationId": "UserToBlacklistHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "user added to blacklist"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "delete": {
+        "tags": [
+          "UsersBlacklist"
+        ],
+        "summary": "Remove user from blacklist.",
+        "operationId": "UserDeleteFromBlacklistHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "user removed from blacklist"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/user/bound_accounts": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-bound-accounts",
+        "tags": [
+          "BoundAccounts"
+        ],
+        "summary": "Get users bound accounts.",
+        "operationId": "GetBoundAccountsHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "bound accounts list",
+            "schema": {
+              "$ref": "#/definitions/BoundAccounts"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-bound-accounts",
+        "tags": [
+          "BoundAccounts"
+        ],
+        "summary": "Bind account.",
+        "operationId": "GetBoundAccountsHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/OAuthLoginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "account added"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "delete": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-bound-account",
+        "tags": [
+          "BoundAccounts"
+        ],
+        "summary": "Unbind account.",
+        "operationId": "DeleteBoundAccountHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/BoundAccountDeleteRequest"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "account deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/user/delete/complete": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-user-from-everywhere",
+        "tags": [
+          "User"
+        ],
+        "summary": "Delete user completely (almost).",
+        "operationId": "CompleteDeleteHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserAgentHeader"
+          },
+          {
+            "$ref": "#/parameters/FingerprintHeader"
+          },
+          {
+            "$ref": "#/parameters/ClientIPHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "user deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/user/delete/partial": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-user-pseudo",
+        "tags": [
+          "User"
+        ],
+        "summary": "Mark user as deleted.",
+        "operationId": "PartialDeleteHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "user deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/user/info": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-profile-info",
+        "tags": [
+          "UserInfo"
+        ],
+        "summary": "Get user info.",
+        "operationId": "UserInfoGetHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "user info",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#change-profile-info",
+        "tags": [
+          "UserInfo"
+        ],
+        "summary": "Update user info.",
+        "operationId": "UserInfoUpdateHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserData"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "updated user info",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/user/info/id/{user_id}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-info-by-id-for-mail",
+        "tags": [
+          "UserInfo"
+        ],
+        "summary": "Get user info by ID.",
+        "operationId": "UserGetByIDHandler",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "user_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user info",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/user/info/login/{login}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-info-by-login-for-resource",
+        "tags": [
+          "UserInfo"
+        ],
+        "summary": "Get user info by ID.",
+        "operationId": "UserGetByLoginHandler",
+        "parameters": [
+          {
+            "type": "string",
+            "name": "login",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user info",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "private"
+      }
+    },
+    "/user/links/{user_id}": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-links",
+        "tags": [
+          "Links"
+        ],
+        "summary": "Get user links.",
+        "operationId": "LinksGetHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "type": "string",
+            "name": "user_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "link sent",
+            "schema": {
+              "$ref": "#/definitions/Links"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/user/list": {
+      "get": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-list",
+        "tags": [
+          "UserInfo"
+        ],
+        "summary": "Get user info.",
+        "operationId": "UserListGetHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "type": "string",
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "name": "per_page",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "users list",
+            "schema": {
+              "$ref": "#/definitions/UserList"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/user/loginid": {
+      "get": {
+        "tags": [
+          "UserInfo"
+        ],
+        "summary": "Get users list.",
+        "operationId": "UserListLoginID",
+        "responses": {
+          "200": {
+            "description": "users list",
+            "schema": {
+              "$ref": "#/definitions/LoginID"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/user/sign_up": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#create-user",
+        "tags": [
+          "User"
+        ],
+        "summary": "Create user.",
+        "operationId": "UserCreateHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserAgentHeader"
+          },
+          {
+            "$ref": "#/parameters/FingerprintHeader"
+          },
+          {
+            "$ref": "#/parameters/ClientIPHeader"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/RegisterRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "user created",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/user/sign_up/resend": {
+      "post": {
+        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#resend-activation-link",
+        "tags": [
+          "Links"
+        ],
+        "summary": "Resend activation link.",
+        "operationId": "LinkResendHandler",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserLogin"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "link sent"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    }
+  },
+  "definitions": {
+    "AccessObject": {
+      "description": "AccessObject represents user access to resource",
+      "type": "object",
+      "properties": {
+        "access": {
+          "type": "string",
+          "x-go-name": "Access"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "Id"
+        },
+        "label": {
+          "type": "string",
+          "x-go-name": "Label"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    },
+    "AccessTokenByIDResponse": {
+      "type": "object",
+      "title": "AccessTokenByIDResponse contains access token get by ID.",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "x-go-name": "AccessToken"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    },
+    "Accounts": {
+      "description": "Accounts -- list of bound accounts",
+      "type": "object",
+      "properties": {
+        "accounts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Accounts"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "AuthClient": {
+      "type": "object",
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    },
+    "AuthServer": {
+      "type": "object",
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    },
+    "BoundAccountDeleteRequest": {
+      "description": "BoundAccountDeleteRequest -- request to remove bound account",
+      "type": "object",
+      "required": [
+        "resource"
+      ],
+      "properties": {
+        "resource": {
+          "type": "string",
+          "x-go-name": "Resource"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "BoundAccounts": {
+      "description": "BoundAccounts -- bound accounts list for user",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "CreateTokenResponse": {
+      "type": "object",
+      "title": "CreateTokenResponse contains access and refresh token.",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "x-go-name": "AccessToken"
+        },
+        "refresh_token": {
+          "type": "string",
+          "x-go-name": "RefreshToken"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    },
+    "Domain": {
+      "description": "DomainListResponse -- domains list",
+      "type": "object",
+      "required": [
+        "domain"
+      ],
+      "properties": {
+        "added_by": {
+          "type": "string",
+          "x-go-name": "AddedBy"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "domain": {
+          "type": "string",
+          "x-go-name": "Domain"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "DomainListResponse": {
+      "description": "DomainListResponse -- domains list",
+      "type": "object",
+      "properties": {
+        "domain_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Domain"
+          },
+          "x-go-name": "DomainList"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "Duration": {
+      "description": "# Examples\n\nExample 1: Compute Duration from two Timestamps in pseudo code.\n\nTimestamp start = ...;\nTimestamp end = ...;\nDuration duration = ...;\n\nduration.seconds = end.seconds - start.seconds;\nduration.nanos = end.nanos - start.nanos;\n\nif (duration.seconds \u003c 0 \u0026\u0026 duration.nanos \u003e 0) {\nduration.seconds += 1;\nduration.nanos -= 1000000000;\n} else if (durations.seconds \u003e 0 \u0026\u0026 duration.nanos \u003c 0) {\nduration.seconds -= 1;\nduration.nanos += 1000000000;\n}\n\nExample 2: Compute Timestamp from Timestamp + Duration in pseudo code.\n\nTimestamp start = ...;\nDuration duration = ...;\nTimestamp end = ...;\n\nend.seconds = start.seconds + duration.seconds;\nend.nanos = start.nanos + duration.nanos;\n\nif (end.nanos \u003c 0) {\nend.seconds -= 1;\nend.nanos += 1000000000;\n} else if (end.nanos \u003e= 1000000000) {\nend.seconds += 1;\nend.nanos -= 1000000000;\n}\n\nExample 3: Compute Duration from datetime.timedelta in Python.\n\ntd = datetime.timedelta(days=3, minutes=10)\nduration = Duration()\nduration.FromTimedelta(td)\n\n# JSON Mapping\n\nIn JSON format, the Duration type is encoded as a string rather than an\nobject, where the string ends in the suffix \"s\" (indicating seconds) and\nis preceded by the number of seconds, with nanoseconds expressed as\nfractional seconds. For example, 3 seconds with 0 nanoseconds should be\nencoded in JSON format as \"3s\", while 3 seconds and 1 nanosecond should\nbe expressed in JSON format as \"3.000000001s\", and 3 seconds and 1\nmicrosecond should be expressed in JSON format as \"3.000001s\".",
+      "type": "object",
+      "title": "A Duration represents a signed, fixed-length span of time represented\nas a count of seconds and fractions of seconds at nanosecond\nresolution. It is independent of any calendar and concepts like \"day\"\nor \"month\". It is related to Timestamp in that the difference between\ntwo Timestamp values is a Duration and it can be added or subtracted\nfrom a Timestamp. Range is approximately +-10,000 years.",
+      "properties": {
+        "nanos": {
+          "description": "Signed fractions of a second at nanosecond resolution of the span\nof time. Durations less than one second are represented with a 0\n`seconds` field and a positive or negative `nanos` field. For durations\nof one second or more, a non-zero value for the `nanos` field must be\nof the same sign as the `seconds` field. Must be from -999,999,999\nto +999,999,999 inclusive.",
+          "type": "integer",
+          "format": "int32",
+          "x-go-name": "Nanos"
+        },
+        "seconds": {
+          "description": "Signed seconds of the span of time. Must be from -315,576,000,000\nto +315,576,000,000 inclusive. Note: these bounds are computed from:\n60 sec/min * 60 min/hr * 24 hr/day * 365.25 days/year * 10000 years",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Seconds"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/golang/protobuf/ptypes/duration"
+    },
+    "Err": {
+      "description": "Err -- standard serializable API error\nMessage -- constant error message:\n+ \"invalid username\"\n+ \"quota exceeded\"\n+ \"validation error\"\n...etc...\nID -- unique error identification code\nDetails -- optional context error messages kinda\n+ \"field 'Replicas' must be non-zero value\"\n+ \"not enough tights to feed gopher\"\n+ \"resource 'God' does't exist\"\nFields -- optional set of key-value pairs",
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Details"
+        },
+        "fields": {
+          "$ref": "#/definitions/Fields"
+        },
+        "id": {
+          "$ref": "#/definitions/ErrID"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "status_http": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "StatusHTTP"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/cherry"
+    },
+    "ErrID": {
+      "description": "ErrID -- represents unique error ID",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/ErrKind"
+        },
+        "sid": {
+          "$ref": "#/definitions/ErrSID"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/cherry"
+    },
+    "ErrKind": {
+      "description": "ErrKind -- represents kind of error",
+      "type": "integer",
+      "format": "uint64",
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/cherry"
+    },
+    "ErrSID": {
+      "description": "ErrSID -- represents service ID of error",
+      "type": "string",
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/cherry"
+    },
+    "ExtendTokenResponse": {
+      "description": "ExtendTokenResponse contains new access and refresh tokens",
+      "type": "object",
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "x-go-name": "AccessToken"
+        },
+        "refresh_token": {
+          "type": "string",
+          "x-go-name": "RefreshToken"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    },
+    "Fields": {
+      "description": "Fields -- represents additional key-value fields of error",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/cherry"
+    },
+    "GetUserTokensResponse": {
+      "description": "GetUserTokensResponse contains user tokens",
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StoredTokenForUser"
+          },
+          "x-go-name": "Tokens"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    },
+    "Link": {
+      "description": "Link -- link (for registration/activation/etc)",
+      "type": "object",
+      "required": [
+        "link"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "expired_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "ExpiredAt"
+        },
+        "is_active": {
+          "type": "boolean",
+          "x-go-name": "IsActive"
+        },
+        "link": {
+          "type": "string",
+          "x-go-name": "Link"
+        },
+        "sent_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "SentAt"
+        },
+        "type": {
+          "$ref": "#/definitions/LinkType"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "LinkType": {
+      "description": "LinkType -- link type",
+      "type": "string",
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "Links": {
+      "description": "Links -- links list",
+      "type": "object",
+      "properties": {
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Link"
+          },
+          "x-go-name": "Links"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "LoginID": {
+      "description": "LoginID -- logins and user ID",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "LoginRequest": {
+      "description": "LoginRequest -- login request (for basic login)",
+      "type": "object",
+      "required": [
+        "login",
+        "password"
+      ],
+      "properties": {
+        "login": {
+          "type": "string",
+          "x-go-name": "Login"
+        },
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "MessageGetResponse": {
+      "description": "MessageGetResponse -- response to get message request",
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "Id"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "template_name": {
+          "type": "string",
+          "x-go-name": "TemplateName"
+        },
+        "user_id": {
+          "type": "string",
+          "x-go-name": "UserId"
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "x-go-name": "Variables"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "MessageListEntry": {
+      "description": "MessageListEntry -- model for messages list",
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "template_name": {
+          "type": "string",
+          "x-go-name": "TemplateName"
+        },
+        "user_id": {
+          "type": "string",
+          "x-go-name": "UserID"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "MessageListQuery": {
+      "description": "MessageListQuery -- query for message list",
+      "type": "object",
+      "properties": {
+        "Page": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "PerPage": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "MessageListResponse": {
+      "description": "MessageListEntry -- model for messages list with query",
+      "type": "object",
+      "properties": {
+        "Page": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "PerPage": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "message_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MessageListEntry"
+          },
+          "x-go-name": "Messages"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "MessagesStorageValue": {
+      "description": "MessagesStorageValue -- model for message in storage",
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "template_name": {
+          "type": "string",
+          "x-go-name": "TemplateName"
+        },
+        "user_id": {
+          "type": "string",
+          "x-go-name": "UserId"
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "x-go-name": "Variables"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "OAuthLoginRequest": {
+      "description": "LoginRequest -- login request (for oauth login)",
+      "type": "object",
+      "required": [
+        "resource",
+        "access_token"
+      ],
+      "properties": {
+        "access_token": {
+          "type": "string",
+          "x-go-name": "AccessToken"
+        },
+        "resource": {
+          "$ref": "#/definitions/OAuthResource"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "OAuthResource": {
+      "type": "string",
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "OneTimeTokenLoginRequest": {
+      "description": "LoginRequest -- login request (for token login)",
+      "type": "object",
+      "required": [
+        "token"
+      ],
+      "properties": {
+        "token": {
+          "type": "string",
+          "x-go-name": "Token"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "PasswordChangeRequest": {
+      "description": "PasswordChangeRequest -- password change request",
+      "type": "object",
+      "required": [
+        "current_password",
+        "new_password"
+      ],
+      "properties": {
+        "current_password": {
+          "type": "string",
+          "x-go-name": "CurrentPassword"
+        },
+        "new_password": {
+          "type": "string",
+          "x-go-name": "NewPassword"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "PasswordRestoreRequest": {
+      "description": "PasswordRestoreRequest -- password restore request",
+      "type": "object",
+      "required": [
+        "link",
+        "new_password"
+      ],
+      "properties": {
+        "link": {
+          "type": "string",
+          "x-go-name": "Link"
+        },
+        "new_password": {
+          "type": "string",
+          "x-go-name": "NewPassword"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "Profile": {
+      "description": "Profile -- additional user information",
+      "type": "object",
+      "properties": {
+        "access": {
+          "type": "string",
+          "x-go-name": "Access"
+        },
+        "blacklisted_at": {
+          "type": "string",
+          "x-go-name": "BlacklistedAt"
+        },
+        "created_at": {
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "data": {
+          "$ref": "#/definitions/UserData"
+        },
+        "deleted_at": {
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
+        "referral": {
+          "type": "string",
+          "x-go-name": "Referral"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "Recipient": {
+      "description": "Recipient -- recipient info for send mail method",
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "email"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "x-go-name": "Email"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "x-go-name": "Variables"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "RegisterRequest": {
+      "description": "RegisterRequest -- request to create new user",
+      "type": "object",
+      "required": [
+        "login",
+        "password",
+        "recaptcha"
+      ],
+      "properties": {
+        "login": {
+          "type": "string",
+          "x-go-name": "Login"
+        },
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        },
+        "recaptcha": {
+          "type": "string",
+          "x-go-name": "ReCaptcha"
+        },
+        "referral": {
+          "type": "string",
+          "x-go-name": "Referral"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "ResourcesAccess": {
+      "description": "ResourceAccesses contains user accesses to resources",
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AccessObject"
+          },
+          "x-go-name": "Namespace"
+        },
+        "volume": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AccessObject"
+          },
+          "x-go-name": "Volume"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    },
+    "SendRequest": {
+      "description": "SimpleSendResponse -- responce to send mail using send method",
+      "type": "object",
+      "properties": {
+        "delay": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Delay"
+        },
+        "message": {
+          "type": "object",
+          "required": [
+            "recipient_data"
+          ],
+          "properties": {
+            "common_variables": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              },
+              "x-go-name": "CommonVariables"
+            },
+            "recipient_data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Recipient"
+              },
+              "x-go-name": "Recipients"
+            }
+          },
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "SendResponse": {
+      "description": "SendResponse -- responce to send mail using send method",
+      "type": "object",
+      "properties": {
+        "email_list": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SendStatus"
+          },
+          "x-go-name": "Statuses"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "SendStatus": {
+      "description": "SendStatus -- status of sent emails",
+      "type": "object",
+      "properties": {
+        "recipient_id": {
+          "type": "string",
+          "x-go-name": "RecipientID"
+        },
+        "status": {
+          "type": "string",
+          "x-go-name": "Status"
+        },
+        "template_name": {
+          "type": "string",
+          "x-go-name": "TemplateName"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "SimpleSendRequest": {
+      "description": "SimpleSendRequest -- request to send mail using simple send method",
+      "type": "object",
+      "required": [
+        "template",
+        "user_id",
+        "variables"
+      ],
+      "properties": {
+        "template": {
+          "type": "string",
+          "x-go-name": "Template"
+        },
+        "user_id": {
+          "type": "string",
+          "x-go-name": "UserID"
+        },
+        "variables": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object"
+          },
+          "x-go-name": "Variables"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "SimpleSendResponse": {
+      "description": "SimpleSendResponse -- responce to send mail using simple send method",
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "x-go-name": "UserID"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "StoredToken": {
+      "description": "StoredToken is a representaion of token database record",
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "$ref": "#/definitions/Timestamp"
+        },
+        "fingerprint": {
+          "type": "string",
+          "x-go-name": "Fingerprint"
+        },
+        "life_time": {
+          "$ref": "#/definitions/Duration"
+        },
+        "part_token_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "PartTokenId"
+        },
+        "platform": {
+          "type": "string",
+          "x-go-name": "Platform"
+        },
+        "raw_refresh_token": {
+          "type": "string",
+          "x-go-name": "RawRefreshToken"
+        },
+        "rw_access": {
+          "type": "boolean",
+          "x-go-name": "RwAccess"
+        },
+        "token_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "TokenId"
+        },
+        "user_agent": {
+          "type": "string",
+          "x-go-name": "UserAgent"
+        },
+        "user_id": {
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "UserId"
+        },
+        "user_ip": {
+          "type": "string",
+          "format": "ip",
+          "x-go-name": "UserIp"
+        },
+        "user_namespace": {
+          "type": "string",
+          "x-go-name": "UserNamespace"
+        },
+        "user_role": {
+          "type": "string",
+          "x-go-name": "UserRole"
+        },
+        "user_volume": {
+          "type": "string",
+          "x-go-name": "UserVolume"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    },
+    "StoredTokenForUser": {
+      "description": "StoredTokenForUser is an information about token sent to user",
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "ip": {
+          "description": "@inject_tag: binding:\"ip\"",
+          "type": "string",
+          "format": "ip",
+          "x-go-name": "Ip"
+        },
+        "token_id": {
+          "description": "@inject_tag: binding:\"uuid\"",
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "TokenId"
+        },
+        "user_agent": {
+          "type": "string",
+          "x-go-name": "UserAgent"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    },
+    "Template": {
+      "description": "Template -- template model",
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "data",
+        "subject"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "data": {
+          "type": "string",
+          "x-go-name": "Data"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "subject": {
+          "type": "string",
+          "x-go-name": "Subject"
+        },
+        "version": {
+          "type": "string",
+          "x-go-name": "Version"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "TemplatesListEntry": {
+      "description": "TemplatesListEntry -- model for template list",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "versions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Versions"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "TemplatesListResponse": {
+      "description": "TemplatesListResponse -- templates list response",
+      "type": "object",
+      "properties": {
+        "templates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TemplatesListEntry"
+          },
+          "x-go-name": "Templates"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/mail-templater/pkg/models"
+    },
+    "Timestamp": {
+      "description": "# Examples\n\nExample 1: Compute Timestamp from POSIX `time()`.\n\nTimestamp timestamp;\ntimestamp.set_seconds(time(NULL));\ntimestamp.set_nanos(0);\n\nExample 2: Compute Timestamp from POSIX `gettimeofday()`.\n\nstruct timeval tv;\ngettimeofday(\u0026tv, NULL);\n\nTimestamp timestamp;\ntimestamp.set_seconds(tv.tv_sec);\ntimestamp.set_nanos(tv.tv_usec * 1000);\n\nExample 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.\n\nFILETIME ft;\nGetSystemTimeAsFileTime(\u0026ft);\nUINT64 ticks = (((UINT64)ft.dwHighDateTime) \u003c\u003c 32) | ft.dwLowDateTime;\n\nA Windows tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z\nis 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.\nTimestamp timestamp;\ntimestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));\ntimestamp.set_nanos((INT32) ((ticks % 10000000) * 100));\n\nExample 4: Compute Timestamp from Java `System.currentTimeMillis()`.\n\nlong millis = System.currentTimeMillis();\n\nTimestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)\n.setNanos((int) ((millis % 1000) * 1000000)).build();\n\n\nExample 5: Compute Timestamp from current time in Python.\n\ntimestamp = Timestamp()\ntimestamp.GetCurrentTime()\n\n# JSON Mapping\n\nIn JSON format, the Timestamp type is encoded as a string in the\n[RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the\nformat is \"{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z\"\nwhere {year} is always expressed using four digits while {month}, {day},\n{hour}, {min}, and {sec} are zero-padded to two digits each. The fractional\nseconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution),\nare optional. The \"Z\" suffix indicates the timezone (\"UTC\"); the timezone\nis required, though only UTC (as indicated by \"Z\") is presently supported.\n\nFor example, \"2017-01-15T01:30:15.01Z\" encodes 15.01 seconds past\n01:30 UTC on January 15, 2017.\n\nIn JavaScript, one can convert a Date object to this format using the\nstandard [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString]\nmethod. In Python, a standard `datetime.datetime` object can be converted\nto this format using [`strftime`](https://docs.python.org/2/library/time.html#time.strftime)\nwith the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one\ncan use the Joda Time's [`ISODateTimeFormat.dateTime()`](\nhttp://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime())\nto obtain a formatter capable of generating timestamps in this format.",
+      "type": "object",
+      "title": "A Timestamp represents a point in time independent of any time zone\nor calendar, represented as seconds and fractions of seconds at\nnanosecond resolution in UTC Epoch time. It is encoded using the\nProleptic Gregorian Calendar which extends the Gregorian calendar\nbackwards to year one. It is encoded assuming all minutes are 60\nseconds long, i.e. leap seconds are \"smeared\" so that no leap second\ntable is needed for interpretation. Range is from\n0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z.\nBy restricting to that range, we ensure that we can convert to\nand from  RFC 3339 date strings.\nSee [https://www.ietf.org/rfc/rfc3339.txt](https://www.ietf.org/rfc/rfc3339.txt).",
+      "properties": {
+        "nanos": {
+          "description": "Non-negative fractions of a second at nanosecond resolution. Negative\nsecond values with fractions must still have non-negative nanos values\nthat count forward in time. Must be from 0 to 999,999,999\ninclusive.",
+          "type": "integer",
+          "format": "int32",
+          "x-go-name": "Nanos"
+        },
+        "seconds": {
+          "description": "Represents seconds of UTC time since Unix epoch\n1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to\n9999-12-31T23:59:59Z inclusive.",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Seconds"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/golang/protobuf/ptypes/timestamp"
+    },
+    "UpdateAccessRequest": {
+      "type": "object",
+      "title": "UpdateAccessRequest describes request for updating user resources accesses.",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UpdateAccessRequestElement"
+          },
+          "x-go-name": "Users"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    },
+    "UpdateAccessRequestElement": {
+      "type": "object",
+      "title": "UpdateAccessRequestElement describes element for updating user resources accesses.",
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/ResourcesAccess"
+        },
+        "user_id": {
+          "description": "@inject_tag: binding:\"uuid\"",
+          "type": "string",
+          "x-go-name": "UserId"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    },
+    "User": {
+      "description": "User -- user model",
+      "type": "object",
+      "properties": {
+        "access": {
+          "type": "string",
+          "x-go-name": "Access"
+        },
+        "accounts": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-name": "Accounts"
+        },
+        "blacklisted_at": {
+          "type": "string",
+          "x-go-name": "BlacklistedAt"
+        },
+        "created_at": {
+          "type": "string",
+          "x-go-name": "CreatedAt"
+        },
+        "data": {
+          "$ref": "#/definitions/UserData"
+        },
+        "deleted_at": {
+          "type": "string",
+          "x-go-name": "DeletedAt"
+        },
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "is_active": {
+          "type": "boolean",
+          "x-go-name": "IsActive"
+        },
+        "is_deleted": {
+          "type": "boolean",
+          "x-go-name": "IsDeleted"
+        },
+        "is_in_blacklist": {
+          "type": "boolean",
+          "x-go-name": "IsInBlacklist"
+        },
+        "login": {
+          "type": "string",
+          "x-go-name": "Login"
+        },
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        },
+        "referral": {
+          "type": "string",
+          "x-go-name": "Referral"
+        },
+        "role": {
+          "type": "string",
+          "x-go-name": "Role"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "UserData": {
+      "description": "UserData -- user profile data",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "UserList": {
+      "description": "UserList -- users list",
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/User"
+          },
+          "x-go-name": "Users"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "UserLogin": {
+      "description": "UserList -- model for user login, password and id",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-go-name": "ID"
+        },
+        "login": {
+          "type": "string",
+          "x-go-name": "Login"
+        },
+        "password": {
+          "type": "string",
+          "x-go-name": "Password"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/pkg/models"
+    },
+    "authClient": {
+      "type": "object",
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
+    }
+  },
+  "parameters": {
+    "ClientIPHeader": {
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/ClientIPHeader"
+    },
+    "FingerprintHeader": {
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserClientHeader"
+    },
+    "SessionIDHeader": {
+      "type": "string",
+      "name": "X-Session-ID",
+      "in": "header",
+      "required": true
+    },
+    "TokenIDHeader": {
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/TokenIDHeader"
+    },
+    "UserAgentHeader": {
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserAgentHeader"
+    },
+    "UserIDHeader": {
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserIDHeader"
+    },
+    "UserRoleHeader": {
+      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserRoleHeader"
+    }
+  },
+  "responses": {
+    "error": {
+      "description": "cherry error",
+      "schema": {
+        "$ref": "vendor/github.com/containerum/cherry/swagger.json#/definitions/Err"
+      }
+    }
+  }
+}

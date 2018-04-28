@@ -51,7 +51,7 @@ func (u *serverImpl) AddBoundAccount(ctx context.Context, request models.OAuthLo
 	return nil
 }
 
-func (u *serverImpl) GetBoundAccounts(ctx context.Context) (map[string]string, error) {
+func (u *serverImpl) GetBoundAccounts(ctx context.Context) (models.BoundAccounts, error) {
 	userID := httputil.MustGetUserID(ctx)
 
 	u.log.WithField("userId", userID).Infof("getting bound accounts")

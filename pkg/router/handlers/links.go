@@ -15,6 +15,22 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
+// swagger:operation POST /user/sign_up/resend Links LinkResendHandler
+// Resend activation link.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#resend-activation-link
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UserLogin'
+// responses:
+//  '202':
+//    description: link sent
+//  default:
+//    $ref: '#/responses/error'
 func LinkResendHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -41,38 +57,29 @@ func LinkResendHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusOK)
+	ctx.Status(http.StatusAccepted)
 }
 
-func ActivateHandler(ctx *gin.Context) {
-	um := ctx.MustGet(m.UMServices).(server.UserManager)
-
-	var request models.Link
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
-		return
-	}
-
-	errs := validation.ValidateLink(request)
-	if errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
-		return
-	}
-
-	tokens, err := um.ActivateUser(ctx.Request.Context(), request)
-	if err != nil {
-		if cherr, ok := err.(*cherry.Err); ok {
-			gonic.Gonic(cherr, ctx)
-		} else {
-			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableActivate(), ctx)
-		}
-		return
-	}
-
-	ctx.JSON(http.StatusOK, tokens)
-}
-
+// swagger:operation GET /user/links/{user_id} Links LinksGetHandler
+// Get user links.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-links
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: user_id
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: link sent
+//    schema:
+//      $ref: '#/definitions/Links'
+//  default:
+//    $ref: '#/responses/error'
 func LinksGetHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 

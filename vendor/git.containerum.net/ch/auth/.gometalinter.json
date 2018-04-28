@@ -1,0 +1,5 @@
+{
+  "fast": true,
+  "vendor": true,
+  "exclude": ["static"]
+}

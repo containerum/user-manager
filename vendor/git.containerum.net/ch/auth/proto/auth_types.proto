@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+option go_package = "authProto";
+
+// StoredToken is a representaion of token database record
+//
+// swagger:model
+message StoredToken {
+    // swagger:strfmt uuid
+    // @inject_tag: binding:"uuid"
+    string token_id = 1;
+    string user_agent = 2;
+    string platform = 3;
+    string fingerprint = 4;
+    // swagger:strfmt uuid
+    // @inject_tag: binding:"uuid"
+    string user_id = 5;
+    string user_role = 6;
+    string user_namespace = 7;
+    string user_volume = 8;
+    bool rw_access = 9;
+    // swagger:strfmt ip
+    // @inject_tag: binding:"ip"
+    string user_ip = 10;
+    // swagger:strfmt uuid
+    // @inject_tag: binding:"omitempty,uuid"
+    string part_token_id = 11;
+    google.protobuf.Timestamp created_at = 12;
+    google.protobuf.Duration life_time = 13;
+    string raw_refresh_token = 14;
+}
+
+// AccessObject represents user access to resource
+//
+// swagger:model
+message AccessObject {
+    string label = 1;
+    // swagger:strfmt uuid
+    // @inject_tag: binding:"uuid"
+    string id = 2;
+    string access = 3;
+}
+
+// ResourceAccesses contains user accesses to resources
+//
+// swagger:model
+message ResourcesAccess {
+    repeated AccessObject namespace = 1;
+    repeated AccessObject volume = 2;
+}
+
+// StoredTokenForUser is an information about token sent to user
+//
+// swagger:model
+message StoredTokenForUser {
+    // @inject_tag: binding:"uuid"
+    // swagger:strfmt uuid
+    string token_id = 1;
+    string user_agent = 2;
+    // @inject_tag: binding:"ip"
+    // swagger:strfmt ip
+    string ip = 3;
+    string created_at = 4;
+}

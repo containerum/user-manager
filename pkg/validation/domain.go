@@ -7,11 +7,10 @@ import (
 )
 
 //ValidateUserCreateRequest validates simple send mail request
-//nolint: gocyclo
 func ValidateDomain(login models.Domain) []error {
 	errs := []error{}
 	if login.Domain == "" {
-		errs = append(errs, fmt.Errorf(isRequired, "Resource"))
+		errs = append(errs, fmt.Errorf(isRequired, "Domain"))
 	}
 	if len(errs) > 0 {
 		return errs

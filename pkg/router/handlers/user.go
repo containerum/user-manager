@@ -2,9 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
-
-	"strings"
 
 	"git.containerum.net/ch/user-manager/pkg/models"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
@@ -17,6 +14,27 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
+// swagger:operation POST /user/sign_up User UserCreateHandler
+// Create user.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#create-user
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserAgentHeader'
+//  - $ref: '#/parameters/FingerprintHeader'
+//  - $ref: '#/parameters/ClientIPHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/RegisterRequest'
+// responses:
+//  '200':
+//    description: user created
+//    schema:
+//      $ref: '#/definitions/UserLogin'
+//  default:
+//    $ref: '#/responses/error'
 func UserCreateHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -47,141 +65,69 @@ func UserCreateHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, resp)
 }
 
-func UserInfoGetHandler(ctx *gin.Context) {
+// swagger:operation POST /user/activation User ActivateHandler
+// Activate user.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#activate-user
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/Link'
+// responses:
+//  '200':
+//    description: user activated
+//    schema:
+//      $ref: '#/definitions/CreateTokenResponse'
+//  default:
+//    $ref: '#/responses/error'
+func ActivateHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	resp, err := um.GetUserInfo(ctx.Request.Context())
-	if err != nil {
-		if cherr, ok := err.(*cherry.Err); ok {
-			gonic.Gonic(cherr, ctx)
-		} else {
-			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
-		}
-		return
-	}
-
-	ctx.JSON(http.StatusOK, resp)
-}
-
-func UserGetByIDHandler(ctx *gin.Context) {
-	um := ctx.MustGet(m.UMServices).(server.UserManager)
-
-	resp, err := um.GetUserInfoByID(ctx.Request.Context(), ctx.Param("user_id"))
-	if err != nil {
-		if cherr, ok := err.(*cherry.Err); ok {
-			gonic.Gonic(cherr, ctx)
-		} else {
-			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
-		}
-		return
-	}
-
-	ctx.JSON(http.StatusOK, resp)
-}
-
-func UserGetByLoginHandler(ctx *gin.Context) {
-	um := ctx.MustGet(m.UMServices).(server.UserManager)
-
-	resp, err := um.GetUserInfoByLogin(ctx.Request.Context(), ctx.Param("login"))
-	if err != nil {
-		if cherr, ok := err.(*cherry.Err); ok {
-			gonic.Gonic(cherr, ctx)
-		} else {
-			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
-		}
-		return
-	}
-
-	ctx.JSON(http.StatusOK, resp)
-}
-
-func UserInfoUpdateHandler(ctx *gin.Context) {
-	um := ctx.MustGet(m.UMServices).(server.UserManager)
-
-	var newData map[string]interface{}
-	if err := ctx.ShouldBindWith(&newData, binding.JSON); err != nil {
+	var request models.Link
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
-	errs := validation.ValidateUserData(newData)
+	errs := validation.ValidateLink(request)
 	if errs != nil {
 		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
-	resp, err := um.UpdateUser(ctx.Request.Context(), newData)
+	tokens, err := um.ActivateUser(ctx.Request.Context(), request)
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableUpdateUserInfo(), ctx)
+			gonic.Gonic(umErrors.ErrUnableActivate(), ctx)
 		}
 		return
 	}
 
-	ctx.JSON(http.StatusOK, resp)
+	ctx.JSON(http.StatusOK, tokens)
 }
 
-func UserListGetHandler(ctx *gin.Context) {
-	um := ctx.MustGet(m.UMServices).(server.UserManager)
-
-	page := int64(1)
-	pagestr, ok := ctx.GetQuery("page")
-	if ok {
-		var err error
-		page, err = strconv.ParseInt(pagestr, 10, 64)
-		if err != nil {
-			ctx.Error(err)
-		}
-	}
-
-	perPage := int64(10)
-	perPagestr, ok := ctx.GetQuery("per_page")
-	if ok {
-		var err error
-		perPage, err = strconv.ParseInt(perPagestr, 10, 64)
-		if err != nil {
-			ctx.Error(err)
-		}
-	}
-
-	filters := strings.Split(ctx.Query("filters"), ",")
-	resp, err := um.GetUsers(ctx.Request.Context(), int(page), int(perPage), filters...)
-	if err != nil {
-		if cherr, ok := err.(*cherry.Err); ok {
-			gonic.Gonic(cherr, ctx)
-		} else {
-			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUsersList(), ctx)
-		}
-		return
-	}
-
-	ctx.JSON(http.StatusOK, resp)
-}
-
-func UserListLoginID(ctx *gin.Context) {
-	um := ctx.MustGet(m.UMServices).(server.UserManager)
-
-	resp, err := um.GetUsersLoginID(ctx.Request.Context())
-	if err != nil {
-		if cherr, ok := err.(*cherry.Err); ok {
-			gonic.Gonic(cherr, ctx)
-		} else {
-			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUsersList(), ctx)
-		}
-		return
-	}
-
-	ctx.JSON(http.StatusOK, resp)
-}
-
+// swagger:operation POST /user/delete/partial User PartialDeleteHandler
+// Mark user as deleted.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-user-pseudo
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+// responses:
+//  '202':
+//    description: user deleted
+//  default:
+//    $ref: '#/responses/error'
 func PartialDeleteHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -199,6 +145,25 @@ func PartialDeleteHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation POST /user/delete/complete User CompleteDeleteHandler
+// Delete user completely (almost).
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-user-from-everywhere
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserAgentHeader'
+//  - $ref: '#/parameters/FingerprintHeader'
+//  - $ref: '#/parameters/ClientIPHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UserLogin'
+// responses:
+//  '202':
+//    description: user deleted
+//  default:
+//    $ref: '#/responses/error'
 func CompleteDeleteHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 

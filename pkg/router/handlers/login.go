@@ -14,6 +14,27 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
+// swagger:operation POST /login/basic Login BasicLoginHandler
+// Basic login.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-in-with-login-and-password
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserAgentHeader'
+//  - $ref: '#/parameters/FingerprintHeader'
+//  - $ref: '#/parameters/ClientIPHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/LoginRequest'
+// responses:
+//  '200':
+//    description: user logged in
+//    schema:
+//      $ref: '#/definitions/CreateTokenResponse'
+//  default:
+//    $ref: '#/responses/error'
 func BasicLoginHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -42,6 +63,27 @@ func BasicLoginHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, tokens)
 }
 
+// swagger:operation POST /login/token Login OneTimeTokenLoginHandler
+// Login with one-time token.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-in-with-one-time-token
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserAgentHeader'
+//  - $ref: '#/parameters/FingerprintHeader'
+//  - $ref: '#/parameters/ClientIPHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/OneTimeTokenLoginRequest'
+// responses:
+//  '200':
+//    description: user logged in
+//    schema:
+//      $ref: '#/definitions/CreateTokenResponse'
+//  default:
+//    $ref: '#/responses/error'
 func OneTimeTokenLoginHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -65,6 +107,27 @@ func OneTimeTokenLoginHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, tokens)
 }
 
+// swagger:operation POST /login/oauth Login OAuthLoginRequest
+// Login using oauth service.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-in-with-third-party-resource-oauth
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserAgentHeader'
+//  - $ref: '#/parameters/FingerprintHeader'
+//  - $ref: '#/parameters/ClientIPHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/OAuthLoginRequest'
+// responses:
+//  '200':
+//    description: user logged in
+//    schema:
+//      $ref: '#/definitions/CreateTokenResponse'
+//  default:
+//    $ref: '#/responses/error'
 func OAuthLoginHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -93,6 +156,20 @@ func OAuthLoginHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, tokens)
 }
 
+// swagger:operation POST /logout Login LogoutHandler
+// Logout for users who used one-time token login.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-out
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/TokenIDHeader'
+//  - $ref: '#/parameters/SessionIDHeader'
+// responses:
+//  '200':
+//    description: user logged out
+//  default:
+//    $ref: '#/responses/error'
 func LogoutHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 

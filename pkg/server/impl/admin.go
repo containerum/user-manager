@@ -75,22 +75,20 @@ func (u *serverImpl) AdminCreateUser(ctx context.Context, request models.UserLog
 	}, nil
 }
 
-func (u *serverImpl) AdminActivateUser(ctx context.Context, request models.UserLogin) (*authProto.CreateTokenResponse, error) {
+func (u *serverImpl) AdminActivateUser(ctx context.Context, request models.UserLogin) error {
 	u.log.Info("activating user (admin)")
-
-	var tokens *authProto.CreateTokenResponse
 
 	user, err := u.svc.DB.GetAnyUserByLogin(ctx, request.Login)
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
-		return nil, cherry.ErrUnableActivate()
+		return cherry.ErrUnableActivate()
 	}
 	if user.IsDeleted {
-		return nil, cherry.ErrInvalidLogin()
+		return cherry.ErrInvalidLogin()
 	}
 
 	if user.IsActive {
-		return nil, cherry.ErrUserAlreadyActivated()
+		return cherry.ErrUserAlreadyActivated()
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
@@ -99,16 +97,13 @@ func (u *serverImpl) AdminActivateUser(ctx context.Context, request models.UserL
 			u.log.WithError(updErr)
 			return cherry.ErrUnableActivate()
 		}
-
-		var err error
-		tokens, err = u.createTokens(ctx, user)
-		return err
+		return nil
 	})
 	if err := u.handleDBError(err); err != nil {
-		return nil, cherry.ErrUnableActivate()
+		return cherry.ErrUnableActivate()
 	}
 
-	return tokens, nil
+	return nil
 }
 
 func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request models.UserLogin) error {
