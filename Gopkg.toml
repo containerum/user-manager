@@ -1,7 +1,13 @@
+required = ["git.containerum.net/ch/auth"]
+
 [prune]
     non-go = true
     go-tests = true
     unused-packages = true
+
+  [[prune.project]]
+    name = "git.containerum.net/ch/auth"
+    non-go = false
 
   [[prune.project]]
     name = "github.com/containerum/utils"

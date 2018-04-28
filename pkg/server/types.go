@@ -17,9 +17,9 @@ type UserManager interface {
 	OneTimeTokenLogin(ctx context.Context, request models.OneTimeTokenLoginRequest) (*authProto.CreateTokenResponse, error)
 	OAuthLogin(ctx context.Context, request models.OAuthLoginRequest) (*authProto.CreateTokenResponse, error)
 
-	ChangePassword(ctx context.Context, request models.PasswordRequest) (*authProto.CreateTokenResponse, error)
+	ChangePassword(ctx context.Context, request models.PasswordChangeRequest) (*authProto.CreateTokenResponse, error)
 	ResetPassword(ctx context.Context, request models.UserLogin) error
-	RestorePassword(ctx context.Context, request models.PasswordRequest) (*authProto.CreateTokenResponse, error)
+	RestorePassword(ctx context.Context, request models.PasswordRestoreRequest) (*authProto.CreateTokenResponse, error)
 
 	Logout(ctx context.Context) error
 
@@ -36,7 +36,7 @@ type UserManager interface {
 
 	// admin methods
 	AdminCreateUser(ctx context.Context, request models.UserLogin) (*models.UserLogin, error)
-	AdminActivateUser(ctx context.Context, request models.UserLogin) (*authProto.CreateTokenResponse, error)
+	AdminActivateUser(ctx context.Context, request models.UserLogin) error
 	AdminDeactivateUser(ctx context.Context, request models.UserLogin) error
 	AdminResetPassword(ctx context.Context, request models.UserLogin) (*models.UserLogin, error)
 	AdminSetAdmin(ctx context.Context, request models.UserLogin) error
@@ -47,10 +47,10 @@ type UserManager interface {
 	GetUserInfo(ctx context.Context) (*models.User, error)
 	GetUserInfoByID(ctx context.Context, userID string) (*models.User, error)
 	GetUserInfoByLogin(ctx context.Context, login string) (*models.User, error)
-	GetUsersLoginID(ctx context.Context) (*map[string]string, error)
+	GetUsersLoginID(ctx context.Context) (*models.LoginID, error)
 	GetBlacklistedUsers(ctx context.Context, page int, perPage int) (*models.UserList, error)
 	GetUsers(ctx context.Context, page int, perPage int, filters ...string) (*models.UserList, error)
-	GetBoundAccounts(ctx context.Context) (map[string]string, error)
+	GetBoundAccounts(ctx context.Context) (models.BoundAccounts, error)
 
 	LinkResend(ctx context.Context, request models.UserLogin) error
 

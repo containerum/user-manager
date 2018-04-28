@@ -14,10 +14,30 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
+// swagger:operation POST /password/change Password PasswordChangeHandler
+// Change password.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#change-password
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/PasswordChangeRequest'
+// responses:
+//  '200':
+//    description: password changed
+//    schema:
+//      $ref: '#/definitions/CreateTokenResponse'
+//  default:
+//    $ref: '#/responses/error'
 func PasswordChangeHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	var request models.PasswordRequest
+	var request models.PasswordChangeRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
@@ -40,9 +60,25 @@ func PasswordChangeHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusAccepted, tokens)
+	ctx.JSON(http.StatusOK, tokens)
 }
 
+// swagger:operation POST /password/reset Password PasswordResetHandler
+// Reset password.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#reset-password
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UserLogin'
+// responses:
+//  '202':
+//    description: password reset link sent
+//  default:
+//    $ref: '#/responses/error'
 func PasswordResetHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -69,13 +105,31 @@ func PasswordResetHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusOK)
+	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation POST /password/restore Password PasswordRestoreHandler
+// Change password with token from email.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#reseted-password-change
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/PasswordRestoreRequest'
+// responses:
+//  '200':
+//    description: password changed
+//    schema:
+//      $ref: '#/definitions/CreateTokenResponse'
+//  default:
+//    $ref: '#/responses/error'
 func PasswordRestoreHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	var request models.PasswordRequest
+	var request models.PasswordRestoreRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
@@ -98,5 +152,5 @@ func PasswordRestoreHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusAccepted, tokens)
+	ctx.JSON(http.StatusOK, tokens)
 }

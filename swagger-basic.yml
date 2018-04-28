@@ -1,0 +1,24 @@
+swagger: "2.0"
+parameters:
+  UserIDHeader:
+    $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserIDHeader"
+  FingerprintHeader:
+    $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserClientHeader"
+  UserAgentHeader:
+    $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserAgentHeader"
+  ClientIPHeader:
+    $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/ClientIPHeader"
+  UserRoleHeader:
+    $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserRoleHeader"
+  TokenIDHeader:
+    $ref: "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/TokenIDHeader"
+  SessionIDHeader:
+    name: X-Session-ID
+    type: string
+    in: header
+    required: true
+responses:
+  error:
+    description: cherry error
+    schema:
+      $ref: "vendor/github.com/containerum/cherry/swagger.json#/definitions/Err"

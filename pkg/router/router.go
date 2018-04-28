@@ -8,6 +8,7 @@ import (
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/umErrors"
+	"git.containerum.net/ch/user-manager/static"
 	"github.com/containerum/cherry/adaptors/cherrylog"
 	"github.com/containerum/cherry/adaptors/gonic"
 	utils "github.com/containerum/utils/httputil"
@@ -16,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	headers "github.com/containerum/utils/httputil"
+	"gopkg.in/gin-contrib/cors.v1"
 )
 
 //CreateRouter initialises router and middlewares
@@ -27,6 +29,14 @@ func CreateRouter(um *server.UserManager) http.Handler {
 }
 
 func initMiddlewares(e *gin.Engine, um *server.UserManager) {
+	/* CORS */
+	cfg := cors.DefaultConfig()
+	cfg.AllowAllOrigins = true
+	cfg.AddAllowMethods(http.MethodDelete)
+	cfg.AddAllowHeaders(headers.UserRoleXHeader, headers.UserIDXHeader, headers.UserAgentXHeader, headers.UserClientXHeader, headers.UserIPXHeader, headers.TokenIDXHeader, "X-Session-ID")
+	e.Use(cors.New(cfg))
+	e.Group("/static").
+		StaticFS("/", static.HTTP)
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
 	e.Use(gonic.Recovery(umErrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
@@ -62,7 +72,7 @@ func initRoutes(app *gin.Engine) {
 		user.PUT("/info", requireIdentityHeaders, m.RequireUserExist, h.UserInfoUpdateHandler)
 
 		user.GET("/list", requireIdentityHeaders, m.RequireAdminRole, h.UserListGetHandler)
-		user.GET("/loginid", requireIdentityHeaders, h.UserListLoginID)
+		user.GET("/loginid", h.UserListLoginID)
 
 		user.GET("/links/:user_id", requireIdentityHeaders, m.RequireAdminRole, h.LinksGetHandler)
 
@@ -75,11 +85,11 @@ func initRoutes(app *gin.Engine) {
 		user.DELETE("/blacklist", requireIdentityHeaders, m.RequireAdminRole, h.UserDeleteFromBlacklistHandler)
 	}
 
-	login := app.Group("/login")
+	login := app.Group("/login", requireLoginHeaders)
 	{
-		login.POST("/basic", requireLoginHeaders, h.BasicLoginHandler)
-		login.POST("/token", requireLoginHeaders, h.OneTimeTokenLoginHandler)
-		login.POST("/oauth", requireLoginHeaders, h.OAuthLoginHandler)
+		login.POST("/basic", h.BasicLoginHandler)
+		login.POST("/token", h.OneTimeTokenLoginHandler)
+		login.POST("/oauth", h.OAuthLoginHandler)
 	}
 
 	password := app.Group("/password")
@@ -90,20 +100,20 @@ func initRoutes(app *gin.Engine) {
 		password.POST("/restore", h.PasswordRestoreHandler)
 	}
 
-	domainBlacklist := app.Group("/domain")
+	domainBlacklist := app.Group("/domain", requireIdentityHeaders, m.RequireAdminRole)
 	{
-		domainBlacklist.POST("/", requireIdentityHeaders, m.RequireAdminRole, h.BlacklistDomainAddHandler)
+		domainBlacklist.POST("/", h.BlacklistDomainAddHandler)
 
-		domainBlacklist.GET("/", requireIdentityHeaders, m.RequireAdminRole, h.BlacklistDomainsListGetHandler)
-		domainBlacklist.GET("/:domain", requireIdentityHeaders, m.RequireAdminRole, h.BlacklistDomainGetHandler)
+		domainBlacklist.GET("/", h.BlacklistDomainsListGetHandler)
+		domainBlacklist.GET("/:domain", h.BlacklistDomainGetHandler)
 
-		domainBlacklist.DELETE("/:domain", requireIdentityHeaders, m.RequireAdminRole, h.BlacklistDomainDeleteHandler)
+		domainBlacklist.DELETE("/:domain", h.BlacklistDomainDeleteHandler)
 	}
 
-	admin := app.Group("/admin", m.RequireAdminRole)
+	admin := app.Group("/admin", requireIdentityHeaders, m.RequireAdminRole)
 	{
 		admin.POST("/user/sign_up", h.AdminUserCreateHandler)
-		admin.POST("/user/activation", h.AdminUserActicate)
+		admin.POST("/user/activation", h.AdminUserActivate)
 		admin.POST("/user/deactivation", h.AdminUserDeactivate)
 		admin.POST("/user/password/reset", h.AdminResetPassword)
 		admin.POST("/user", h.AdminSetAdmin)

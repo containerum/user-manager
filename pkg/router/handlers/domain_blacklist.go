@@ -14,6 +14,94 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
+// swagger:operation GET /domain DomainBlacklist BlacklistDomainsListGetHandler
+// Get blacklisted domains list.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-blacklist-domain-list
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+// responses:
+//  '200':
+//    description: blacklisted domains
+//    schema:
+//      $ref: '#/definitions/DomainListResponse'
+//  default:
+//    $ref: '#/responses/error'
+func BlacklistDomainsListGetHandler(ctx *gin.Context) {
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
+
+	resp, err := um.GetBlacklistedDomainsList(ctx.Request.Context())
+	if err != nil {
+		if cherr, ok := err.(*cherry.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(umErrors.ErrUnableGetDomainBlacklist(), ctx)
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// swagger:operation GET /domain/{domain} DomainBlacklist BlacklistDomainGetHandler
+// Check if domain is in blacklist.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-blacklist-domain
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: domain
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: blacklisted domain
+//    schema:
+//      $ref: '#/definitions/Domain'
+//  default:
+//    $ref: '#/responses/error'
+func BlacklistDomainGetHandler(ctx *gin.Context) {
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
+
+	resp, err := um.GetBlacklistedDomain(ctx.Request.Context(), ctx.Param("domain"))
+	if err != nil {
+		if cherr, ok := err.(*cherry.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(umErrors.ErrUnableGetDomainBlacklist(), ctx)
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+}
+
+// swagger:operation POST /domain DomainBlacklist BlacklistDomainAddHandler
+// Add domain to blacklist.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-domain-to-blacklist
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/Domain'
+// responses:
+//  '202':
+//    description: domain added to blacklist
+//  default:
+//    $ref: '#/responses/error'
 func BlacklistDomainAddHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -43,6 +131,24 @@ func BlacklistDomainAddHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation DELETE /domain/{domain} DomainBlacklist BlacklistDomainDeleteHandler
+// Remove domain from blacklist.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-domain-from-blacklist
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: domain
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: domain removed from blacklist
+//  default:
+//    $ref: '#/responses/error'
 func BlacklistDomainDeleteHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -58,39 +164,4 @@ func BlacklistDomainDeleteHandler(ctx *gin.Context) {
 	}
 
 	ctx.Status(http.StatusAccepted)
-}
-
-func BlacklistDomainGetHandler(ctx *gin.Context) {
-	um := ctx.MustGet(m.UMServices).(server.UserManager)
-
-	resp, err := um.GetBlacklistedDomain(ctx.Request.Context(), ctx.Param("domain"))
-	if err != nil {
-		if cherr, ok := err.(*cherry.Err); ok {
-			gonic.Gonic(cherr, ctx)
-		} else {
-			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetDomainBlacklist(), ctx)
-		}
-		return
-	}
-
-	ctx.JSON(http.StatusOK, resp)
-}
-
-func BlacklistDomainsListGetHandler(ctx *gin.Context) {
-	um := ctx.MustGet(m.UMServices).(server.UserManager)
-
-	resp, err := um.GetBlacklistedDomainsList(ctx.Request.Context())
-	if err != nil {
-		if cherr, ok := err.(*cherry.Err); ok {
-			gonic.Gonic(cherr, ctx)
-		} else {
-			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetDomainBlacklist(), ctx)
-		}
-		return
-	}
-
-	ctx.JSON(http.StatusOK, resp)
-
 }

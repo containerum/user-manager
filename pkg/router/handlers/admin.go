@@ -14,11 +14,30 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
+// swagger:operation POST /admin/user/sign_up Admin AdminUserCreateHandler
+// Create user.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-create-user
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UserLogin'
+// responses:
+//  '201':
+//    description: account created
+//    schema:
+//      $ref: '#/definitions/UserLogin'
+//  default:
+//    $ref: '#/responses/error'
 func AdminUserCreateHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request models.UserLogin
-
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
@@ -44,18 +63,34 @@ func AdminUserCreateHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, resp)
 }
 
-func AdminUserActicate(ctx *gin.Context) {
+// swagger:operation POST /admin/user/activation Admin AdminUserActivate
+// Activate user.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-user-activation
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UserLogin'
+// responses:
+//  '202':
+//    description: user activated
+//  default:
+//    $ref: '#/responses/error'
+func AdminUserActivate(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request models.UserLogin
-
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
 		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
-	resp, err := um.AdminActivateUser(ctx.Request.Context(), request)
-	if err != nil {
+	if err := um.AdminActivateUser(ctx.Request.Context(), request); err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
@@ -65,9 +100,27 @@ func AdminUserActicate(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusAccepted, resp)
+	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation POST /admin/user/deactivation Admin AdminUserDeactivate
+// Deactivate user.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-user-deactivation
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UserLogin'
+// responses:
+//  '202':
+//    description: user deactivated
+//  default:
+//    $ref: '#/responses/error'
 func AdminUserDeactivate(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -92,6 +145,24 @@ func AdminUserDeactivate(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation POST /admin Admin AdminSetAdmin
+// Make user admin.
+// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#set-admin
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UserLogin'
+// responses:
+//  '202':
+//    description: user becomes admin
+//  default:
+//    $ref: '#/responses/error'
 func AdminSetAdmin(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -116,6 +187,23 @@ func AdminSetAdmin(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation DELETE /admin Admin AdminSetAdmin
+// Make admin user.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UserLogin'
+// responses:
+//  '202':
+//    description: admin becomes user
+//  default:
+//    $ref: '#/responses/error'
 func AdminUnsetAdmin(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -140,6 +228,26 @@ func AdminUnsetAdmin(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation POST /admin/user/password/reset Admin AdminResetPassword
+// Make admin user.
+//https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-reset-password
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UserLogin'
+// responses:
+//  '202':
+//    description: user new credentials
+//    schema:
+//      $ref: '#/definitions/UserLogin'
+//  default:
+//    $ref: '#/responses/error'
 func AdminResetPassword(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 

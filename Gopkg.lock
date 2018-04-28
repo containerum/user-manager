@@ -4,7 +4,10 @@
 [[projects]]
   branch = "develop"
   name = "git.containerum.net/ch/auth"
-  packages = ["proto"]
+  packages = [
+    ".",
+    "proto"
+  ]
   revision = "7430ec8f101b19886808585f9cef3ff6e6c33016"
 
 [[projects]]
@@ -276,7 +279,9 @@
     "internal/timeseries",
     "lex/httplex",
     "publicsuffix",
-    "trace"
+    "trace",
+    "webdav",
+    "webdav/internal/xml"
   ]
   revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
 
@@ -287,7 +292,7 @@
     "unix",
     "windows"
   ]
-  revision = "bb9c189858d91f42db229b04d45a4c3d23a7662a"
+  revision = "cbbc999da32df943dac6cd71eb3ee39e1d7838b9"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -314,7 +319,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "7fd901a49ba6a7f87732eb344f6e3c5b19d1b200"
+  revision = "86e600f69ee4704c6efbf6a2a40a5c10700e76c2"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -347,6 +352,12 @@
   version = "v1.11.3"
 
 [[projects]]
+  name = "gopkg.in/gin-contrib/cors.v1"
+  packages = ["."]
+  revision = "cf4846e6a636a76237a28d9286f163c132e841bc"
+  version = "v1.2"
+
+[[projects]]
   name = "gopkg.in/go-playground/validator.v8"
   packages = ["."]
   revision = "5f1438d3fca68893a817e4a66806cea46a9e4ebf"
@@ -373,6 +384,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "64fa3e13191b1ea675a8ff30d25b46d1e6e28af236afecf973da9eb99e909eef"
+  inputs-digest = "7c0d1765c0cbfcd532de4a4adb38013143d0987193030b92c30b3fe48c1106bf"
   solver-name = "gps-cdcl"
   solver-version = 1

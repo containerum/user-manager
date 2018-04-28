@@ -16,7 +16,7 @@ import (
 	"github.com/containerum/utils/httputil"
 )
 
-func (u *serverImpl) ChangePassword(ctx context.Context, request models.PasswordRequest) (*authProto.CreateTokenResponse, error) {
+func (u *serverImpl) ChangePassword(ctx context.Context, request models.PasswordChangeRequest) (*authProto.CreateTokenResponse, error) {
 	userID := httputil.MustGetUserID(ctx)
 	u.log.WithField("user_id", userID).Info("changing password")
 
@@ -108,7 +108,7 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request models.UserLogin
 	return nil
 }
 
-func (u *serverImpl) RestorePassword(ctx context.Context, request models.PasswordRequest) (*authProto.CreateTokenResponse, error) {
+func (u *serverImpl) RestorePassword(ctx context.Context, request models.PasswordRestoreRequest) (*authProto.CreateTokenResponse, error) {
 	u.log.Info("restoring password")
 	u.log.WithField("link", request.Link).Debug("restoring password details")
 

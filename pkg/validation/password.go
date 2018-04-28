@@ -6,7 +6,7 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/models"
 )
 
-func ValidatePasswordChangeRequest(link models.PasswordRequest) []error {
+func ValidatePasswordChangeRequest(link models.PasswordChangeRequest) []error {
 	errs := []error{}
 	if link.CurrentPassword == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Current password"))
@@ -20,7 +20,7 @@ func ValidatePasswordChangeRequest(link models.PasswordRequest) []error {
 	return nil
 }
 
-func ValidatePasswordRestoreRequest(link models.PasswordRequest) []error {
+func ValidatePasswordRestoreRequest(link models.PasswordRestoreRequest) []error {
 	errs := []error{}
 	if link.Link == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Link"))
