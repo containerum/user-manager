@@ -61,9 +61,9 @@ var flags = []cli.Flag{
 		Usage:  "DB for project",
 	},
 	cli.StringFlag{
-		EnvVar: "CH_USER_DB_URL",
+		EnvVar: "CH_USER_PG_URL",
 		Name:   dbURLFlag,
-		Usage:  "DB URL",
+		Usage:  "DB URL (PostgreSQL)",
 	},
 	cli.StringFlag{
 		EnvVar: "CH_USER_MIGRATIONS_PATH",
