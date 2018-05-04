@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"time"
 
-	"git.containerum.net/ch/auth/static"
 	h "git.containerum.net/ch/user-manager/pkg/router/handlers"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/umErrors"
+	"git.containerum.net/ch/user-manager/static"
 	"github.com/containerum/cherry/adaptors/cherrylog"
 	"github.com/containerum/cherry/adaptors/gonic"
 	utils "github.com/containerum/utils/httputil"
