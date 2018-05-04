@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"time"
 
+	"git.containerum.net/ch/auth/static"
 	h "git.containerum.net/ch/user-manager/pkg/router/handlers"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
 	"git.containerum.net/ch/user-manager/pkg/umErrors"
-	"git.containerum.net/ch/user-manager/static"
 	"github.com/containerum/cherry/adaptors/cherrylog"
 	"github.com/containerum/cherry/adaptors/gonic"
 	utils "github.com/containerum/utils/httputil"
@@ -21,20 +21,22 @@ import (
 )
 
 //CreateRouter initialises router and middlewares
-func CreateRouter(um *server.UserManager) http.Handler {
+func CreateRouter(um *server.UserManager, enableCORS bool) http.Handler {
 	e := gin.New()
-	initMiddlewares(e, um)
+	initMiddlewares(e, um, enableCORS)
 	initRoutes(e)
 	return e
 }
 
-func initMiddlewares(e *gin.Engine, um *server.UserManager) {
+func initMiddlewares(e *gin.Engine, um *server.UserManager, enableCORS bool) {
 	/* CORS */
-	cfg := cors.DefaultConfig()
-	cfg.AllowAllOrigins = true
-	cfg.AddAllowMethods(http.MethodDelete)
-	cfg.AddAllowHeaders(headers.UserRoleXHeader, headers.UserIDXHeader, headers.UserAgentXHeader, headers.UserClientXHeader, headers.UserIPXHeader, headers.TokenIDXHeader, "X-Session-ID")
-	e.Use(cors.New(cfg))
+	if enableCORS {
+		cfg := cors.DefaultConfig()
+		cfg.AllowAllOrigins = true
+		cfg.AddAllowMethods(http.MethodDelete)
+		cfg.AddAllowHeaders(headers.UserRoleXHeader, headers.UserIDXHeader, headers.UserAgentXHeader, headers.UserClientXHeader, headers.UserIPXHeader, headers.TokenIDXHeader, "X-Session-ID")
+		e.Use(cors.New(cfg))
+	}
 	e.Group("/static").
 		StaticFS("/", static.HTTP)
 	/* System */
