@@ -44,10 +44,9 @@ func initServer(c *cli.Context) error {
 	exitOnErr(err)
 	defer userManager.Close()
 
-	app := router.CreateRouter(&userManager)
+	app := router.CreateRouter(&userManager, c.Bool(corsFlag))
 
 	// graceful shutdown support
-
 	srv := http.Server{
 		Addr:    ":" + c.String(portFlag),
 		Handler: app,
