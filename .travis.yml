@@ -5,7 +5,7 @@ language: go
 env:
   global:
   - OWNER=containerum
-  - NAME=user
+  - NAME=user-manager
   - IMAGE_NAME=$OWNER/$NAME
   - HELM_URL=https://$OWNER.github.io/$NAME
 
