@@ -5,7 +5,7 @@
 ### Using Helm
 
 ```
-  helm repo add containerum https://containerum.github.io/user
+  helm repo add containerum https://containerum.github.io/user-manager
   helm repo update
-  helm install helm containerum/user
+  helm install containerum/user-manager
 ```
