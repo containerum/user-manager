@@ -6,7 +6,7 @@ env:
   global:
   - OWNER=containerum
   - NAME=user-manager
-  - IMAGE_NAME=$OWNER/$NAME
+  - IMAGE_NAME=$OWNER/user
   - HELM_URL=https://$OWNER.github.io/$NAME
 
 services:
