@@ -58,5 +58,7 @@ spec:
           value: '${CH_USER_LISTEN_ADDR}'
         - name: CH_USER_WEB_API_URL
           value: '${CH_USER_WEB_API_URL}'
+        - name: CH_USER_RESOURCE_SERVICE_URL
+          value: '${CH_USER_RESOURCE_SERVICE_URL}'
       imagePullSecrets:
       - name: gitlab-registry
