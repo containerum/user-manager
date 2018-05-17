@@ -11,10 +11,6 @@ WORKDIR /usr/share/zoneinfo
 # tz loader doesn't handle compressed data.
 RUN zip -r -0 /zoneinfo.zip .
 
-FROM library/postgres as pg
-COPY test.sql /docker-entrypoint-initdb.d/
-
-
 FROM alpine:3.7
 # app
 COPY --from=builder /bin/user-manager /
