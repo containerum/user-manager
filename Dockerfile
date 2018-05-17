@@ -16,7 +16,6 @@ FROM alpine:3.7
 COPY --from=builder /bin/user-manager /
 # migrations
 COPY pkg/migrations /migrations
-COPY --from=pg / /pg
 # timezone data
 ENV ZONEINFO /zoneinfo.zip
 COPY --from=alpine /zoneinfo.zip /
