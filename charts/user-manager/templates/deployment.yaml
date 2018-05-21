@@ -29,4 +29,7 @@ spec:
               value: {{ $val | quote }}
             {{- end }}
             - name: CH_USER_PG_URL
-              value: "postgres://{{ .Values.postgresql.postgresUser }}:{{ .Values.postgresql.postgresPassword }}@{{ .Release.Name }}-postgresql:{{ .Values.postgresql.service.port }}/{{ .Values.postgresql.postgresDatabase }}?sslmode=disable"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "fullname" . }}
+                  key: pg-url
