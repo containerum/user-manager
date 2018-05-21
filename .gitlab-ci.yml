@@ -133,6 +133,7 @@ pub-github:
     - git fetch github
     - git checkout origin/develop
     - git checkout -b pub
+    - rm .gitlab-ci.yml
     - git add -A .
     - git commit -m "Deploy to github"
   only:
