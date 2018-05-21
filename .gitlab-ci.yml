@@ -28,6 +28,7 @@ test-build:
     - master
     - staging
     - tags
+    - publish
 
 unit-tests:
   image: golang:1.9-alpine
@@ -46,6 +47,7 @@ unit-tests:
     - master
     - staging
     - tags
+    - publish
 
 migrations-test:
   services:
@@ -69,7 +71,7 @@ migrations-test:
     - master
     - staging
     - tags
-
+    - publish
 
 dev-release:
   image: docker:latest
