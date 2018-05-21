@@ -127,7 +127,7 @@ pub-github:
   script:
     - git remote show
     - if [ $(git remote show | grep github) ]; then git remote rm github; fi
-    - if [ $(git branch --list | grep pub) ]; then git branch -d pub; fi
+    - if [ $(git branch --list | grep pub) ]; then git branch -D pub; fi
     - git pull origin publish
     - git remote add github ${GITHUB_REMOTE}
     - git fetch github
