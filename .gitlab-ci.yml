@@ -133,8 +133,8 @@ pub-github:
     - git fetch github
     - git checkout origin/develop
     - git checkout -b pub
-    - git rebase pub
-    - git log
+    - git add -A .
+    - git commit -m "Deploy to github"
   only:
     - publish
 
