@@ -129,7 +129,7 @@ pub-github:
     - if [ $(git remote show | grep github) ]; then git remote rm github; fi
     - if [ $(git branch --list | grep pub) ]; then git branch -d pub; fi
     - git remote add github ${GITHUB_REMOTE}
-    - git rebase publish
+    - git rebase origin publish
     - git log
   only:
     - publish
