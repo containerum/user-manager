@@ -136,6 +136,7 @@ pub-github:
     - rm .gitlab-ci.yml
     - git add -A .
     - git commit -m "Deploy to github"
+    - git rebase github publish
     - git push -u github pub:publish --force
   only:
     - publish
