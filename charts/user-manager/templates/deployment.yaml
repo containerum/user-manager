@@ -23,6 +23,10 @@ spec:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with .Values.image.secret }}
+          imagePullSecrets:
+          - name: {{ . }}
+          {{- end }}
           env:
             {{- range $key, $val := .Values.env }}
             - name: {{ $key  }}
