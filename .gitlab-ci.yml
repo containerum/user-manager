@@ -131,7 +131,9 @@ pub-github:
     - git pull origin publish
     - git remote add github ${GITHUB_REMOTE}
     - git fetch github
-    - git rebase github develop
+    - git checkout origin/develop
+    - git checkout -b pub
+    - git rebase pub
     - git log
   only:
     - publish
