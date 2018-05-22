@@ -28,7 +28,6 @@ test-build:
     - master
     - staging
     - tags
-    - publish
 
 unit-tests:
   image: golang:1.9-alpine
@@ -47,7 +46,6 @@ unit-tests:
     - master
     - staging
     - tags
-    - publish
 
 migrations-test:
   services:
@@ -71,7 +69,6 @@ migrations-test:
     - master
     - staging
     - tags
-    - publish
 
 dev-release:
   image: docker:latest
@@ -127,19 +124,17 @@ pub-github:
   script:
     - git remote show
     - if [ $(git remote show | grep github) ]; then git remote rm github; fi
-    - if [ $(git branch --list | grep pub) ]; then git branch -D pub; fi
-    - git pull origin publish
+    - if [ $(git branch --list | grep pub) ]; then git branch -d pub; fi
     - git remote add github ${GITHUB_REMOTE}
+    - git pull origin develop
     - git fetch github
     - git checkout origin/develop
     - git checkout -b pub
-    - rm .gitlab-ci.yml
-    - git add -A .
-    - git commit -m "Deploy to github"
-    - git rebase github/publish
-    - git push -u github pub:publish --force
+    - git push -u github pub:develop --force
+    - git remote rm github
   only:
-    - publish
+    - develop
+  when: manual
 
 
 stage-release:
