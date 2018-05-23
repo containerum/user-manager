@@ -224,9 +224,9 @@ func (u *serverImpl) GetUsers(ctx context.Context, page int, perPage int, filter
 	return &resp, nil
 }
 
-func (u *serverImpl) GetUsersLoginID(ctx context.Context) (*models.LoginID, error) {
+func (u *serverImpl) GetUsersLoginID(ctx context.Context, ids []string) (*models.LoginID, error) {
 	u.log.Info("get users list")
-	users, err := u.svc.DB.GetAllUsersLoginID(ctx)
+	users, err := u.svc.DB.GetUsersLoginID(ctx, ids)
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetUsersList()

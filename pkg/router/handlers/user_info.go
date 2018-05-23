@@ -235,6 +235,11 @@ func UserListGetHandler(ctx *gin.Context) {
 //
 // ---
 // x-method-visibility: public
+// parameters:
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/IDList'
 // responses:
 //  '200':
 //    description: users list
@@ -245,7 +250,18 @@ func UserListGetHandler(ctx *gin.Context) {
 func UserListLoginID(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	resp, err := um.GetUsersLoginID(ctx.Request.Context())
+	var ids models.IDList
+	if err := ctx.ShouldBindWith(&ids, binding.JSON); err != nil {
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		return
+	}
+
+	if len(ids) < 1 {
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetails("no users ids in request"), ctx)
+		return
+	}
+
+	resp, err := um.GetUsersLoginID(ctx.Request.Context(), ids)
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)

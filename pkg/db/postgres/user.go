@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"git.containerum.net/ch/user-manager/pkg/db"
+	"github.com/jmoiron/sqlx"
 )
 
 const userQueryColumns = "id, login, password_hash, salt, role, is_active, is_deleted, is_in_blacklist"
@@ -141,11 +142,14 @@ func (pgdb *pgDB) UnBlacklistUser(ctx context.Context, user *db.User) error {
 	return nil
 }
 
-func (pgdb *pgDB) GetAllUsersLoginID(ctx context.Context) ([]db.User, error) {
+func (pgdb *pgDB) GetUsersLoginID(ctx context.Context, ids []string) ([]db.User, error) {
 	pgdb.log.Infoln("Get all users")
 	users := make([]db.User, 0) // return empty slice instead of nil if no records found
-
-	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT id, login FROM users")
+	query, args, err := sqlx.In("SELECT id, login FROM users WHERE id IN (?)", ids)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := pgdb.qLog.QueryxContext(ctx, pgdb.conn.Rebind(query), args...)
 	if err != nil {
 		return nil, err
 	}
