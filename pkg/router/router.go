@@ -74,7 +74,7 @@ func initRoutes(app *gin.Engine) {
 		user.PUT("/info", requireIdentityHeaders, m.RequireUserExist, h.UserInfoUpdateHandler)
 
 		user.GET("/list", requireIdentityHeaders, m.RequireAdminRole, h.UserListGetHandler)
-		user.GET("/loginid", h.UserListLoginID)
+		user.POST("/loginid", h.UserListLoginID)
 
 		user.GET("/links/:user_id", requireIdentityHeaders, m.RequireAdminRole, h.LinksGetHandler)
 

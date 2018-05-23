@@ -86,3 +86,8 @@ type UserData map[string]interface{}
 //
 // swagger:model
 type LoginID map[string]string
+
+// IDList -- ids list
+//
+// swagger:model
+type IDList []string
