@@ -32,8 +32,3 @@ spec:
             - name: {{ $key  }}
               value: {{ $val | quote }}
             {{- end }}
-            - name: CH_USER_PG_URL
-              valueFrom:
-                secretKeyRef:
-                  name: {{ template "fullname" . }}
-                  key: pg-url
