@@ -32,8 +32,16 @@ spec:
           value: '${GIN_MODE}'
         - name: CH_USER_LOG_LEVEL
           value: '${CH_USER_LOG_LEVEL}'
-        - name: CH_USER_PG_URL
-          value: '${CH_USER_PG_URL}'
+        - name: CH_USER_PG_LOGIN
+          value: '${CH_USER_PG_LOGIN}'
+        - name: CH_USER_PG_PASSWORD
+          value: '${CH_USER_PG_PASSWORD}'
+        - name: CH_USER_PG_ADDR
+          value: '${CH_USER_PG_ADDR}'
+        - name: CH_USER_PG_DBNAME
+          value: '${CH_USER_PG_DBNAME}'
+        - name: CH_USER_PG_NOSSL
+          value: '${CH_USER_PG_NOSSL}'
         - name: CH_USER_MAIL_URL
           value: '${CH_USER_MAIL_URL}'
         - name: CH_USER_RECAPTCHA_KEY
