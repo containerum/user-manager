@@ -24,7 +24,11 @@ COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 ENV GIN_MODE=debug \
     CH_USER_LOG_LEVEL=5 \
     CH_USER_DB="postgres" \
-    CH_USER_PG_URL="postgres://user_manager:12345678@127.0.0.1:5432/user_manager?sslmode=disable" \
+    CH_USER_PG_LOGIN="usermanager" \
+    CH_USER_PG_PASSWORD="ae9Oodai3aid" \
+    CH_USER_PG_ADDR="postgres:5432" \
+    CH_USER_PG_DBNAME="usermanager" \
+    CH_USER_PG_NOSSL=true \
     CH_USER_MIGRATIONS_PATH="migrations" \
     CH_USER_MAIL="http" \
     CH_USER_MAIL_URL="http://ch-mail-templater:7070/" \

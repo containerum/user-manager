@@ -3,6 +3,8 @@ package main
 import (
 	"errors"
 
+	"fmt"
+
 	"git.containerum.net/ch/user-manager/pkg/clients"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/db/postgres"
@@ -23,7 +25,11 @@ const (
 	debugFlag        = "debug"
 	textlogFlag      = "textlog"
 	dbFlag           = "db"
-	dbURLFlag        = "db_url"
+	dbPGLoginFlag    = "db_pg_login"
+	dbPGPasswordFlag = "db_pg_password"
+	dbPGAddrFlag     = "db_pg_addr"
+	dbPGNameFlag     = "db_pg_dbname"
+	dbPGNoSSLFlag    = "db_pg_nossl"
 	dbMigrationsFlag = "db_migrations"
 	mailFlag         = "mail"
 	mailURLFlag      = "mail_url"
@@ -62,9 +68,29 @@ var flags = []cli.Flag{
 		Usage:  "DB for project",
 	},
 	cli.StringFlag{
-		EnvVar: "CH_USER_PG_URL",
-		Name:   dbURLFlag,
-		Usage:  "DB URL (PostgreSQL)",
+		EnvVar: "CH_USER_PG_LOGIN",
+		Name:   dbPGLoginFlag,
+		Usage:  "DB Login (PostgreSQL)",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_USER_PG_PASSWORD",
+		Name:   dbPGPasswordFlag,
+		Usage:  "DB Password (PostgreSQL)",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_USER_PG_ADDR",
+		Name:   dbPGAddrFlag,
+		Usage:  "DB Address (PostgreSQL)",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_USER_PG_DBNAME",
+		Name:   dbPGNameFlag,
+		Usage:  "DB name (PostgreSQL)",
+	},
+	cli.BoolFlag{
+		EnvVar: "CH_USER_PG_NOSSL",
+		Name:   dbPGNoSSLFlag,
+		Usage:  "DB disable ssl (PostgreSQL)",
 	},
 	cli.StringFlag{
 		EnvVar: "CH_USER_MIGRATIONS_PATH",
@@ -156,7 +182,11 @@ func setupLogs(c *cli.Context) {
 func getDB(c *cli.Context) (db.DB, error) {
 	switch c.String(dbFlag) {
 	case "postgres":
-		return postgres.DBConnect(c.String(dbURLFlag), c.String(dbMigrationsFlag))
+		url := fmt.Sprintf("postgres://%v:%v@%v/%v", c.String(dbPGLoginFlag), c.String(dbPGPasswordFlag), c.String(dbPGAddrFlag), c.String(dbPGNameFlag))
+		if c.Bool(dbPGNoSSLFlag) {
+			url = url + "?sslmode=disable"
+		}
+		return postgres.DBConnect(url, c.String(dbMigrationsFlag))
 	default:
 		return nil, errors.New("invalid db")
 	}
