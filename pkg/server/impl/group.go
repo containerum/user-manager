@@ -168,3 +168,30 @@ func (u *serverImpl) DeleteGroupMember(ctx context.Context, groupID string, user
 
 	return nil
 }
+
+func (u *serverImpl) UpdateGroupMemberAccess(ctx context.Context, groupID, username, access string) error {
+	u.log.Info("deleting group members")
+
+	usr, err := u.svc.DB.GetUserByLogin(ctx, username)
+	if err != nil {
+		u.log.WithError(err)
+		return err
+	}
+
+	if usr == nil {
+		return cherry.ErrUserNotExist().AddDetails(username)
+	}
+
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+		return tx.UpdateGroupMember(ctx, usr.ID, groupID, access)
+	})
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		if err.Error() == "user is not in this group" {
+			return cherry.ErrNotInGroup().AddDetails(username)
+		}
+		return cherry.ErrUnableDeleteGroupMember().AddDetailsErr(err)
+	}
+
+	return nil
+}

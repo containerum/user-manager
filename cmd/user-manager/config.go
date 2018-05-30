@@ -186,7 +186,6 @@ func getDB(c *cli.Context) (db.DB, error) {
 		if c.Bool(dbPGNoSSLFlag) {
 			url = url + "?sslmode=disable"
 		}
-		fmt.Println("TEST", url)
 		return postgres.DBConnect(url, c.String(dbMigrationsFlag))
 	default:
 		return nil, errors.New("invalid db")

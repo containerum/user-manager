@@ -215,6 +215,12 @@ func DeleteGroupMemberHandler(ctx *gin.Context) {
 func UpdateGroupMemberHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
+	var request kube_types.UserGroupMember
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		return
+	}
+
 	group, err := um.GetGroup(ctx.Request.Context(), ctx.Param("group"))
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
@@ -231,7 +237,7 @@ func UpdateGroupMemberHandler(ctx *gin.Context) {
 		return
 	}
 
-	if err := um.DeleteGroupMember(ctx.Request.Context(), ctx.Param("group"), ctx.Param("id")); err != nil {
+	if err := um.UpdateGroupMemberAccess(ctx.Request.Context(), ctx.Param("group"), ctx.Param("id"), string(request.Access)); err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {

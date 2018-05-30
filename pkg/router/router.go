@@ -127,7 +127,7 @@ func initRoutes(app *gin.Engine) {
 		userGroups.GET("/:group", m.RequireUserExist, h.GetGroupHandler)
 		userGroups.POST("/", m.RequireUserExist, h.CreateGroupHandler)
 		userGroups.POST("/:group/members", m.RequireUserExist, h.AddGroupMemberHandler)
-		userGroups.PUT("/:group/members/:id", m.RequireUserExist, h.DeleteGroupMemberHandler)
+		userGroups.PUT("/:group/members/:id", m.RequireUserExist, h.UpdateGroupMemberHandler)
 		userGroups.DELETE("/:group/members/:id", m.RequireUserExist, h.DeleteGroupMemberHandler)
 	}
 }

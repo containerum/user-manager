@@ -89,7 +89,7 @@ func (pgdb *pgDB) DeleteGroupMember(ctx context.Context, userID string, groupID 
 }
 
 func (pgdb *pgDB) UpdateGroupMember(ctx context.Context, userID string, groupID string, access string) error {
-	pgdb.log.Infoln("Update member access", userID)
+	pgdb.log.WithField("userID", userID).WithField("access", access).Infoln("Update member access")
 	res, err := pgdb.eLog.ExecContext(ctx, "UPDATE groups_members SET default_access = $3 WHERE group_id = $1 AND user_id = $2", groupID, userID, access)
 	if err != nil {
 		return err
