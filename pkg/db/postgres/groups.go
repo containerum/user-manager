@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 
 	"git.containerum.net/ch/user-manager/pkg/db"
 )
@@ -37,7 +38,7 @@ func (pgdb *pgDB) AddGroupMembers(ctx context.Context, member *db.UserGroupMembe
 }
 
 func (pgdb *pgDB) GetGroup(ctx context.Context, groupID string) (*db.UserGroup, error) {
-	pgdb.log.Infoln("Get group users", groupID)
+	pgdb.log.Infoln("Get group", groupID)
 	var group db.UserGroup // return empty slice instead of nil if no records found
 	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT * FROM groups WHERE id = $1", groupID)
 	if err != nil {
@@ -70,4 +71,34 @@ func (pgdb *pgDB) GetGroupMembers(ctx context.Context, groupID string) ([]db.Use
 	}
 
 	return resp, err
+}
+
+func (pgdb *pgDB) DeleteGroupMember(ctx context.Context, userID string, groupID string) error {
+	pgdb.log.Infoln("Delete member", userID)
+	res, err := pgdb.eLog.ExecContext(ctx, "DELETE FROM groups_members WHERE group_id = $1 AND user_id = $2", groupID, userID)
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	} else if rows == 0 {
+		return errors.New("user is not in this group")
+	}
+	return nil
+}
+
+func (pgdb *pgDB) UpdateGroupMember(ctx context.Context, userID string, groupID string, access string) error {
+	pgdb.log.Infoln("Update member access", userID)
+	res, err := pgdb.eLog.ExecContext(ctx, "UPDATE groups_members SET default_access = $3 WHERE group_id = $1 AND user_id = $2", groupID, userID, access)
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	} else if rows == 0 {
+		return errors.New("user is not in this group")
+	}
+	return nil
 }

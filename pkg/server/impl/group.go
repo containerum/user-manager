@@ -5,13 +5,15 @@ import (
 
 	"errors"
 
+	"time"
+
 	"git.containerum.net/ch/user-manager/pkg/db"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	"github.com/containerum/utils/httputil"
 )
 
-func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGroup) error {
+func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGroup) (*string, error) {
 	u.log.WithField("label", request.Label).Info("creating group")
 
 	newGroup := &db.UserGroup{
@@ -24,8 +26,7 @@ func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGro
 	})
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
-		//TODO
-		return cherry.ErrUnableBlacklistDomain()
+		return nil, cherry.ErrUnableCreateGroup()
 	}
 
 	newGroupAdmin := &db.UserGroupMember{
@@ -39,28 +40,31 @@ func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGro
 	})
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
-		//TODO
-		return cherry.ErrUnableBlacklistDomain()
+		return nil, cherry.ErrUnableCreateGroup()
 	}
 
-	_ = u.CreateGroupMembers(ctx, newGroup.ID, *request.UserGroupMembers)
-	return nil
+	if request.UserGroupMembers != nil {
+		_ = u.AddGroupMembers(ctx, newGroup.ID, *request.UserGroupMembers)
+	}
+	return &newGroup.ID, nil
 }
 
-func (u *serverImpl) CreateGroupMembers(ctx context.Context, groupID string, request kube_types.UserGroupMembers) error {
+func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, request kube_types.UserGroupMembers) error {
 	u.log.Info("adding group members")
 
+	var errs []error
 	var created int
-
 	for _, member := range request.Members {
 		usr, err := u.svc.DB.GetUserByLogin(ctx, member.Username)
 		if err != nil {
 			u.log.WithError(err)
+			errs = append(errs, err)
 			continue
 		}
 
 		if usr == nil {
-			u.log.WithError(errors.New("user not exists"))
+			u.log.WithError(cherry.ErrUserNotExist().AddDetails(member.Username))
+			errs = append(errs, cherry.ErrUserNotExist().AddDetails(member.Username))
 			continue
 		}
 
@@ -75,13 +79,14 @@ func (u *serverImpl) CreateGroupMembers(ctx context.Context, groupID string, req
 		})
 		if err := u.handleDBError(err); err != nil {
 			u.log.WithError(err)
+			errs = append(errs, err)
 			continue
 		}
 		created++
 	}
 
 	if created == 0 {
-		return errors.New("no members were added to group")
+		return cherry.ErrUnableAddGroupMember().AddDetailsErr(errs...)
 	}
 
 	return nil
@@ -90,33 +95,28 @@ func (u *serverImpl) CreateGroupMembers(ctx context.Context, groupID string, req
 func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.UserGroup, error) {
 	u.log.Info("adding group members")
 
-	var group *db.UserGroup
-	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		var err error
-		group, err = tx.GetGroup(ctx, groupID)
-		return err
-	})
-	if err := u.handleDBError(err); err != nil {
+	group, err := u.svc.DB.GetGroup(ctx, groupID)
+	if err != nil {
 		u.log.WithError(err)
-		return nil, cherry.ErrUnableBlacklistDomain()
+		return nil, cherry.ErrUnableGetGroup()
 	}
+
+	if group == nil {
+		return nil, cherry.ErrGroupNotExist()
+	}
+
 	ret := kube_types.UserGroup{
 		ID:        group.ID,
 		Label:     group.Label,
 		OwnerID:   group.OwnerID,
-		CreatedAt: group.CreatedAt.Time.String(),
+		CreatedAt: group.CreatedAt.Time.Format(time.RFC3339),
 	}
 
 	var members []db.UserGroupMember
-	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		var err error
-		members, err = tx.GetGroupMembers(ctx, groupID)
-		return err
-	})
-	if err := u.handleDBError(err); err != nil {
+	members, err = u.svc.DB.GetGroupMembers(ctx, groupID)
+	if err != nil {
 		u.log.WithError(err)
-		//TODO
-		return nil, cherry.ErrUnableBlacklistDomain()
+		return nil, cherry.ErrUnableGetGroup()
 	}
 
 	ret.UserGroupMembers = &kube_types.UserGroupMembers{Members: make([]kube_types.UserGroupMember, 0)}
@@ -140,4 +140,31 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 	}
 
 	return &ret, nil
+}
+
+func (u *serverImpl) DeleteGroupMember(ctx context.Context, groupID string, username string) error {
+	u.log.Info("deleting group members")
+
+	usr, err := u.svc.DB.GetUserByLogin(ctx, username)
+	if err != nil {
+		u.log.WithError(err)
+		return err
+	}
+
+	if usr == nil {
+		return cherry.ErrUserNotExist().AddDetails(username)
+	}
+
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+		return tx.DeleteGroupMember(ctx, usr.ID, groupID)
+	})
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		if err.Error() == "user is not in this group" {
+			return cherry.ErrNotInGroup().AddDetails(username)
+		}
+		return cherry.ErrUnableDeleteGroupMember().AddDetailsErr(err)
+	}
+
+	return nil
 }

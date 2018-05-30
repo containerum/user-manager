@@ -14,5 +14,6 @@ CREATE TABLE IF NOT EXISTS groups_members
   default_access TEXT NOT NULL,
   added_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW() NOT NULL,
   CONSTRAINT group_member_group_id FOREIGN KEY (group_id) REFERENCES groups (id) ON DELETE CASCADE,
-  CONSTRAINT group_member_user_id FOREIGN KEY (user_id) REFERENCES users (id)
+  CONSTRAINT group_member_user_id FOREIGN KEY (user_id) REFERENCES users (id),
+  CONSTRAINT unique_user_id_group UNIQUE (group_id, user_id)
 );

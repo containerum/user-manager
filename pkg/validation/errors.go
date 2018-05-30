@@ -5,9 +5,8 @@ import (
 )
 
 const (
-	isRequired = "field %v is required"
-	notBase64  = "field %v should be encoded in base64"
-	moreZero   = "field %v should be >0"
+	isRequired      = "field %v is required"
+	isRequiredSlice = "field %v is required in element %v"
 )
 
 var (

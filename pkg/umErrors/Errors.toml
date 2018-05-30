@@ -237,3 +237,57 @@ SID = "UserManager"
     StatusHTTP = 400
     Message = "User is already activated"
     Kind = 37
+
+[[error]]
+    Name = "ErrGroupNotExist"
+    StatusHTTP = 404
+    Message = "Group with such id doesn't exist"
+    Kind = 38
+
+[[error]]
+    Name = "ErrUnableGetGroup"
+    StatusHTTP = 500
+    Message = "Unable get group"
+    Kind = 39
+
+[[error]]
+    Name = "ErrUnableCreateGroup"
+    StatusHTTP = 500
+    Message = "Unable create group"
+    Kind = 40
+
+[[error]]
+    Name = "ErrUnableAddGroupMember"
+    StatusHTTP = 500
+    Message = "Unable add group member"
+    Kind = 41
+
+[[error]]
+    Name = "ErrAlreadyExists"
+    StatusHTTP = 409
+    Message = "Already exists"
+    Kind = 42
+
+[[error]]
+    Name = "ErrAlreadyInGroup"
+    StatusHTTP = 409
+    Message = "User is already in this group"
+    Kind = 43
+
+[[error]]
+    Name = "ErrNotGroupOwner"
+    StatusHTTP = 403
+    Message = "Only group owner can do this"
+    Kind = 44
+
+[[error]]
+    Name = "ErrUnableDeleteGroupMember"
+    StatusHTTP = 500
+    Message = "Unable delete group member"
+    Kind = 45
+
+[[error]]
+    Name = "ErrNotInGroup"
+    StatusHTTP = 404
+    Message = "User is not in this group"
+    Kind = 46

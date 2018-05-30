@@ -17,3 +17,20 @@ func ValidateCreateGroup(group kube_types.UserGroup) []error {
 	}
 	return nil
 }
+
+//ValidateAddMembers validates add group members request
+func ValidateAddMembers(members kube_types.UserGroupMembers) []error {
+	var errs []error
+	for i, m := range members.Members {
+		if m.Access == "" {
+			errs = append(errs, fmt.Errorf(isRequiredSlice, "access", i+1))
+		}
+		if m.Username == "" {
+			errs = append(errs, fmt.Errorf(isRequiredSlice, "username", i+1))
+		}
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}

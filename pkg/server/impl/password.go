@@ -36,24 +36,22 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request models.Password
 
 	var tokens *authProto.CreateTokenResponse
 
+	user.PasswordHash = utils.GetKey(user.Login, request.NewPassword, user.Salt)
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		user.PasswordHash = utils.GetKey(user.Login, request.NewPassword, user.Salt)
-		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
-			return updErr
-		}
-
-		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
-			UserId: user.ID,
-		})
-		if authErr != nil {
-			return authErr
-		}
-
-		tokens, authErr = u.createTokens(ctx, user)
-		return authErr
+		return tx.UpdateUser(ctx, user)
 	})
 	if err = u.handleDBError(err); err != nil {
 		return nil, cherry.ErrUnableChangePassword()
+	}
+	if _, err := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
+		UserId: user.ID,
+	}); err != nil {
+		return nil, err
+	}
+
+	tokens, err = u.createTokens(ctx, user)
+	if err != nil {
+		return nil, err
 	}
 	go func() {
 		mailErr := u.svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
@@ -126,32 +124,33 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request models.Passwor
 		return nil, cherry.ErrInvalidLink().AddDetailsErr(fmt.Errorf(linkNotFound, request.Link))
 	}
 
-	var tokens *authProto.CreateTokenResponse
-
+	link.User.PasswordHash = utils.GetKey(link.User.Login, request.NewPassword, link.User.Salt)
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		link.User.PasswordHash = utils.GetKey(link.User.Login, request.NewPassword, link.User.Salt)
-		if updErr := tx.UpdateUser(ctx, link.User); updErr != nil {
-			return updErr
-		}
-		link.IsActive = false
-
-		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
-			UserId: link.User.ID,
-		})
-		if authErr != nil {
-			return authErr
-		}
-
-		if updErr := tx.UpdateLink(ctx, link); updErr != nil {
-			return updErr
-		}
-
-		tokens, authErr = u.createTokens(ctx, link.User)
-		return authErr
+		return tx.UpdateUser(ctx, link.User)
 	})
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableResetPassword()
+	}
+
+	link.IsActive = false
+
+	if _, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
+		UserId: link.User.ID,
+	}); authErr != nil {
+		return nil, authErr
+	}
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+		return tx.UpdateLink(ctx, link)
+	})
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return nil, cherry.ErrUnableResetPassword()
+	}
+
+	tokens, err := u.createTokens(ctx, link.User)
+	if err != nil {
+		return nil, err
 	}
 
 	go func() {

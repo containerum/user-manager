@@ -158,6 +158,8 @@ type DB interface {
 	AddGroupMembers(ctx context.Context, member *UserGroupMember) error
 	GetGroup(ctx context.Context, groupID string) (*UserGroup, error)
 	GetGroupMembers(ctx context.Context, groupID string) ([]UserGroupMember, error)
+	DeleteGroupMember(ctx context.Context, userID string, groupID string) error
+	UpdateGroupMember(ctx context.Context, userID string, groupID string, access string) error
 
 	// Perform operations inside transaction
 	// Transaction commits if `f` returns nil error, rollbacks and forwards error otherwise
