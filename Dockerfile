@@ -37,7 +37,7 @@ ENV GIN_MODE=debug \
     CH_USER_OAUTH_CLIENTS="http" \
     CH_USER_AUTH_GRPC_ADDR="ch-auth:1112" \
     CH_USER_RESOURCE_SERVICE="http" \
-    CH_USER_RESOURCE_SERVICE_URL="http://resource-service:1213" \
+    CH_USER_RESOURCE_SERVICE_URL="http://permissions:4242" \
     CH_USER_LISTEN_ADDR=":8111" \
     CH_USER_USER_MANAGER="impl"
 ENTRYPOINT ["/user-manager"]
