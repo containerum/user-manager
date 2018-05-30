@@ -340,7 +340,7 @@ func ErrUserNotBlacklisted(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableBlacklistDomain(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "User is already blacklisted", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x1b}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to blacklist domain", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x1b}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -352,7 +352,7 @@ func ErrUnableBlacklistDomain(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableUnblacklistDomain(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "User is not blacklisted", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x1c}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to unblacklist domain", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x1c}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -364,7 +364,7 @@ func ErrUnableUnblacklistDomain(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrDomainAlreadyBlacklisted(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "User is already blacklisted", StatusHTTP: 409, ID: cherry.ErrID{SID: "UserManager", Kind: 0x1d}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Domain is already blacklisted", StatusHTTP: 409, ID: cherry.ErrID{SID: "UserManager", Kind: 0x1d}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -376,7 +376,7 @@ func ErrDomainAlreadyBlacklisted(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrDomainNotBlacklisted(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "User is not blacklisted", StatusHTTP: 404, ID: cherry.ErrID{SID: "UserManager", Kind: 0x1e}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Domain is not blacklisted", StatusHTTP: 404, ID: cherry.ErrID{SID: "UserManager", Kind: 0x1e}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}

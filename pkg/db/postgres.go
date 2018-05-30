@@ -88,6 +88,23 @@ type DomainBlacklistEntry struct {
 	AddedBy   sql.NullString `db:"added_by"`
 }
 
+// UserGroup describes user group model. It should be used only inside this project.
+type UserGroup struct {
+	ID        string      `db:"id"`
+	Label     string      `db:"label"`
+	OwnerID   string      `db:"owner_user_id"`
+	CreatedAt pq.NullTime `db:"created_at"`
+}
+
+// UserGroupMember describes user group member model. It should be used only inside this project.
+type UserGroupMember struct {
+	ID      string      `db:"id"`
+	GroupID string      `db:"group_id"`
+	UserID  string      `db:"user_id"`
+	Access  string      `db:"default_access"`
+	AddedAt pq.NullTime `db:"added_at"`
+}
+
 // Errors which may occur in transactional operations
 var (
 	ErrTransactionBegin    = errors.New("transaction begin error")
@@ -136,6 +153,11 @@ type DB interface {
 	GetTokenBySessionID(ctx context.Context, sessionID string) (*Token, error)
 	DeleteToken(ctx context.Context, token string) error
 	UpdateToken(ctx context.Context, token *Token) error
+
+	CreateGroup(ctx context.Context, group *UserGroup) error
+	AddGroupMembers(ctx context.Context, member *UserGroupMember) error
+	GetGroup(ctx context.Context, groupID string) (*UserGroup, error)
+	GetGroupMembers(ctx context.Context, groupID string) ([]UserGroupMember, error)
 
 	// Perform operations inside transaction
 	// Transaction commits if `f` returns nil error, rollbacks and forwards error otherwise

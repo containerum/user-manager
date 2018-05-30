@@ -5,6 +5,8 @@ import (
 
 	"io"
 
+	kube_types "github.com/containerum/kube-client/pkg/model"
+
 	"git.containerum.net/ch/auth/proto"
 	"git.containerum.net/ch/user-manager/pkg/clients"
 	"git.containerum.net/ch/user-manager/pkg/db"
@@ -63,6 +65,11 @@ type UserManager interface {
 	RemoveDomainFromBlacklist(ctx context.Context, domain string) error
 	GetBlacklistedDomain(ctx context.Context, domain string) (*models.Domain, error)
 	GetBlacklistedDomainsList(ctx context.Context) (*models.DomainListResponse, error)
+
+	//User groups
+	GetGroup(ctx context.Context, groupID string) (*kube_types.UserGroup, error)
+	CreateGroup(ctx context.Context, request kube_types.UserGroup) error
+	CreateGroupMembers(ctx context.Context, groupID string, request kube_types.UserGroupMembers) error
 
 	io.Closer
 }

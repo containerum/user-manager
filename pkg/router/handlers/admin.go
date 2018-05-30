@@ -63,7 +63,7 @@ func AdminUserCreateHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, resp)
 }
 
-// swagger:operation POST /admin/user/activation Admin AdminUserActivate
+// swagger:operation POST /admin/user/activation Admin AdminUserActivateHandler
 // Activate user.
 // https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-user-activation
 //
@@ -81,7 +81,7 @@ func AdminUserCreateHandler(ctx *gin.Context) {
 //    description: user activated
 //  default:
 //    $ref: '#/responses/error'
-func AdminUserActivate(ctx *gin.Context) {
+func AdminUserActivateHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request models.UserLogin
@@ -103,7 +103,7 @@ func AdminUserActivate(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-// swagger:operation POST /admin/user/deactivation Admin AdminUserDeactivate
+// swagger:operation POST /admin/user/deactivation Admin AdminUserDeactivateHandler
 // Deactivate user.
 // https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-user-deactivation
 //
@@ -121,7 +121,7 @@ func AdminUserActivate(ctx *gin.Context) {
 //    description: user deactivated
 //  default:
 //    $ref: '#/responses/error'
-func AdminUserDeactivate(ctx *gin.Context) {
+func AdminUserDeactivateHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request models.UserLogin
@@ -145,7 +145,7 @@ func AdminUserDeactivate(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-// swagger:operation POST /admin Admin AdminSetAdmin
+// swagger:operation POST /admin Admin AdminSetAdminHandler
 // Make user admin.
 // https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#set-admin
 //
@@ -163,7 +163,7 @@ func AdminUserDeactivate(ctx *gin.Context) {
 //    description: user becomes admin
 //  default:
 //    $ref: '#/responses/error'
-func AdminSetAdmin(ctx *gin.Context) {
+func AdminSetAdminHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request models.UserLogin
@@ -187,7 +187,7 @@ func AdminSetAdmin(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-// swagger:operation DELETE /admin Admin AdminSetAdmin
+// swagger:operation DELETE /admin Admin AdminSetAdminHandler
 // Make admin user.
 //
 // ---
@@ -204,7 +204,7 @@ func AdminSetAdmin(ctx *gin.Context) {
 //    description: admin becomes user
 //  default:
 //    $ref: '#/responses/error'
-func AdminUnsetAdmin(ctx *gin.Context) {
+func AdminUnsetAdminHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request models.UserLogin
@@ -228,7 +228,7 @@ func AdminUnsetAdmin(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-// swagger:operation POST /admin/user/password/reset Admin AdminResetPassword
+// swagger:operation POST /admin/user/password/reset Admin AdminResetPasswordHandler
 // Make admin user.
 //https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-reset-password
 //
@@ -248,7 +248,7 @@ func AdminUnsetAdmin(ctx *gin.Context) {
 //      $ref: '#/definitions/UserLogin'
 //  default:
 //    $ref: '#/responses/error'
-func AdminResetPassword(ctx *gin.Context) {
+func AdminResetPasswordHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request models.UserLogin

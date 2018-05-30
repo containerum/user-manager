@@ -175,25 +175,25 @@ SID = "UserManager"
 [[error]]
     Name = "ErrUnableBlacklistDomain"
     StatusHTTP = 500
-    Message = "User is already blacklisted"
+    Message = "Unable to blacklist domain"
     Kind = 27
 
 [[error]]
     Name = "ErrUnableUnblacklistDomain"
     StatusHTTP = 500
-    Message = "User is not blacklisted"
+    Message = "Unable to unblacklist domain"
     Kind = 28
 
 [[error]]
     Name = "ErrDomainAlreadyBlacklisted"
     StatusHTTP = 409
-    Message = "User is already blacklisted"
+    Message = "Domain is already blacklisted"
     Kind = 29
 
 [[error]]
     Name = "ErrDomainNotBlacklisted"
     StatusHTTP = 404
-    Message = "User is not blacklisted"
+    Message = "Domain is not blacklisted"
     Kind = 30
 
 [[error]]
