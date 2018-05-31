@@ -101,9 +101,9 @@ func GetGroupHandler(ctx *gin.Context) {
 //  - name: body
 //    in: body
 //    schema:
-//      $ref: '#/definitions/Domain'
+//      $ref: '#/definitions/UserGroup'
 // responses:
-//  '202':
+//  '201':
 //    description: group created
 //  default:
 //    $ref: '#/responses/error'
@@ -150,7 +150,7 @@ func CreateGroupHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusAccepted, resp)
+	ctx.JSON(http.StatusCreated, resp)
 }
 
 // swagger:operation POST /groups/{group}/members/{member} UserGroups UpdateGroupMemberHandler
@@ -169,6 +169,10 @@ func CreateGroupHandler(ctx *gin.Context) {
 //    in: path
 //    type: string
 //    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UserGroupMember'
 // responses:
 //  '202':
 //    description: user access changed
@@ -217,7 +221,28 @@ func UpdateGroupMemberHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-func AddGroupMemberHandler(ctx *gin.Context) {
+// swagger:operation POST /groups/{group}/members UserGroups AddGroupMembersHandler
+// Add members to the group.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: group
+//    in: path
+//    type: string
+//    required: true
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/UserGroupMembers'
+// responses:
+//  '202':
+//    description: user added
+//  default:
+//    $ref: '#/responses/error'
+func AddGroupMembersHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
 	var request kube_types.UserGroupMembers
@@ -261,6 +286,27 @@ func AddGroupMemberHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation DELETE /groups/{group}/members/{member} UserGroups DeleteGroupMemberHandler
+// Remove members from the group.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: group
+//    in: path
+//    type: string
+//    required: true
+//  - name: member
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: user removed from the group
+//  default:
+//    $ref: '#/responses/error'
 func DeleteGroupMemberHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -298,6 +344,23 @@ func DeleteGroupMemberHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
+// swagger:operation DELETE /groups/{group} UserGroups DeleteGroupHandler
+// Delete user group.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: group
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: group deleted
+//  default:
+//    $ref: '#/responses/error'
 func DeleteGroupHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 

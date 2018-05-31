@@ -20,8 +20,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-//go:generate swagger generate spec -m -i ../../swagger-basic.yml -o ../../swagger.json
-
 func initServer(c *cli.Context) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent|tabwriter.Debug)
 	for _, f := range c.GlobalFlagNames() {

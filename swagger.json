@@ -348,12 +348,39 @@
       }
     },
     "/groups": {
+      "get": {
+        "tags": [
+          "UserGroups"
+        ],
+        "summary": "Get user groups list.",
+        "operationId": "GetGroupsListHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "groups list",
+            "schema": {
+              "$ref": "#/definitions/UserGroups"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
       "post": {
         "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-domain-to-blacklist",
         "tags": [
           "UserGroups"
         ],
-        "summary": "Add domain to blacklist.",
+        "summary": "Create user group.",
         "operationId": "CreateGroupHandler",
         "parameters": [
           {
@@ -366,13 +393,198 @@
             "name": "body",
             "in": "body",
             "schema": {
-              "$ref": "#/definitions/Domain"
+              "$ref": "#/definitions/UserGroup"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "group created"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/groups/{group}": {
+      "get": {
+        "tags": [
+          "UserGroups"
+        ],
+        "summary": "Get user groups list.",
+        "operationId": "GetGroupHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "type": "string",
+            "name": "group",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "group",
+            "schema": {
+              "$ref": "#/definitions/UserGroup"
+            }
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "delete": {
+        "tags": [
+          "UserGroups"
+        ],
+        "summary": "Delete user group.",
+        "operationId": "DeleteGroupHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "type": "string",
+            "name": "group",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "group deleted"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/groups/{group}/members": {
+      "post": {
+        "tags": [
+          "UserGroups"
+        ],
+        "summary": "Add members to the group.",
+        "operationId": "AddGroupMembersHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "type": "string",
+            "name": "group",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserGroupMembers"
             }
           }
         ],
         "responses": {
           "202": {
-            "description": "group created"
+            "description": "user added"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      }
+    },
+    "/groups/{group}/members/{member}": {
+      "post": {
+        "tags": [
+          "UserGroups"
+        ],
+        "summary": "Change group member access.",
+        "operationId": "UpdateGroupMemberHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "type": "string",
+            "name": "group",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "member",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/UserGroupMember"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "user access changed"
+          },
+          "default": {
+            "$ref": "#/responses/error"
+          }
+        },
+        "x-method-visibility": "public"
+      },
+      "delete": {
+        "tags": [
+          "UserGroups"
+        ],
+        "summary": "Remove members from the group.",
+        "operationId": "DeleteGroupMemberHandler",
+        "parameters": [
+          {
+            "$ref": "#/parameters/UserRoleHeader"
+          },
+          {
+            "$ref": "#/parameters/UserIDHeader"
+          },
+          {
+            "type": "string",
+            "name": "group",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "name": "member",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "user removed from the group"
           },
           "default": {
             "$ref": "#/responses/error"
@@ -1224,7 +1436,7 @@
   "definitions": {
     "AccessLevel": {
       "type": "string",
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "AccessObject": {
       "description": "AccessObject represents user access to resource",
@@ -1310,7 +1522,7 @@
           "x-go-name": "URL"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "AvailableSolutionsList": {
       "description": "AvailableSolutionsList -- list of available solutions",
@@ -1324,7 +1536,7 @@
           "x-go-name": "Solutions"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "BoundAccountDeleteRequest": {
       "description": "BoundAccountDeleteRequest -- request to remove bound account",
@@ -1360,7 +1572,7 @@
           "x-go-name": "Type"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ConfigMap": {
       "description": "ConfigMap -- model for config map",
@@ -1387,7 +1599,7 @@
           "x-go-name": "Owner"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ConfigMapData": {
       "description": "ConfigMapData -- model for config map data",
@@ -1395,7 +1607,7 @@
       "additionalProperties": {
         "type": "string"
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ConfigMapsList": {
       "description": "ConfigMapsList -- model for config maps list",
@@ -1409,7 +1621,7 @@
           "x-go-name": "ConfigMaps"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Container": {
       "description": "Container -- model for container in deployment",
@@ -1467,7 +1679,7 @@
           "x-go-name": "VolumeMounts"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ContainerPort": {
       "description": "ContainerPort -- model for port in container",
@@ -1491,7 +1703,7 @@
           "$ref": "#/definitions/Protocol"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ContainerVolume": {
       "description": "ContainerVolume -- volume (or config map) mounted in container",
@@ -1522,7 +1734,7 @@
           "x-go-name": "SubPath"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "CreateTokenResponse": {
       "type": "object",
@@ -1584,7 +1796,7 @@
           "x-go-name": "TotalMemory"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "DeploymentStatus": {
       "description": "DeploymentStatus -- kubernetes status of deployment",
@@ -1626,7 +1838,7 @@
           "x-go-name": "UpdatedReplicas"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "DeploymentsList": {
       "description": "DeploymentsList -- model for deployments list",
@@ -1640,7 +1852,7 @@
           "x-go-name": "Deployments"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Domain": {
       "description": "DomainListResponse -- domains list",
@@ -1716,7 +1928,7 @@
           "x-go-name": "Value"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Err": {
       "description": "Err -- standard serializable API error\nMessage -- constant error message:\n+ \"invalid username\"\n+ \"quota exceeded\"\n+ \"validation error\"\n...etc...\nID -- unique error identification code\nDetails -- optional context error messages kinda\n+ \"field 'Replicas' must be non-zero value\"\n+ \"not enough tights to feed gopher\"\n+ \"resource 'God' does't exist\"\nFields -- optional set of key-value pairs",
@@ -1845,7 +2057,7 @@
           "x-go-name": "Rules"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "IngressesList": {
       "description": "IngressesList -- model for ingresses list",
@@ -1859,7 +2071,7 @@
           "x-go-name": "Ingress"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Link": {
       "description": "Link -- link (for registration/activation/etc)",
@@ -2120,6 +2332,10 @@
         "resources": {
           "$ref": "#/definitions/Resources"
         },
+        "tariff_id": {
+          "type": "string",
+          "x-go-name": "TariffID"
+        },
         "users": {
           "type": "array",
           "items": {
@@ -2128,7 +2344,7 @@
           "x-go-name": "Users"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "NamespacesList": {
       "description": "NamespacesList -- model for namespaces list",
@@ -2142,7 +2358,7 @@
           "x-go-name": "Namespaces"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "OAuthLoginRequest": {
       "description": "LoginRequest -- login request (for oauth login)",
@@ -2241,11 +2457,11 @@
           "x-go-name": "ServicePort"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "PersistentVolumeAccessMode": {
       "type": "string",
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Pod": {
       "description": "Pod -- model for pod",
@@ -2302,7 +2518,7 @@
           "x-go-name": "TotalMemory"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "PodStatus": {
       "description": "PodStatus -- kubernetes status of pod",
@@ -2323,7 +2539,7 @@
           "x-go-name": "StartAt"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "PodsList": {
       "description": "PodsList -- model for pods list",
@@ -2337,7 +2553,7 @@
           "x-go-name": "Pods"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Profile": {
       "description": "Profile -- additional user information",
@@ -2372,7 +2588,7 @@
     "Protocol": {
       "description": "represents port protocol type (TCP or UDP)",
       "type": "string",
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Recipient": {
       "description": "Recipient -- recipient info for send mail method",
@@ -2454,7 +2670,7 @@
           "x-go-name": "Memory"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Resources": {
       "type": "object",
@@ -2470,7 +2686,7 @@
           "$ref": "#/definitions/Resource"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ResourcesAccess": {
       "description": "ResourceAccesses contains user accesses to resources",
@@ -2517,7 +2733,7 @@
           "x-go-name": "TLSSecret"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "RunSolutionResponse": {
       "description": "RunSolutionResponse -- response to run solution request",
@@ -2541,7 +2757,7 @@
           "x-go-name": "NotCreated"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Secret": {
       "description": "model for secret",
@@ -2572,7 +2788,7 @@
           "x-go-name": "Owner"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "SecretsList": {
       "description": "SecretsList -- model for secrets list",
@@ -2586,7 +2802,7 @@
           "x-go-name": "Secrets"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "SelectedConfigMapsList": {
       "description": "SelectedConfigMapsList -- model for config maps list from all namespaces",
@@ -2594,7 +2810,7 @@
       "additionalProperties": {
         "$ref": "#/definitions/ConfigMapsList"
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "SelectedIngressesList": {
       "description": "SelectedIngressesList -- model for ingresses list from all namespaces",
@@ -2602,7 +2818,7 @@
       "additionalProperties": {
         "$ref": "#/definitions/IngressesList"
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "SendRequest": {
       "description": "SimpleSendResponse -- responce to send mail using send method",
@@ -2716,7 +2932,7 @@
           "x-go-name": "Ports"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ServicePort": {
       "description": "represent service port",
@@ -2745,12 +2961,12 @@
           "x-go-name": "TargetPort"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ServiceType": {
       "description": "represents service type",
       "type": "string",
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "ServicesList": {
       "description": "ServicesList -- model for services list",
@@ -2764,7 +2980,7 @@
           "x-go-name": "Services"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "SimpleSendRequest": {
       "description": "SimpleSendRequest -- request to send mail using simple send method",
@@ -2816,7 +3032,7 @@
           "x-go-name": "Env"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "SolutionLimits": {
       "description": "SolutionLimits -- solution resources limits",
@@ -2831,7 +3047,7 @@
           "x-go-name": "RAM"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "SolutionResources": {
       "description": "SolutionResources -- list of solution resources",
@@ -2846,7 +3062,7 @@
           "x-go-name": "Resources"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "StoredToken": {
       "description": "StoredToken is a representaion of token database record",
@@ -3072,7 +3288,7 @@
           "x-go-name": "Image"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UpdateNamespaceName": {
       "description": "UpdateNamespaceName -- contains new namespace label",
@@ -3086,7 +3302,7 @@
           "x-go-name": "Label"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UpdateReplicas": {
       "description": "UpdateReplicas -- contains new number of replicas",
@@ -3101,7 +3317,7 @@
           "x-go-name": "Replicas"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "User": {
       "description": "User -- user model",
@@ -3179,7 +3395,7 @@
           "x-go-name": "Username"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UserData": {
       "description": "UserData -- user profile data",
@@ -3210,7 +3426,11 @@
           "x-go-name": "Label"
         },
         "members": {
-          "$ref": "#/definitions/UserGroupMembers"
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserGroupMember"
+          },
+          "x-go-name": "Members"
         },
         "members_count": {
           "type": "integer",
@@ -3222,11 +3442,11 @@
           "x-go-name": "OwnerID"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UserGroupAccess": {
       "type": "string",
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UserGroupMember": {
       "description": "UserGroupMember -- group member",
@@ -3240,7 +3460,7 @@
           "x-go-name": "Username"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UserGroupMembers": {
       "description": "UserGroupMembers -- list of user group members",
@@ -3254,7 +3474,21 @@
           "x-go-name": "Members"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
+    },
+    "UserGroups": {
+      "description": "UserGroups -- list of user groups",
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserGroup"
+          },
+          "x-go-name": "Groups"
+        }
+      },
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UserHeaderData": {
       "description": "represents header data for X-User-Namespace and X-User-Volume headers (encoded in base64)",
@@ -3279,7 +3513,7 @@
           "x-go-name": "Label"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UserList": {
       "description": "UserList -- users list",
@@ -3351,7 +3585,7 @@
           "x-go-name": "Template"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UserSolutionsList": {
       "description": "UserSolutionsList -- list of running solution",
@@ -3365,7 +3599,7 @@
           "x-go-name": "Solutions"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "Volume": {
       "description": "Volume -- volume representation",
@@ -3402,6 +3636,10 @@
           "type": "string",
           "x-go-name": "StorageName"
         },
+        "tariff_id": {
+          "type": "string",
+          "x-go-name": "TariffID"
+        },
         "users": {
           "type": "array",
           "items": {
@@ -3410,7 +3648,7 @@
           "x-go-name": "Users"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "VolumesList": {
       "description": "VolumesList -- model for volumes list",
@@ -3424,7 +3662,7 @@
           "x-go-name": "Volumes"
         }
       },
-      "x-go-package": "github.com/containerum/kube-client/pkg/model"
+      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "authClient": {
       "type": "object",

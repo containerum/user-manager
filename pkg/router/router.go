@@ -125,11 +125,11 @@ func initRoutes(app *gin.Engine) {
 
 	userGroups := app.Group("/groups", requireIdentityHeaders, m.RequireUserExist)
 	{
-		userGroups.GET("/", h.GetGroupsListHandler)
+		userGroups.GET("", h.GetGroupsListHandler)
 		userGroups.GET("/:group", h.GetGroupHandler)
 
-		userGroups.POST("/", h.CreateGroupHandler)
-		userGroups.POST("/:group/members", h.AddGroupMemberHandler)
+		userGroups.POST("", h.CreateGroupHandler)
+		userGroups.POST("/:group/members", h.AddGroupMembersHandler)
 
 		userGroups.PUT("/:group/members/:id", h.UpdateGroupMemberHandler)
 
