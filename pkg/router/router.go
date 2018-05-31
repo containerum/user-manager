@@ -55,7 +55,7 @@ func initRoutes(app *gin.Engine) {
 	//TODO
 	requireLogoutHeaders := utils.RequireHeaders(umErrors.ErrRequiredHeadersNotProvided, headers.TokenIDXHeader, "X-Session-ID")
 
-	root := app.Group("/")
+	root := app.Group("")
 	{
 		root.POST("/logout", requireLogoutHeaders, m.RequireUserExist, h.LogoutHandler)
 	}
@@ -104,9 +104,9 @@ func initRoutes(app *gin.Engine) {
 
 	domainBlacklist := app.Group("/domain", requireIdentityHeaders, m.RequireAdminRole)
 	{
-		domainBlacklist.POST("/", h.BlacklistDomainAddHandler)
+		domainBlacklist.POST("", h.BlacklistDomainAddHandler)
 
-		domainBlacklist.GET("/", h.BlacklistDomainsListGetHandler)
+		domainBlacklist.GET("", h.BlacklistDomainsListGetHandler)
 		domainBlacklist.GET("/:domain", h.BlacklistDomainGetHandler)
 
 		domainBlacklist.DELETE("/:domain", h.BlacklistDomainDeleteHandler)

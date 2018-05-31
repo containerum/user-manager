@@ -22,7 +22,6 @@ COPY --from=alpine /zoneinfo.zip /
 # tls certificates
 COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 ENV GIN_MODE=debug \
-    CH_USER_LOG_LEVEL=5 \
     CH_USER_DB="postgres" \
     CH_USER_PG_LOGIN="usermanager" \
     CH_USER_PG_PASSWORD="ae9Oodai3aid" \
