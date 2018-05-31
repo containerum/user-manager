@@ -20,13 +20,12 @@ env:
   CH_USER_DB: "usermanager"
   CH_USER_PG_LOGIN: "usermanager"
   CH_USER_PG_PASSWORD: "ae9Oodai3aid"
-  CH_USER_PG_ADDR: "postgres:5432"
+  CH_USER_PG_ADDR: "postgres-master.postgres.svc.cluster.local:5432"
   CH_USER_PG_DBNAME: "usermanager"
   CH_USER_PG_NOSSL: true
-  CH_USER_PG_URL:
   CH_USER_MIGRATIONS_PATH: "migrations"
   CH_USER_MAIL: "http"
-  CH_USER_MAIL_URL: "http://ch-mail-templater:7070/"
+  CH_USER_MAIL_URL: "http://mail-templater:7070/"
   CH_USER_RECAPTCHA: "dummy"
   CH_USER_RECAPTCHA_KEY: "recaptcha_key"
   CH_USER_OAUTH_CLIENTS: "http"
