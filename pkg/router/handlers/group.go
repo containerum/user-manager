@@ -91,7 +91,6 @@ func GetGroupHandler(ctx *gin.Context) {
 
 // swagger:operation POST /groups UserGroups CreateGroupHandler
 // Create user group.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-domain-to-blacklist
 //
 // ---
 // x-method-visibility: public

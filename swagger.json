@@ -13,7 +13,6 @@
   "paths": {
     "/admin": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#set-admin",
         "tags": [
           "Admin"
         ],
@@ -78,7 +77,6 @@
     },
     "/admin/user/activation": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-user-activation",
         "tags": [
           "Admin"
         ],
@@ -112,7 +110,6 @@
     },
     "/admin/user/deactivation": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-user-deactivation",
         "tags": [
           "Admin"
         ],
@@ -146,7 +143,6 @@
     },
     "/admin/user/password/reset": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-reset-password",
         "tags": [
           "Admin"
         ],
@@ -183,7 +179,6 @@
     },
     "/admin/user/sign_up": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-create-user",
         "tags": [
           "Admin"
         ],
@@ -220,7 +215,6 @@
     },
     "/domain": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-blacklist-domain-list",
         "tags": [
           "DomainBlacklist"
         ],
@@ -248,7 +242,6 @@
         "x-method-visibility": "public"
       },
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-domain-to-blacklist",
         "tags": [
           "DomainBlacklist"
         ],
@@ -282,7 +275,6 @@
     },
     "/domain/{domain}": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-blacklist-domain",
         "tags": [
           "DomainBlacklist"
         ],
@@ -316,7 +308,6 @@
         "x-method-visibility": "public"
       },
       "delete": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-domain-from-blacklist",
         "tags": [
           "DomainBlacklist"
         ],
@@ -376,7 +367,6 @@
         "x-method-visibility": "public"
       },
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-domain-to-blacklist",
         "tags": [
           "UserGroups"
         ],
@@ -595,7 +585,6 @@
     },
     "/login/basic": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-in-with-login-and-password",
         "tags": [
           "Login"
         ],
@@ -635,7 +624,6 @@
     },
     "/login/oauth": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-in-with-third-party-resource-oauth",
         "tags": [
           "Login"
         ],
@@ -675,7 +663,6 @@
     },
     "/login/token": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-in-with-one-time-token",
         "tags": [
           "Login"
         ],
@@ -715,7 +702,6 @@
     },
     "/logout": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-out",
         "tags": [
           "Login"
         ],
@@ -742,7 +728,6 @@
     },
     "/password/change": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#change-password",
         "tags": [
           "Password"
         ],
@@ -779,7 +764,6 @@
     },
     "/password/reset": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#reset-password",
         "tags": [
           "Password"
         ],
@@ -807,7 +791,6 @@
     },
     "/password/restore": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#reseted-password-change",
         "tags": [
           "Password"
         ],
@@ -838,7 +821,6 @@
     },
     "/user/activation": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#activate-user",
         "tags": [
           "User"
         ],
@@ -875,7 +857,7 @@
     },
     "/user/blacklist": {
       "get": {
-        "description": "Users blacklist\nhttps://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#blacklist-users",
+        "description": "Users blacklist",
         "tags": [
           "UsersBlacklist"
         ],
@@ -912,7 +894,6 @@
         "x-method-visibility": "public"
       },
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#user-to-blacklist",
         "tags": [
           "UsersBlacklist"
         ],
@@ -977,7 +958,6 @@
     },
     "/user/bound_accounts": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-bound-accounts",
         "tags": [
           "BoundAccounts"
         ],
@@ -1005,7 +985,6 @@
         "x-method-visibility": "public"
       },
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-bound-accounts",
         "tags": [
           "BoundAccounts"
         ],
@@ -1071,7 +1050,6 @@
     },
     "/user/delete/complete": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-user-from-everywhere",
         "tags": [
           "User"
         ],
@@ -1108,7 +1086,6 @@
     },
     "/user/delete/partial": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-user-pseudo",
         "tags": [
           "User"
         ],
@@ -1135,7 +1112,6 @@
     },
     "/user/info": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-profile-info",
         "tags": [
           "UserInfo"
         ],
@@ -1163,7 +1139,6 @@
         "x-method-visibility": "public"
       },
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#change-profile-info",
         "tags": [
           "UserInfo"
         ],
@@ -1200,7 +1175,6 @@
     },
     "/user/info/id/{user_id}": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-info-by-id-for-mail",
         "tags": [
           "UserInfo"
         ],
@@ -1230,7 +1204,6 @@
     },
     "/user/info/login/{login}": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-info-by-login-for-resource",
         "tags": [
           "UserInfo"
         ],
@@ -1260,7 +1233,6 @@
     },
     "/user/links/{user_id}": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-links",
         "tags": [
           "Links"
         ],
@@ -1296,7 +1268,6 @@
     },
     "/user/list": {
       "get": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-list",
         "tags": [
           "UserInfo"
         ],
@@ -1366,7 +1337,6 @@
     },
     "/user/sign_up": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#create-user",
         "tags": [
           "User"
         ],
@@ -1406,7 +1376,6 @@
     },
     "/user/sign_up/resend": {
       "post": {
-        "description": "https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#resend-activation-link",
         "tags": [
           "Links"
         ],

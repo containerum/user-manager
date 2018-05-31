@@ -17,7 +17,6 @@ import (
 
 // swagger:operation POST /user/sign_up/resend Links LinkResendHandler
 // Resend activation link.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#resend-activation-link
 //
 // ---
 // x-method-visibility: public
@@ -62,7 +61,6 @@ func LinkResendHandler(ctx *gin.Context) {
 
 // swagger:operation GET /user/links/{user_id} Links LinksGetHandler
 // Get user links.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-links
 //
 // ---
 // x-method-visibility: public

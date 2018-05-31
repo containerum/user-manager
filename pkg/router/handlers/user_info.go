@@ -18,7 +18,6 @@ import (
 
 // swagger:operation GET /user/info UserInfo UserInfoGetHandler
 // Get user info.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-profile-info
 //
 // ---
 // x-method-visibility: public
@@ -51,7 +50,6 @@ func UserInfoGetHandler(ctx *gin.Context) {
 
 // swagger:operation POST /user/info UserInfo UserInfoUpdateHandler
 // Update user info.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#change-profile-info
 //
 // ---
 // x-method-visibility: private
@@ -100,7 +98,6 @@ func UserInfoUpdateHandler(ctx *gin.Context) {
 
 // swagger:operation GET /user/info/id/{user_id} UserInfo UserGetByIDHandler
 // Get user info by ID.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-info-by-id-for-mail
 //
 // ---
 // x-method-visibility: private
@@ -135,7 +132,6 @@ func UserGetByIDHandler(ctx *gin.Context) {
 
 // swagger:operation GET /user/info/login/{login} UserInfo UserGetByLoginHandler
 // Get user info by ID.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-info-by-login-for-resource
 //
 // ---
 // x-method-visibility: private
@@ -170,7 +166,6 @@ func UserGetByLoginHandler(ctx *gin.Context) {
 
 // swagger:operation GET /user/list UserInfo UserListGetHandler
 // Get user info.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-user-list
 //
 // ---
 // x-method-visibility: public

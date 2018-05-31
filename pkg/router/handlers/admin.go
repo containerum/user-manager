@@ -16,7 +16,6 @@ import (
 
 // swagger:operation POST /admin/user/sign_up Admin AdminUserCreateHandler
 // Create user.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-create-user
 //
 // ---
 // x-method-visibility: public
@@ -65,7 +64,6 @@ func AdminUserCreateHandler(ctx *gin.Context) {
 
 // swagger:operation POST /admin/user/activation Admin AdminUserActivateHandler
 // Activate user.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-user-activation
 //
 // ---
 // x-method-visibility: public
@@ -105,7 +103,6 @@ func AdminUserActivateHandler(ctx *gin.Context) {
 
 // swagger:operation POST /admin/user/deactivation Admin AdminUserDeactivateHandler
 // Deactivate user.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-user-deactivation
 //
 // ---
 // x-method-visibility: public
@@ -147,7 +144,6 @@ func AdminUserDeactivateHandler(ctx *gin.Context) {
 
 // swagger:operation POST /admin Admin AdminSetAdminHandler
 // Make user admin.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#set-admin
 //
 // ---
 // x-method-visibility: public
@@ -230,7 +226,6 @@ func AdminUnsetAdminHandler(ctx *gin.Context) {
 
 // swagger:operation POST /admin/user/password/reset Admin AdminResetPasswordHandler
 // Make admin user.
-//https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#admin-reset-password
 //
 // ---
 // x-method-visibility: public
