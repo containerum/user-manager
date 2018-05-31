@@ -80,9 +80,9 @@ type UserManager interface {
 
 // Services is a collection of resources needed for server functionality.
 type Services struct {
-	MailClient            clients.MailClient
-	DB                    db.DB
-	AuthClient            clients.AuthClientCloser
-	ReCaptchaClient       clients.ReCaptchaClient
-	ResourceServiceClient clients.ResourceServiceClient
+	MailClient        clients.MailClient
+	DB                db.DB
+	AuthClient        clients.AuthClientCloser
+	ReCaptchaClient   clients.ReCaptchaClient
+	PermissionsClient clients.PermissionsClient
 }

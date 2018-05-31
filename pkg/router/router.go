@@ -119,16 +119,20 @@ func initRoutes(app *gin.Engine) {
 		admin.POST("/user/deactivation", h.AdminUserDeactivateHandler)
 		admin.POST("/user/password/reset", h.AdminResetPasswordHandler)
 		admin.POST("/user", h.AdminSetAdminHandler)
+
 		admin.DELETE("/user", h.AdminUnsetAdminHandler)
 	}
 
 	userGroups := app.Group("/groups", requireIdentityHeaders, m.RequireUserExist)
 	{
-		userGroups.GET("/:group", h.GetGroupHandler)
 		userGroups.GET("/", h.GetGroupsListHandler)
+		userGroups.GET("/:group", h.GetGroupHandler)
+
 		userGroups.POST("/", h.CreateGroupHandler)
 		userGroups.POST("/:group/members", h.AddGroupMemberHandler)
+
 		userGroups.PUT("/:group/members/:id", h.UpdateGroupMemberHandler)
+
 		userGroups.DELETE("/:group/members/:id", h.DeleteGroupMemberHandler)
 		userGroups.DELETE("/:group", h.DeleteGroupHandler)
 	}

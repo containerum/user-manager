@@ -132,10 +132,10 @@ func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request models.Use
 	})
 	return authErr
 
-	if err := u.svc.ResourceServiceClient.DeleteUserNamespaces(ctx, user); err != nil {
+	if err := u.svc.PermissionsClient.DeleteUserNamespaces(ctx, user); err != nil {
 		u.log.WithError(err)
 	}
-	if err := u.svc.ResourceServiceClient.DeleteUserVolumes(ctx, user); err != nil {
+	if err := u.svc.PermissionsClient.DeleteUserVolumes(ctx, user); err != nil {
 		u.log.WithError(err)
 	}
 	return nil

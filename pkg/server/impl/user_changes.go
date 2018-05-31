@@ -329,10 +329,10 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 	})
 	return authErr
 
-	if err := u.svc.ResourceServiceClient.DeleteUserNamespaces(ctx, user); err != nil {
+	if err := u.svc.PermissionsClient.DeleteUserNamespaces(ctx, user); err != nil {
 		u.log.WithError(err)
 	}
-	if err := u.svc.ResourceServiceClient.DeleteUserVolumes(ctx, user); err != nil {
+	if err := u.svc.PermissionsClient.DeleteUserVolumes(ctx, user); err != nil {
 		u.log.WithError(err)
 	}
 

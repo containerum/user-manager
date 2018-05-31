@@ -89,7 +89,7 @@ func (u *serverImpl) linkSend(ctx context.Context, link *db.Link) {
 }
 
 func (u *serverImpl) createTokens(ctx context.Context, user *db.User) (resp *authProto.CreateTokenResponse, err error) {
-	access, err := u.svc.ResourceServiceClient.GetUserAccess(ctx, user)
+	access, err := u.svc.PermissionsClient.GetUserAccess(ctx, user)
 	if err != nil {
 		u.log.WithError(err).Warning(resourceAccessGetFailed)
 		return nil, errors.New(resourceAccessGetFailed)

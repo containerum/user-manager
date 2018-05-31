@@ -16,6 +16,21 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
+// swagger:operation GET /groups UserGroups GetGroupsListHandler
+// Get user groups list.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+// responses:
+//  '200':
+//    description: groups list
+//    schema:
+//      $ref: '#/definitions/UserGroups'
+//  default:
+//    $ref: '#/responses/error'
 func GetGroupsListHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -33,6 +48,25 @@ func GetGroupsListHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
+// swagger:operation GET /groups/{group} UserGroups GetGroupHandler
+// Get user groups list.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: group
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '200':
+//    description: group
+//    schema:
+//      $ref: '#/definitions/UserGroup'
+//  default:
+//    $ref: '#/responses/error'
 func GetGroupHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -56,7 +90,7 @@ func GetGroupHandler(ctx *gin.Context) {
 }
 
 // swagger:operation POST /groups UserGroups CreateGroupHandler
-// Add domain to blacklist.
+// Create user group.
 // https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-domain-to-blacklist
 //
 // ---
@@ -119,6 +153,27 @@ func CreateGroupHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, resp)
 }
 
+// swagger:operation POST /groups/{group}/members/{member} UserGroups UpdateGroupMemberHandler
+// Change group member access.
+//
+// ---
+// x-method-visibility: public
+// parameters:
+//  - $ref: '#/parameters/UserRoleHeader'
+//  - $ref: '#/parameters/UserIDHeader'
+//  - name: group
+//    in: path
+//    type: string
+//    required: true
+//  - name: member
+//    in: path
+//    type: string
+//    required: true
+// responses:
+//  '202':
+//    description: user access changed
+//  default:
+//    $ref: '#/responses/error'
 func UpdateGroupMemberHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
