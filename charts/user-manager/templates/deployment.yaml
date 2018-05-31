@@ -71,4 +71,10 @@ spec:
                 secretKeyRef:
                   name: {{ template "fullname" . }}
                   key: pg-password
+            {{- else if .Values.tags.platformdb }}
+            - name: CH_USER_PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-postgres
+                  key: postgres-password
             {{- end }}

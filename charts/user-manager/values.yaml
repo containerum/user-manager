@@ -1,5 +1,6 @@
 tags:
   db: true
+  platformdb: false
 
 replicaCount: 1
 
