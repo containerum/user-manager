@@ -17,7 +17,9 @@ service:
 env:
   global:
     GIN_MODE: debug
+    CH_USER_DEBUG: true
     CH_USER_LOG_LEVEL: 5
+    CH_USER_TEXTLOG: true
     CH_USER_LISTEN_ADDR: ":8111"
     CH_USER_PG_LOGIN: "usermanager"
     CH_USER_PG_DBNAME: "usermanager"
