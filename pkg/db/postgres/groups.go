@@ -39,7 +39,7 @@ func (pgdb *pgDB) AddGroupMembers(ctx context.Context, member *db.UserGroupMembe
 
 func (pgdb *pgDB) GetGroup(ctx context.Context, groupID string) (*db.UserGroup, error) {
 	pgdb.log.Infoln("Get group", groupID)
-	var group db.UserGroup // return empty slice instead of nil if no records found
+	var group db.UserGroup
 	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT * FROM groups WHERE id = $1", groupID)
 	if err != nil {
 		return nil, err
