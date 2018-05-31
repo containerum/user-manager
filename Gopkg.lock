@@ -14,7 +14,7 @@
   branch = "develop"
   name = "git.containerum.net/ch/mail-templater"
   packages = ["pkg/models"]
-  revision = "6caffc407b626f9e915d81ebae91db36ee31c28d"
+  revision = "50c2bcce5445f99ae6c23d62f81015c1e5dc789a"
 
 [[projects]]
   name = "github.com/containerum/cherry"
@@ -29,8 +29,8 @@
 [[projects]]
   name = "github.com/containerum/kube-client"
   packages = ["pkg/model"]
-  revision = "5338251b5cb2a68e18a119c9dd2fd4cc9f41b3eb"
-  version = "v0.17.6"
+  revision = "09522c513a575e6a85a057ed00aa37e5134dbc60"
+  version = "v0.19.1"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -77,12 +77,6 @@
   packages = ["."]
   revision = "b32fa301c9fe55953584134cb6853a13c87ec0a1"
   version = "v0.16.0"
-
-[[projects]]
-  name = "github.com/go-siris/siris"
-  packages = ["core/errors"]
-  revision = "d6bc3df4b216199bec985043ca6c3e5c00232fd5"
-  version = "v7.4.0"
 
 [[projects]]
   branch = "master"
@@ -191,12 +185,6 @@
   version = "v0.8.0"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/satori/go.uuid"
-  packages = ["."]
-  revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
-
-[[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
@@ -238,7 +226,7 @@
     "webdav",
     "webdav/internal/xml"
   ]
-  revision = "89e543239a64caf31d3a6865872ea120b41446df"
+  revision = "1e491301e022f8f977054da4c2d852decd59571f"
 
 [[projects]]
   branch = "master"
@@ -339,6 +327,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "17f7ef54ce5feff807e65f7ba528e0dd8b0a8e5049e0e002acc3db43fa5eb231"
+  inputs-digest = "baee5d5f07cdb7bff4265d6636cdee6069f5f89fc60499b589bfe68ae9564669"
   solver-name = "gps-cdcl"
   solver-version = 1

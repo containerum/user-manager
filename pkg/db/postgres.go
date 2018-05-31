@@ -154,12 +154,16 @@ type DB interface {
 	DeleteToken(ctx context.Context, token string) error
 	UpdateToken(ctx context.Context, token *Token) error
 
-	CreateGroup(ctx context.Context, group *UserGroup) error
-	AddGroupMembers(ctx context.Context, member *UserGroupMember) error
 	GetGroup(ctx context.Context, groupID string) (*UserGroup, error)
 	GetGroupMembers(ctx context.Context, groupID string) ([]UserGroupMember, error)
+	GetUserGroupsIDsAccesses(ctx context.Context, userID string) (map[string]string, error)
+	CreateGroup(ctx context.Context, group *UserGroup) error
+	DeleteGroup(ctx context.Context, groupID string) error
+
+	AddGroupMembers(ctx context.Context, member *UserGroupMember) error
 	DeleteGroupMember(ctx context.Context, userID string, groupID string) error
 	UpdateGroupMember(ctx context.Context, userID string, groupID string, access string) error
+	CountGroupMembers(ctx context.Context, groupID string) (*uint, error)
 
 	// Perform operations inside transaction
 	// Transaction commits if `f` returns nil error, rollbacks and forwards error otherwise

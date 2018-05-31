@@ -54,7 +54,7 @@ func (pgdb *pgDB) GetGroup(ctx context.Context, groupID string) (*db.UserGroup, 
 
 func (pgdb *pgDB) GetGroupMembers(ctx context.Context, groupID string) ([]db.UserGroupMember, error) {
 	pgdb.log.Infoln("Get group users", groupID)
-	resp := make([]db.UserGroupMember, 0) // return empty slice instead of nil if no records found
+	resp := make([]db.UserGroupMember, 0)
 
 	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT * FROM groups_members WHERE group_id = $1", groupID)
 	if err != nil {
@@ -71,6 +71,45 @@ func (pgdb *pgDB) GetGroupMembers(ctx context.Context, groupID string) ([]db.Use
 	}
 
 	return resp, err
+}
+
+func (pgdb *pgDB) GetUserGroupsIDsAccesses(ctx context.Context, userID string) (map[string]string, error) {
+	pgdb.log.Infoln("Get users groups", userID)
+	resp := make(map[string]string, 0)
+
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT group_id, default_access FROM groups_members WHERE user_id = $1", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var groupId string
+		var access string
+		err := rows.Scan(&groupId, &access)
+		if err != nil {
+			return nil, err
+		}
+		resp[groupId] = access
+	}
+
+	return resp, err
+}
+
+func (pgdb *pgDB) CountGroupMembers(ctx context.Context, groupID string) (*uint, error) {
+	pgdb.log.Infoln("Count group members", groupID)
+
+	var membersCount uint
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT count(id) FROM groups_members WHERE group_id = $1", groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, rows.Err()
+	}
+	err = rows.Scan(&membersCount)
+
+	return &membersCount, err
 }
 
 func (pgdb *pgDB) DeleteGroupMember(ctx context.Context, userID string, groupID string) error {
@@ -99,6 +138,15 @@ func (pgdb *pgDB) UpdateGroupMember(ctx context.Context, userID string, groupID 
 		return err
 	} else if rows == 0 {
 		return errors.New("user is not in this group")
+	}
+	return nil
+}
+
+func (pgdb *pgDB) DeleteGroup(ctx context.Context, groupID string) error {
+	pgdb.log.Infoln("Delete group", groupID)
+	_, err := pgdb.eLog.ExecContext(ctx, "DELETE FROM groups WHERE id = $1", groupID)
+	if err != nil {
+		return err
 	}
 	return nil
 }

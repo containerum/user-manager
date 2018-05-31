@@ -16,6 +16,45 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
+func GetGroupsListHandler(ctx *gin.Context) {
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
+
+	resp, err := um.GetGroupsList(ctx.Request.Context(), httputil.MustGetUserID(ctx.Request.Context()))
+	if err != nil {
+		if cherr, ok := err.(*cherry.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+}
+
+func GetGroupHandler(ctx *gin.Context) {
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
+
+	resp, err := um.GetGroup(ctx.Request.Context(), ctx.Param("group"))
+	if err != nil {
+		if cherr, ok := err.(*cherry.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+		}
+		return
+	}
+
+	if resp.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) {
+		gonic.Gonic(umErrors.ErrNotGroupOwner(), ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, resp)
+}
+
 // swagger:operation POST /groups UserGroups CreateGroupHandler
 // Add domain to blacklist.
 // https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-domain-to-blacklist
@@ -80,24 +119,49 @@ func CreateGroupHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusAccepted, resp)
 }
 
-// swagger:operation POST /groups UserGroups CreateGroupHandler
-// Add domain to blacklist.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-domain-to-blacklist
-//
-// ---
-// x-method-visibility: public
-// parameters:
-//  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserIDHeader'
-//  - name: body
-//    in: body
-//    schema:
-//      $ref: '#/definitions/Domain'
-// responses:
-//  '202':
-//    description: group created
-//  default:
-//    $ref: '#/responses/error'
+func UpdateGroupMemberHandler(ctx *gin.Context) {
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
+
+	var request kube_types.UserGroupMember
+	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		return
+	}
+
+	group, err := um.GetGroup(ctx.Request.Context(), ctx.Param("group"))
+	if err != nil {
+		if cherr, ok := err.(*cherry.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+		}
+		return
+	}
+
+	if group.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) {
+		gonic.Gonic(umErrors.ErrNotGroupOwner(), ctx)
+		return
+	}
+
+	if group.OwnerID == ctx.Param("id") {
+		gonic.Gonic(umErrors.ErrUnableChangeOwnerPermissions(), ctx)
+		return
+	}
+
+	if err := um.UpdateGroupMemberAccess(ctx.Request.Context(), ctx.Param("group"), ctx.Param("id"), string(request.Access)); err != nil {
+		if cherr, ok := err.(*cherry.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+		}
+		return
+	}
+
+	ctx.Status(http.StatusAccepted)
+}
+
 func AddGroupMemberHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -142,44 +206,6 @@ func AddGroupMemberHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-// swagger:operation GET /user/info UserInfo UserInfoGetHandler
-// Get user info.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-profile-info
-//
-// ---
-// x-method-visibility: public
-// parameters:
-//  - $ref: '#/parameters/UserRoleHeader'
-//  - $ref: '#/parameters/UserIDHeader'
-// responses:
-//  '202':
-//    description: user info
-//    schema:
-//      $ref: '#/definitions/User'
-//  default:
-//    $ref: '#/responses/error'
-func GetGroupHandler(ctx *gin.Context) {
-	um := ctx.MustGet(m.UMServices).(server.UserManager)
-
-	resp, err := um.GetGroup(ctx.Request.Context(), ctx.Param("group"))
-	if err != nil {
-		if cherr, ok := err.(*cherry.Err); ok {
-			gonic.Gonic(cherr, ctx)
-		} else {
-			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
-		}
-		return
-	}
-
-	if resp.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) {
-		gonic.Gonic(umErrors.ErrNotGroupOwner(), ctx)
-		return
-	}
-
-	ctx.JSON(http.StatusOK, resp)
-}
-
 func DeleteGroupMemberHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
@@ -199,6 +225,11 @@ func DeleteGroupMemberHandler(ctx *gin.Context) {
 		return
 	}
 
+	if group.OwnerID == ctx.Param("id") {
+		gonic.Gonic(umErrors.ErrUnableRemoveOwner(), ctx)
+		return
+	}
+
 	if err := um.DeleteGroupMember(ctx.Request.Context(), ctx.Param("group"), ctx.Param("id")); err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
@@ -212,14 +243,8 @@ func DeleteGroupMemberHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-func UpdateGroupMemberHandler(ctx *gin.Context) {
+func DeleteGroupHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
-
-	var request kube_types.UserGroupMember
-	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
-		return
-	}
 
 	group, err := um.GetGroup(ctx.Request.Context(), ctx.Param("group"))
 	if err != nil {
@@ -237,12 +262,12 @@ func UpdateGroupMemberHandler(ctx *gin.Context) {
 		return
 	}
 
-	if err := um.UpdateGroupMemberAccess(ctx.Request.Context(), ctx.Param("group"), ctx.Param("id"), string(request.Access)); err != nil {
+	if err := um.DeleteGroup(ctx.Request.Context(), ctx.Param("group")); err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+			gonic.Gonic(umErrors.ErrUnableDeleteGroup(), ctx)
 		}
 		return
 	}

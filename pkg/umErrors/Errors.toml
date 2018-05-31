@@ -291,3 +291,21 @@ SID = "UserManager"
     StatusHTTP = 404
     Message = "User is not in this group"
     Kind = 46
+
+[[error]]
+    Name = "ErrUnableDeleteGroup"
+    StatusHTTP = 500
+    Message = "Unable delete group"
+    Kind = 47
+
+[[error]]
+    Name = "ErrUnableRemoveOwner"
+    StatusHTTP = 403
+    Message = "Unable remove owner from group"
+    Kind = 48
+
+[[error]]
+    Name = "ErrUnableChangeOwnerPermissions"
+    StatusHTTP = 403
+    Message = "Unable change owners permissions"
+    Kind = 49

@@ -7,6 +7,8 @@ import (
 
 	"time"
 
+	"fmt"
+
 	"git.containerum.net/ch/user-manager/pkg/db"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
@@ -50,7 +52,7 @@ func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGro
 }
 
 func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, request kube_types.UserGroupMembers) error {
-	u.log.Info("adding group members")
+	u.log.WithField("groupID", groupID).Info("adding group members")
 
 	var errs []error
 	var created int
@@ -93,7 +95,7 @@ func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, reques
 }
 
 func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.UserGroup, error) {
-	u.log.Info("adding group members")
+	u.log.WithField("groupID", groupID).Info("getting group")
 
 	group, err := u.svc.DB.GetGroup(ctx, groupID)
 	if err != nil {
@@ -142,8 +144,44 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 	return &ret, nil
 }
 
+func (u *serverImpl) GetGroupsList(ctx context.Context, userID string) (*kube_types.UserGroups, error) {
+	u.log.WithField("userID", userID).Info("getting groups list")
+
+	groupsIDs, err := u.svc.DB.GetUserGroupsIDsAccesses(ctx, userID)
+	if err != nil {
+		u.log.WithError(err)
+		fmt.Println("TEST1", err)
+		return nil, cherry.ErrUnableGetGroup()
+	}
+
+	groups := make([]kube_types.UserGroup, 0)
+	for gr, perm := range groupsIDs {
+		group, err := u.svc.DB.GetGroup(ctx, gr)
+		if err != nil {
+			u.log.WithError(err)
+			return nil, cherry.ErrUnableGetGroup()
+		}
+		membersCount, err := u.svc.DB.CountGroupMembers(ctx, gr)
+		if err != nil {
+			u.log.WithError(err)
+			return nil, cherry.ErrUnableGetGroup()
+		}
+		userGroup := kube_types.UserGroup{
+			UserAccess:   kube_types.UserGroupAccess(perm),
+			ID:           group.ID,
+			Label:        group.Label,
+			OwnerID:      group.OwnerID,
+			CreatedAt:    group.CreatedAt.Time.Format(time.RFC3339),
+			MembersCount: *membersCount,
+		}
+		groups = append(groups, userGroup)
+	}
+
+	return &kube_types.UserGroups{Groups: groups}, nil
+}
+
 func (u *serverImpl) DeleteGroupMember(ctx context.Context, groupID string, username string) error {
-	u.log.Info("deleting group members")
+	u.log.WithField("groupID", groupID).WithField("username", username).Info("deleting group member")
 
 	usr, err := u.svc.DB.GetUserByLogin(ctx, username)
 	if err != nil {
@@ -170,7 +208,7 @@ func (u *serverImpl) DeleteGroupMember(ctx context.Context, groupID string, user
 }
 
 func (u *serverImpl) UpdateGroupMemberAccess(ctx context.Context, groupID, username, access string) error {
-	u.log.Info("deleting group members")
+	u.log.WithField("groupID", groupID).WithField("username", username).WithField("access", access).Info("updating group member access")
 
 	usr, err := u.svc.DB.GetUserByLogin(ctx, username)
 	if err != nil {
@@ -191,6 +229,20 @@ func (u *serverImpl) UpdateGroupMemberAccess(ctx context.Context, groupID, usern
 			return cherry.ErrNotInGroup().AddDetails(username)
 		}
 		return cherry.ErrUnableDeleteGroupMember().AddDetailsErr(err)
+	}
+
+	return nil
+}
+
+func (u *serverImpl) DeleteGroup(ctx context.Context, groupID string) error {
+	u.log.WithField("groupID", groupID).Info("deleting group")
+
+	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+		return tx.DeleteGroup(ctx, groupID)
+	})
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return cherry.ErrUnableDeleteGroup().AddDetailsErr(err)
 	}
 
 	return nil
