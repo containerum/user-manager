@@ -65,8 +65,8 @@ spec:
               value: "http://{{ .Release.Name }}-mail:7070"
             {{- end }}
 
-            {{- if .Values.env.local.CH_USER_PG_ADDR }}
-            - name: CH_USER_PG_ADDR
+            {{- if .Values.env.local.CH_USER_PG_PASSWORD }}
+            - name: CH_USER_PG_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ template "fullname" . }}
