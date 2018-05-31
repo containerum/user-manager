@@ -38,7 +38,7 @@ spec:
               value: "{{ .Values.env.local.CH_USER_PG_ADDR }}"
             {{- else }}
             - name: CH_USER_PG_ADDR
-              value: "http://{{ .Release.Name }}-postgresql:5432"
+              value: "{{ .Release.Name }}-postgresql:5432"
             {{- end }}
 
             {{- if .Values.env.local.CH_USER_RESOURCE_SERVICE_URL }}
