@@ -75,6 +75,6 @@ spec:
             - name: CH_USER_PG_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-postgres
+                  name: {{ .Release.Name }}-postgresql
                   key: postgres-password
             {{- end }}
