@@ -7,8 +7,6 @@ import (
 
 	"time"
 
-	"fmt"
-
 	"git.containerum.net/ch/user-manager/pkg/db"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
@@ -23,7 +21,14 @@ func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGro
 		OwnerID: httputil.MustGetUserID(ctx),
 	}
 
-	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+	usr, err := u.svc.DB.GetUserByID(ctx, newGroup.OwnerID)
+	if err != nil {
+		return nil, err
+	}
+
+	newGroup.OwnerLogin = usr.Login
+
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.CreateGroup(ctx, newGroup)
 	})
 	if err := u.handleDBError(err); err != nil {
@@ -34,7 +39,7 @@ func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGro
 	newGroupAdmin := &db.UserGroupMember{
 		UserID:  httputil.MustGetUserID(ctx),
 		GroupID: newGroup.ID,
-		Access:  string(kube_types.AdminAccess),
+		Access:  string(kube_types.OwnerAccess),
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
@@ -108,10 +113,11 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 	}
 
 	ret := kube_types.UserGroup{
-		ID:        group.ID,
-		Label:     group.Label,
-		OwnerID:   group.OwnerID,
-		CreatedAt: group.CreatedAt.Time.Format(time.RFC3339),
+		ID:         group.ID,
+		Label:      group.Label,
+		OwnerID:    group.OwnerID,
+		OwnerLogin: group.OwnerLogin,
+		CreatedAt:  group.CreatedAt.Time.Format(time.RFC3339),
 	}
 
 	var members []db.UserGroupMember
@@ -150,7 +156,6 @@ func (u *serverImpl) GetGroupsList(ctx context.Context, userID string) (*kube_ty
 	groupsIDs, err := u.svc.DB.GetUserGroupsIDsAccesses(ctx, userID)
 	if err != nil {
 		u.log.WithError(err)
-		fmt.Println("TEST1", err)
 		return nil, cherry.ErrUnableGetGroup()
 	}
 
@@ -171,6 +176,7 @@ func (u *serverImpl) GetGroupsList(ctx context.Context, userID string) (*kube_ty
 			ID:           group.ID,
 			Label:        group.Label,
 			OwnerID:      group.OwnerID,
+			OwnerLogin:   group.OwnerLogin,
 			CreatedAt:    group.CreatedAt.Time.Format(time.RFC3339),
 			MembersCount: *membersCount,
 		}
@@ -180,8 +186,8 @@ func (u *serverImpl) GetGroupsList(ctx context.Context, userID string) (*kube_ty
 	return &kube_types.UserGroups{Groups: groups}, nil
 }
 
-func (u *serverImpl) DeleteGroupMember(ctx context.Context, groupID string, username string) error {
-	u.log.WithField("groupID", groupID).WithField("username", username).Info("deleting group member")
+func (u *serverImpl) DeleteGroupMember(ctx context.Context, group kube_types.UserGroup, username string) error {
+	u.log.WithField("groupID", group.ID).WithField("username", username).Info("deleting group member")
 
 	usr, err := u.svc.DB.GetUserByLogin(ctx, username)
 	if err != nil {
@@ -193,8 +199,12 @@ func (u *serverImpl) DeleteGroupMember(ctx context.Context, groupID string, user
 		return cherry.ErrUserNotExist().AddDetails(username)
 	}
 
+	if usr.ID == group.OwnerID {
+		return cherry.ErrUnableRemoveOwner()
+	}
+
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		return tx.DeleteGroupMember(ctx, usr.ID, groupID)
+		return tx.DeleteGroupMember(ctx, usr.ID, group.ID)
 	})
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
@@ -207,8 +217,8 @@ func (u *serverImpl) DeleteGroupMember(ctx context.Context, groupID string, user
 	return nil
 }
 
-func (u *serverImpl) UpdateGroupMemberAccess(ctx context.Context, groupID, username, access string) error {
-	u.log.WithField("groupID", groupID).WithField("username", username).WithField("access", access).Info("updating group member access")
+func (u *serverImpl) UpdateGroupMemberAccess(ctx context.Context, group kube_types.UserGroup, username, access string) error {
+	u.log.WithField("groupID", group.ID).WithField("username", username).WithField("access", access).Info("updating group member access")
 
 	usr, err := u.svc.DB.GetUserByLogin(ctx, username)
 	if err != nil {
@@ -220,8 +230,12 @@ func (u *serverImpl) UpdateGroupMemberAccess(ctx context.Context, groupID, usern
 		return cherry.ErrUserNotExist().AddDetails(username)
 	}
 
+	if usr.ID == group.OwnerID {
+		return cherry.ErrUnableChangeOwnerPermissions()
+	}
+
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		return tx.UpdateGroupMember(ctx, usr.ID, groupID, access)
+		return tx.UpdateGroupMember(ctx, usr.ID, group.ID, access)
 	})
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)

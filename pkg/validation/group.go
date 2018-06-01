@@ -34,3 +34,15 @@ func ValidateAddMembers(members kube_types.UserGroupMembers) []error {
 	}
 	return nil
 }
+
+//ValidateAddMembers validates add group members request
+func ValidateUpdateMember(member kube_types.UserGroupMember) []error {
+	var errs []error
+	if member.Access == "" {
+		errs = append(errs, fmt.Errorf(isRequired, "access"))
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return nil
+}

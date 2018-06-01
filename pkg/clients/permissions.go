@@ -19,7 +19,6 @@ type PermissionsClient interface {
 	// GetUserAccess returns information about user access to resources (namespace, volumes) needed for token creation.
 	GetUserAccess(ctx context.Context, user *db.User) (*authProto.ResourcesAccess, error)
 	DeleteUserNamespaces(ctx context.Context, user *db.User) error
-	//	DeleteUserVolumes(ctx context.Context, user *db.User) error
 }
 
 type httpPermissionsClient struct {
@@ -79,22 +78,3 @@ func (c *httpPermissionsClient) DeleteUserNamespaces(ctx context.Context, user *
 	}
 	return nil
 }
-
-/*
-func (c *httpPermissionsClient) DeleteUserVolumes(ctx context.Context, user *db.User) error {
-	c.log.WithField("user_id", user.ID).Info("Deleting user volumes")
-	headersMap := utils.RequestHeadersMap(ctx)
-	headersMap[headers.UserIDXHeader] = user.ID
-	headersMap[headers.UserRoleXHeader] = user.Role
-	resp, err := c.rest.R().SetContext(ctx).
-		SetResult(authProto.ResourcesAccess{}).
-		SetHeaders(headersMap). // forward request headers to other our service
-		Delete("/volumes")
-	if err != nil {
-		return err
-	}
-	if resp.Error() != nil {
-		return resp.Error().(*cherry.Err)
-	}
-	return nil
-}*/

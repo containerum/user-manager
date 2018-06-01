@@ -90,10 +90,11 @@ type DomainBlacklistEntry struct {
 
 // UserGroup describes user group model. It should be used only inside this project.
 type UserGroup struct {
-	ID        string      `db:"id"`
-	Label     string      `db:"label"`
-	OwnerID   string      `db:"owner_user_id"`
-	CreatedAt pq.NullTime `db:"created_at"`
+	ID         string      `db:"id"`
+	Label      string      `db:"label"`
+	OwnerID    string      `db:"owner_user_id"`
+	OwnerLogin string      `db:"owner_login"`
+	CreatedAt  pq.NullTime `db:"created_at"`
 }
 
 // UserGroupMember describes user group member model. It should be used only inside this project.

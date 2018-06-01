@@ -71,8 +71,8 @@ type UserManager interface {
 	GetGroup(ctx context.Context, groupID string) (*kube_types.UserGroup, error)
 	CreateGroup(ctx context.Context, request kube_types.UserGroup) (*string, error)
 	AddGroupMembers(ctx context.Context, groupID string, request kube_types.UserGroupMembers) error
-	DeleteGroupMember(ctx context.Context, groupID string, username string) error
-	UpdateGroupMemberAccess(ctx context.Context, groupID, username, access string) error
+	DeleteGroupMember(ctx context.Context, group kube_types.UserGroup, username string) error
+	UpdateGroupMemberAccess(ctx context.Context, group kube_types.UserGroup, username, access string) error
 	DeleteGroup(ctx context.Context, groupID string) error
 
 	io.Closer

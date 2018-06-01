@@ -186,6 +186,11 @@ func UpdateGroupMemberHandler(ctx *gin.Context) {
 		return
 	}
 
+	if errs := validation.ValidateUpdateMember(request); errs != nil {
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		return
+	}
+
 	group, err := um.GetGroup(ctx.Request.Context(), ctx.Param("group"))
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
@@ -202,12 +207,7 @@ func UpdateGroupMemberHandler(ctx *gin.Context) {
 		return
 	}
 
-	if group.OwnerID == ctx.Param("id") {
-		gonic.Gonic(umErrors.ErrUnableChangeOwnerPermissions(), ctx)
-		return
-	}
-
-	if err := um.UpdateGroupMemberAccess(ctx.Request.Context(), ctx.Param("group"), ctx.Param("id"), string(request.Access)); err != nil {
+	if err := um.UpdateGroupMemberAccess(ctx.Request.Context(), *group, ctx.Param("login"), string(request.Access)); err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
@@ -325,12 +325,7 @@ func DeleteGroupMemberHandler(ctx *gin.Context) {
 		return
 	}
 
-	if group.OwnerID == ctx.Param("id") {
-		gonic.Gonic(umErrors.ErrUnableRemoveOwner(), ctx)
-		return
-	}
-
-	if err := um.DeleteGroupMember(ctx.Request.Context(), ctx.Param("group"), ctx.Param("id")); err != nil {
+	if err := um.DeleteGroupMember(ctx.Request.Context(), *group, ctx.Param("login")); err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
