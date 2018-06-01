@@ -16,7 +16,6 @@ import (
 
 // swagger:operation GET /user/bound_accounts BoundAccounts GetBoundAccountsHandler
 // Get users bound accounts.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-bound-accounts
 //
 // ---
 // x-method-visibility: public
@@ -49,7 +48,6 @@ func GetBoundAccountsHandler(ctx *gin.Context) {
 
 // swagger:operation POST /user/bound_accounts BoundAccounts GetBoundAccountsHandler
 // Bind account.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-bound-accounts
 //
 // ---
 // x-method-visibility: public

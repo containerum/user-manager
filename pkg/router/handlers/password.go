@@ -16,7 +16,6 @@ import (
 
 // swagger:operation POST /password/change Password PasswordChangeHandler
 // Change password.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#change-password
 //
 // ---
 // x-method-visibility: public
@@ -65,7 +64,6 @@ func PasswordChangeHandler(ctx *gin.Context) {
 
 // swagger:operation POST /password/reset Password PasswordResetHandler
 // Reset password.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#reset-password
 //
 // ---
 // x-method-visibility: public
@@ -110,7 +108,6 @@ func PasswordResetHandler(ctx *gin.Context) {
 
 // swagger:operation POST /password/restore Password PasswordRestoreHandler
 // Change password with token from email.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#reseted-password-change
 //
 // ---
 // x-method-visibility: public

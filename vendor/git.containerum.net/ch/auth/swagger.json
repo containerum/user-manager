@@ -5,7 +5,7 @@
   "produces": [
     "application/json"
   ],
-  "swagger": "3.0",
+  "swagger": "2.0",
   "info": {
     "description": "Auth service is an OAuth authentication server that is used to authenticate users.",
     "title": "Auth API"

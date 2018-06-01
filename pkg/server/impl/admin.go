@@ -52,7 +52,7 @@ func (u *serverImpl) AdminCreateUser(ctx context.Context, request models.UserLog
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		if createErr := tx.CreateUser(ctx, newUser); createErr != nil {
-			return err
+			return createErr
 		}
 
 		if createErr := tx.CreateProfile(ctx, &db.Profile{
@@ -60,7 +60,7 @@ func (u *serverImpl) AdminCreateUser(ctx context.Context, request models.UserLog
 			Access:    sql.NullString{String: "rw", Valid: true},
 			CreatedAt: pq.NullTime{Time: time.Now().UTC(), Valid: true},
 		}); createErr != nil {
-			return err
+			return createErr
 		}
 		return nil
 	})
@@ -91,13 +91,9 @@ func (u *serverImpl) AdminActivateUser(ctx context.Context, request models.UserL
 		return cherry.ErrUserAlreadyActivated()
 	}
 
+	user.IsActive = true
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		user.IsActive = true
-		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
-			u.log.WithError(updErr)
-			return cherry.ErrUnableActivate()
-		}
-		return nil
+		return tx.UpdateUser(ctx, user)
 	})
 	if err := u.handleDBError(err); err != nil {
 		return cherry.ErrUnableActivate()
@@ -122,29 +118,26 @@ func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request models.Use
 		return cherry.ErrUnableDeleteUser()
 	}
 
+	user.IsDeleted = true
+	user.IsActive = false
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		user.IsDeleted = true
-		user.IsActive = false
-		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
-			u.log.WithError(updErr)
-			return cherry.ErrUnableDeleteUser()
-		}
-
-		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
-			UserId: user.ID,
-		})
-		return authErr
+		return tx.UpdateUser(ctx, user)
 	})
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
 		return cherry.ErrUnableDeleteUser()
 	}
-	if err := u.svc.ResourceServiceClient.DeleteUserNamespaces(ctx, user); err != nil {
+	_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
+		UserId: user.ID,
+	})
+	return authErr
+
+	if err := u.svc.PermissionsClient.DeleteUserNamespaces(ctx, user); err != nil {
 		u.log.WithError(err)
 	}
-	if err := u.svc.ResourceServiceClient.DeleteUserVolumes(ctx, user); err != nil {
+	/*if err := u.svc.PermissionsClient.DeleteUserVolumes(ctx, user); err != nil {
 		u.log.WithError(err)
-	}
+	}*/
 	return nil
 }
 
@@ -166,22 +159,18 @@ func (u *serverImpl) AdminResetPassword(ctx context.Context, request models.User
 		return nil, cherry.ErrUnableChangePassword()
 	}
 
+	user.PasswordHash = utils.GetKey(user.Login, password, user.Salt)
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		user.PasswordHash = utils.GetKey(user.Login, password, user.Salt)
-		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
-			return updErr
-		}
-
-		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
-			UserId: user.ID,
-		})
-		if authErr != nil {
-			return authErr
-		}
-		return nil
+		return tx.UpdateUser(ctx, user)
 	})
 	if err = u.handleDBError(err); err != nil {
 		return nil, cherry.ErrUnableChangePassword()
+	}
+
+	if _, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
+		UserId: user.ID,
+	}); authErr != nil {
+		return nil, authErr
 	}
 
 	return &models.UserLogin{
@@ -203,12 +192,9 @@ func (u *serverImpl) AdminSetAdmin(ctx context.Context, request models.UserLogin
 		return err
 	}
 
+	user.Role = "admin"
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		user.Role = "admin"
-		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
-			return updErr
-		}
-		return nil
+		return tx.UpdateUser(ctx, user)
 	})
 	if err = u.handleDBError(err); err != nil {
 		u.log.WithError(err)
@@ -230,12 +216,9 @@ func (u *serverImpl) AdminUnsetAdmin(ctx context.Context, request models.UserLog
 		return err
 	}
 
+	user.Role = "user"
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		user.Role = "user"
-		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
-			return updErr
-		}
-		return nil
+		return tx.UpdateUser(ctx, user)
 	})
 	if err = u.handleDBError(err); err != nil {
 		u.log.WithError(err)

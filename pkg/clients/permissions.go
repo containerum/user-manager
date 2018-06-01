@@ -14,21 +14,21 @@ import (
 	"gopkg.in/resty.v1"
 )
 
-// ResourceServiceClient is an interface to resource-service.
-type ResourceServiceClient interface {
+// PermissionsClient is an interface to resource-service.
+type PermissionsClient interface {
 	// GetUserAccess returns information about user access to resources (namespace, volumes) needed for token creation.
 	GetUserAccess(ctx context.Context, user *db.User) (*authProto.ResourcesAccess, error)
 	DeleteUserNamespaces(ctx context.Context, user *db.User) error
-	DeleteUserVolumes(ctx context.Context, user *db.User) error
+	//	DeleteUserVolumes(ctx context.Context, user *db.User) error
 }
 
-type httpResourceServiceClient struct {
+type httpPermissionsClient struct {
 	rest *resty.Client
 	log  *logrus.Entry
 }
 
-// NewHTTPResourceServiceClient returns client for resource-service working via restful api
-func NewHTTPResourceServiceClient(serverURL string) ResourceServiceClient {
+// NewHTTPPermissionsClient returns client for resource-service working via restful api
+func NewHTTPPermissionsClient(serverURL string) PermissionsClient {
 	log := logrus.WithField("component", "resource_service_client")
 	client := resty.New().
 		SetHostURL(serverURL).
@@ -38,13 +38,13 @@ func NewHTTPResourceServiceClient(serverURL string) ResourceServiceClient {
 		SetError(cherry.Err{})
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
-	return &httpResourceServiceClient{
+	return &httpPermissionsClient{
 		rest: client,
 		log:  log,
 	}
 }
 
-func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *db.User) (*authProto.ResourcesAccess, error) {
+func (c *httpPermissionsClient) GetUserAccess(ctx context.Context, user *db.User) (*authProto.ResourcesAccess, error) {
 	c.log.WithField("user_id", user.ID).Info("Getting user access from resource service")
 	headersMap := utils.RequestHeadersMap(ctx)
 	headersMap[headers.UserIDXHeader] = user.ID
@@ -52,7 +52,7 @@ func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *db.
 	resp, err := c.rest.R().SetContext(ctx).
 		SetResult(authProto.ResourcesAccess{}).
 		SetHeaders(headersMap). // forward request headers to other our service
-		Get("/access")
+		Get("/accesses")
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (c *httpResourceServiceClient) GetUserAccess(ctx context.Context, user *db.
 	return resp.Result().(*authProto.ResourcesAccess), nil
 }
 
-func (c *httpResourceServiceClient) DeleteUserNamespaces(ctx context.Context, user *db.User) error {
+func (c *httpPermissionsClient) DeleteUserNamespaces(ctx context.Context, user *db.User) error {
 	c.log.WithField("user_id", user.ID).Info("Deleting user namespaces")
 	headersMap := utils.RequestHeadersMap(ctx)
 	headersMap[headers.UserIDXHeader] = user.ID
@@ -80,7 +80,8 @@ func (c *httpResourceServiceClient) DeleteUserNamespaces(ctx context.Context, us
 	return nil
 }
 
-func (c *httpResourceServiceClient) DeleteUserVolumes(ctx context.Context, user *db.User) error {
+/*
+func (c *httpPermissionsClient) DeleteUserVolumes(ctx context.Context, user *db.User) error {
 	c.log.WithField("user_id", user.ID).Info("Deleting user volumes")
 	headersMap := utils.RequestHeadersMap(ctx)
 	headersMap[headers.UserIDXHeader] = user.ID
@@ -96,4 +97,4 @@ func (c *httpResourceServiceClient) DeleteUserVolumes(ctx context.Context, user 
 		return resp.Error().(*cherry.Err)
 	}
 	return nil
-}
+}*/

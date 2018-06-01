@@ -84,19 +84,19 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request models.OneTi
 		}
 
 		var tokens *authProto.CreateTokenResponse
+		token.IsActive = false
+		//TODO Do something with session ID
+		token.SessionID = ""
 		err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-			token.IsActive = false
-			//TODO Do something with session ID
-			token.SessionID = ""
-			if updErr := tx.UpdateToken(ctx, token); updErr != nil {
-				return updErr
-			}
-
-			var err error
-			tokens, err = u.createTokens(ctx, token.User)
-			return err
+			return tx.UpdateToken(ctx, token)
 		})
+
 		if err := u.handleDBError(err); err != nil {
+			u.log.WithError(err)
+			return nil, cherry.ErrLoginFailed()
+		}
+		tokens, err := u.createTokens(ctx, token.User)
+		if err != nil {
 			u.log.WithError(err)
 			return nil, cherry.ErrLoginFailed()
 		}
