@@ -29,8 +29,8 @@
 [[projects]]
   name = "github.com/containerum/kube-client"
   packages = ["pkg/model"]
-  revision = "ea99fc8e4b53d482604ae1ea8ba7ff4a481a7bcb"
-  version = "v0.19.2"
+  revision = "963ded2cea4d23dbbcd88367b7c64e8d545470b3"
+  version = "v0.19.4"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -175,8 +175,8 @@
 [[projects]]
   name = "github.com/ninedraft/boxofstuff"
   packages = ["strset"]
-  revision = "a75053006032b83ac7c7c9d5ed2af949e954b372"
-  version = "v0.1.0"
+  revision = "a57c6ea397e253eec08da7ff4305febfd0db5f7e"
+  version = "v0.1.1"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -209,7 +209,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
+  revision = "5ba7f63082460102a45837dbd1827e10f9479ac0"
 
 [[projects]]
   branch = "master"
@@ -262,7 +262,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "694d95ba50e67b2e363f3483057db5d4910c18f9"
+  revision = "4065a77fc542a455295382a23a996a08ed18813a"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -327,6 +327,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "18e477ee7e76af9f5a3dfe60daf9c78d6fb7f86d1a88afecfdeb90ad885cd03d"
+  inputs-digest = "385d3a5a0e6f0184fb08347fa229cb660589c29527bbe816de7cfddb2ff825a9"
   solver-name = "gps-cdcl"
   solver-version = 1

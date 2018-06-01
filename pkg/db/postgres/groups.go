@@ -9,9 +9,9 @@ import (
 
 func (pgdb *pgDB) CreateGroup(ctx context.Context, group *db.UserGroup) error {
 	pgdb.log.Infoln("Create group", group.Label)
-	rows, err := pgdb.qLog.QueryxContext(ctx, "INSERT INTO groups (label, owner_user_id) "+
-		"VALUES ($1, $2) RETURNING id",
-		group.Label, group.OwnerID)
+	rows, err := pgdb.qLog.QueryxContext(ctx, "INSERT INTO groups (label, owner_login, owner_user_id) "+
+		"VALUES ($1, $2, $3) RETURNING id",
+		group.Label, group.OwnerLogin, group.OwnerID)
 	if err != nil {
 		return err
 	}
