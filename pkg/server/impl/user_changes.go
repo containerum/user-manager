@@ -332,9 +332,6 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 	if err := u.svc.PermissionsClient.DeleteUserNamespaces(ctx, user); err != nil {
 		u.log.WithError(err)
 	}
-	/*if err := u.svc.PermissionsClient.DeleteUserVolumes(ctx, user); err != nil {
-		u.log.WithError(err)
-	}*/
 
 	go func() {
 		err := u.svc.MailClient.SendAccDeletedMail(ctx, &mttypes.Recipient{
