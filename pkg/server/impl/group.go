@@ -95,7 +95,6 @@ func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, reques
 	if created == 0 {
 		return cherry.ErrUnableAddGroupMember().AddDetailsErr(errs...)
 	}
-
 	return nil
 }
 
@@ -146,7 +145,6 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 		}
 		ret.Members = append(ret.Members, newMember)
 	}
-
 	return &ret, nil
 }
 
@@ -182,7 +180,6 @@ func (u *serverImpl) GetGroupsList(ctx context.Context, userID string) (*kube_ty
 		}
 		groups = append(groups, userGroup)
 	}
-
 	return &kube_types.UserGroups{Groups: groups}, nil
 }
 
@@ -213,7 +210,6 @@ func (u *serverImpl) DeleteGroupMember(ctx context.Context, group kube_types.Use
 		}
 		return cherry.ErrUnableDeleteGroupMember().AddDetailsErr(err)
 	}
-
 	return nil
 }
 
@@ -244,7 +240,6 @@ func (u *serverImpl) UpdateGroupMemberAccess(ctx context.Context, group kube_typ
 		}
 		return cherry.ErrUnableDeleteGroupMember().AddDetailsErr(err)
 	}
-
 	return nil
 }
 
