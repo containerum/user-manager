@@ -105,7 +105,6 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request models.OneTi
 	return nil, cherry.ErrInvalidLogin()
 }
 
-//nolint: gocyclo
 func (u *serverImpl) OAuthLogin(ctx context.Context, request models.OAuthLoginRequest) (*authProto.CreateTokenResponse, error) {
 	u.log.WithFields(logrus.Fields{
 		"resource": request.Resource,

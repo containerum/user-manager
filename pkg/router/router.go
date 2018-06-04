@@ -126,14 +126,14 @@ func initRoutes(app *gin.Engine) {
 	userGroups := app.Group("/groups", requireIdentityHeaders, m.RequireUserExist)
 	{
 		userGroups.GET("", h.GetGroupsListHandler)
-		userGroups.GET("/:group", h.GetGroupHandler)
+		userGroups.GET("/:group", m.RequireAdminRole, h.GetGroupHandler)
 
-		userGroups.POST("", h.CreateGroupHandler)
-		userGroups.POST("/:group/members", h.AddGroupMembersHandler)
+		userGroups.POST("", m.RequireAdminRole, h.CreateGroupHandler)
+		userGroups.POST("/:group/members", m.RequireAdminRole, h.AddGroupMembersHandler)
 
-		userGroups.PUT("/:group/members/:login", h.UpdateGroupMemberHandler)
+		userGroups.PUT("/:group/members/:login", m.RequireAdminRole, h.UpdateGroupMemberHandler)
 
-		userGroups.DELETE("/:group/members/:login", h.DeleteGroupMemberHandler)
-		userGroups.DELETE("/:group", h.DeleteGroupHandler)
+		userGroups.DELETE("/:group/members/:login", m.RequireAdminRole, h.DeleteGroupMemberHandler)
+		userGroups.DELETE("/:group", m.RequireAdminRole, h.DeleteGroupHandler)
 	}
 }
