@@ -1,5 +1,5 @@
 # user-manager
-User manager is a service for managing users, groups, credentials, user and domain blacklists for Containerum.
+User manager is a service for managing users, groups, credentials, user and domain blacklists for [Containerum](https://github.com/containerum/containerum).
 
 ## Prerequisites
 * MongoDB 
