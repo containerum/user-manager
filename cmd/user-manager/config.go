@@ -139,16 +139,16 @@ var flags = []cli.Flag{
 		Usage:  "Recaptcha key",
 	},
 	cli.StringFlag{
-		EnvVar: "CH_USER_RESOURCE_SERVICE",
+		EnvVar: "CH_USER_PERMISSIONS",
 		Name:   resourceFlag,
 		Value:  serviceClientHTTP,
-		Usage:  "Resource service kind",
+		Usage:  "Permissions service kind",
 	},
 	cli.StringFlag{
-		EnvVar: "CH_USER_RESOURCE_SERVICE_URL",
+		EnvVar: "CH_USER_PERMISSIONS_URL",
 		Name:   resourceURLFlag,
-		Value:  "http://resource-service:1213",
-		Usage:  "MResource service URL",
+		Value:  "http://permissions:4242",
+		Usage:  "Permissions service URL",
 	},
 	cli.StringFlag{
 		EnvVar: "CH_USER_USER_MANAGER",
@@ -233,10 +233,10 @@ func getAuthClient(c *cli.Context) (clients.AuthClientCloser, error) {
 	}
 }
 
-func getResourceServiceClient(c *cli.Context) (clients.ResourceServiceClient, error) {
+func getPermissionsClient(c *cli.Context) (clients.PermissionsClient, error) {
 	switch c.String(resourceFlag) {
 	case serviceClientHTTP:
-		return clients.NewHTTPResourceServiceClient(c.String(resourceURLFlag)), nil
+		return clients.NewHTTPPermissionsClient(c.String(resourceURLFlag)), nil
 	default:
 		return nil, errors.New("invalid resource service client")
 	}

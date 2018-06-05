@@ -16,7 +16,6 @@ import (
 
 // swagger:operation GET /domain DomainBlacklist BlacklistDomainsListGetHandler
 // Get blacklisted domains list.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-blacklist-domain-list
 //
 // ---
 // x-method-visibility: public
@@ -49,7 +48,6 @@ func BlacklistDomainsListGetHandler(ctx *gin.Context) {
 
 // swagger:operation GET /domain/{domain} DomainBlacklist BlacklistDomainGetHandler
 // Check if domain is in blacklist.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#get-blacklist-domain
 //
 // ---
 // x-method-visibility: public
@@ -86,7 +84,6 @@ func BlacklistDomainGetHandler(ctx *gin.Context) {
 
 // swagger:operation POST /domain DomainBlacklist BlacklistDomainAddHandler
 // Add domain to blacklist.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#add-domain-to-blacklist
 //
 // ---
 // x-method-visibility: public
@@ -133,7 +130,6 @@ func BlacklistDomainAddHandler(ctx *gin.Context) {
 
 // swagger:operation DELETE /domain/{domain} DomainBlacklist BlacklistDomainDeleteHandler
 // Remove domain from blacklist.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-domain-from-blacklist
 //
 // ---
 // x-method-visibility: public

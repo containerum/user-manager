@@ -16,7 +16,6 @@ import (
 
 // swagger:operation POST /user/sign_up User UserCreateHandler
 // Create user.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#create-user
 //
 // ---
 // x-method-visibility: public
@@ -67,7 +66,6 @@ func UserCreateHandler(ctx *gin.Context) {
 
 // swagger:operation POST /user/activation User ActivateHandler
 // Activate user.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#activate-user
 //
 // ---
 // x-method-visibility: public
@@ -116,7 +114,6 @@ func ActivateHandler(ctx *gin.Context) {
 
 // swagger:operation POST /user/delete/partial User PartialDeleteHandler
 // Mark user as deleted.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-user-pseudo
 //
 // ---
 // x-method-visibility: public
@@ -147,7 +144,6 @@ func PartialDeleteHandler(ctx *gin.Context) {
 
 // swagger:operation POST /user/delete/complete User CompleteDeleteHandler
 // Delete user completely (almost).
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#delete-user-from-everywhere
 //
 // ---
 // x-method-visibility: public

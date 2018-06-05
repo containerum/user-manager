@@ -18,6 +18,7 @@ import (
 	mttypes "git.containerum.net/ch/mail-templater/pkg/models"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"github.com/containerum/utils/httputil"
+	"github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 )
 
@@ -88,7 +89,7 @@ func (u *serverImpl) linkSend(ctx context.Context, link *db.Link) {
 }
 
 func (u *serverImpl) createTokens(ctx context.Context, user *db.User) (resp *authProto.CreateTokenResponse, err error) {
-	access, err := u.svc.ResourceServiceClient.GetUserAccess(ctx, user)
+	access, err := u.svc.PermissionsClient.GetUserAccess(ctx, user)
 	if err != nil {
 		u.log.WithError(err).Warning(resourceAccessGetFailed)
 		return nil, errors.New(resourceAccessGetFailed)
@@ -145,6 +146,17 @@ func (u *serverImpl) handleDBError(err error) error {
 		u.log.WithError(err).Error("db transaction error")
 		return err
 	default:
+		if pqerr, ok := err.(*pq.Error); ok {
+			switch pqerr.Code {
+			case "23505": //unique_violation
+				if pqerr.Constraint == "unique_user_id_group" {
+					return cherry.ErrAlreadyInGroup()
+				}
+				return cherry.ErrAlreadyExists()
+			default:
+				u.log.WithError(pqerr)
+			}
+		}
 		u.log.WithError(err).Error("db error")
 		return err
 	}

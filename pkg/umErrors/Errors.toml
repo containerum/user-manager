@@ -175,25 +175,25 @@ SID = "UserManager"
 [[error]]
     Name = "ErrUnableBlacklistDomain"
     StatusHTTP = 500
-    Message = "User is already blacklisted"
+    Message = "Unable to blacklist domain"
     Kind = 27
 
 [[error]]
     Name = "ErrUnableUnblacklistDomain"
     StatusHTTP = 500
-    Message = "User is not blacklisted"
+    Message = "Unable to unblacklist domain"
     Kind = 28
 
 [[error]]
     Name = "ErrDomainAlreadyBlacklisted"
     StatusHTTP = 409
-    Message = "User is already blacklisted"
+    Message = "Domain is already blacklisted"
     Kind = 29
 
 [[error]]
     Name = "ErrDomainNotBlacklisted"
     StatusHTTP = 404
-    Message = "User is not blacklisted"
+    Message = "Domain is not blacklisted"
     Kind = 30
 
 [[error]]
@@ -237,3 +237,75 @@ SID = "UserManager"
     StatusHTTP = 400
     Message = "User is already activated"
     Kind = 37
+
+[[error]]
+    Name = "ErrGroupNotExist"
+    StatusHTTP = 404
+    Message = "Group with such id doesn't exist"
+    Kind = 38
+
+[[error]]
+    Name = "ErrUnableGetGroup"
+    StatusHTTP = 500
+    Message = "Unable get group"
+    Kind = 39
+
+[[error]]
+    Name = "ErrUnableCreateGroup"
+    StatusHTTP = 500
+    Message = "Unable create group"
+    Kind = 40
+
+[[error]]
+    Name = "ErrUnableAddGroupMember"
+    StatusHTTP = 500
+    Message = "Unable add group member"
+    Kind = 41
+
+[[error]]
+    Name = "ErrAlreadyExists"
+    StatusHTTP = 409
+    Message = "Already exists"
+    Kind = 42
+
+[[error]]
+    Name = "ErrAlreadyInGroup"
+    StatusHTTP = 409
+    Message = "User is already in this group"
+    Kind = 43
+
+[[error]]
+    Name = "ErrNotGroupOwner"
+    StatusHTTP = 403
+    Message = "Only group owner can do this"
+    Kind = 44
+
+[[error]]
+    Name = "ErrUnableDeleteGroupMember"
+    StatusHTTP = 500
+    Message = "Unable delete group member"
+    Kind = 45
+
+[[error]]
+    Name = "ErrNotInGroup"
+    StatusHTTP = 404
+    Message = "User is not in this group"
+    Kind = 46
+
+[[error]]
+    Name = "ErrUnableDeleteGroup"
+    StatusHTTP = 500
+    Message = "Unable delete group"
+    Kind = 47
+
+[[error]]
+    Name = "ErrUnableRemoveOwner"
+    StatusHTTP = 403
+    Message = "Unable remove owner from group"
+    Kind = 48
+
+[[error]]
+    Name = "ErrUnableChangeOwnerPermissions"
+    StatusHTTP = 403
+    Message = "Unable change owners permissions"
+    Kind = 49

@@ -5,6 +5,8 @@ import (
 
 	"io"
 
+	kube_types "github.com/containerum/kube-client/pkg/model"
+
 	"git.containerum.net/ch/auth/proto"
 	"git.containerum.net/ch/user-manager/pkg/clients"
 	"git.containerum.net/ch/user-manager/pkg/db"
@@ -64,14 +66,23 @@ type UserManager interface {
 	GetBlacklistedDomain(ctx context.Context, domain string) (*models.Domain, error)
 	GetBlacklistedDomainsList(ctx context.Context) (*models.DomainListResponse, error)
 
+	//User groups
+	GetGroupsList(ctx context.Context, userID string) (*kube_types.UserGroups, error)
+	GetGroup(ctx context.Context, groupID string) (*kube_types.UserGroup, error)
+	CreateGroup(ctx context.Context, request kube_types.UserGroup) (*string, error)
+	AddGroupMembers(ctx context.Context, groupID string, request kube_types.UserGroupMembers) error
+	DeleteGroupMember(ctx context.Context, group kube_types.UserGroup, username string) error
+	UpdateGroupMemberAccess(ctx context.Context, group kube_types.UserGroup, username, access string) error
+	DeleteGroup(ctx context.Context, groupID string) error
+
 	io.Closer
 }
 
 // Services is a collection of resources needed for server functionality.
 type Services struct {
-	MailClient            clients.MailClient
-	DB                    db.DB
-	AuthClient            clients.AuthClientCloser
-	ReCaptchaClient       clients.ReCaptchaClient
-	ResourceServiceClient clients.ResourceServiceClient
+	MailClient        clients.MailClient
+	DB                db.DB
+	AuthClient        clients.AuthClientCloser
+	ReCaptchaClient   clients.ReCaptchaClient
+	PermissionsClient clients.PermissionsClient
 }

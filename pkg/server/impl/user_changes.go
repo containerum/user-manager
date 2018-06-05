@@ -135,8 +135,6 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request models.Link) (*au
 		return nil, cherry.ErrInvalidLink().AddDetailsErr(fmt.Errorf(linkNotFound, request.Link))
 	}
 
-	var tokens *authProto.CreateTokenResponse
-
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		link.User.IsActive = true
 		if updErr := tx.UpdateUser(ctx, link.User); updErr != nil {
@@ -146,15 +144,15 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request models.Link) (*au
 		if updErr := tx.UpdateLink(ctx, link); updErr != nil {
 			return cherry.ErrUnableActivate()
 		}
-
-		// TODO: send request to billing manager
-
-		var err error
-		tokens, err = u.createTokens(ctx, link.User)
-		return err
+		return nil
 	})
 	if err := u.handleDBError(err); err != nil {
 		return nil, cherry.ErrUnableActivate()
+	}
+
+	tokens, err := u.createTokens(ctx, link.User)
+	if err != nil {
+		return nil, err
 	}
 
 	go func() {
@@ -194,7 +192,6 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request models.UserLogin
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		// TODO: send request to resource manager
 		return tx.BlacklistUser(ctx, user)
 	})
 	if err := u.handleDBError(err); err != nil {
@@ -242,7 +239,6 @@ func (u *serverImpl) UnBlacklistUser(ctx context.Context, request models.UserLog
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		// TODO: send request to resource manager
 		return tx.UnBlacklistUser(ctx, user)
 	})
 	if err := u.handleDBError(err); err != nil {
@@ -282,8 +278,8 @@ func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interfac
 		return nil, cherry.ErrUnableUpdateUserInfo()
 	}
 
+	profile.Data = newData
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		profile.Data = newData
 		return tx.UpdateProfile(ctx, profile)
 	})
 	if err = u.handleDBError(err); err != nil {
@@ -319,28 +315,21 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		return cherry.ErrUserNotExist()
 	}
 
+	user.IsDeleted = true
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		user.IsDeleted = true
-		if updErr := tx.UpdateUser(ctx, user); updErr != nil {
-			return updErr
-		}
-
-		// TODO: send request to billing manager
-
-		_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
-			UserId: user.ID,
-		})
-		return authErr
+		return tx.UpdateUser(ctx, user)
 	})
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
 		return cherry.ErrUnableDeleteUser()
 	}
 
-	if err := u.svc.ResourceServiceClient.DeleteUserNamespaces(ctx, user); err != nil {
-		u.log.WithError(err)
-	}
-	if err := u.svc.ResourceServiceClient.DeleteUserVolumes(ctx, user); err != nil {
+	_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
+		UserId: user.ID,
+	})
+	return authErr
+
+	if err := u.svc.PermissionsClient.DeleteUserNamespaces(ctx, user); err != nil {
 		u.log.WithError(err)
 	}
 
@@ -375,13 +364,12 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 		return cherry.ErrUnableDeleteUser()
 	}
 
+	add, rngErr := utils.SecureRandomString(6)
+	if rngErr != nil {
+		return rngErr
+	}
+	user.Login = user.Login + "-" + add
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		add, rngErr := utils.SecureRandomString(6)
-		if rngErr != nil {
-			return rngErr
-		}
-		user.Login = user.Login + "-" + add
-		// TODO: send request to billing manager
 		return tx.UpdateUser(ctx, user)
 	})
 	if err := u.handleDBError(err); err != nil {

@@ -55,7 +55,7 @@ func initRoutes(app *gin.Engine) {
 	//TODO
 	requireLogoutHeaders := utils.RequireHeaders(umErrors.ErrRequiredHeadersNotProvided, headers.TokenIDXHeader, "X-Session-ID")
 
-	root := app.Group("/")
+	root := app.Group("")
 	{
 		root.POST("/logout", requireLogoutHeaders, m.RequireUserExist, h.LogoutHandler)
 	}
@@ -104,9 +104,9 @@ func initRoutes(app *gin.Engine) {
 
 	domainBlacklist := app.Group("/domain", requireIdentityHeaders, m.RequireAdminRole)
 	{
-		domainBlacklist.POST("/", h.BlacklistDomainAddHandler)
+		domainBlacklist.POST("", h.BlacklistDomainAddHandler)
 
-		domainBlacklist.GET("/", h.BlacklistDomainsListGetHandler)
+		domainBlacklist.GET("", h.BlacklistDomainsListGetHandler)
 		domainBlacklist.GET("/:domain", h.BlacklistDomainGetHandler)
 
 		domainBlacklist.DELETE("/:domain", h.BlacklistDomainDeleteHandler)
@@ -115,10 +115,25 @@ func initRoutes(app *gin.Engine) {
 	admin := app.Group("/admin", requireIdentityHeaders, m.RequireAdminRole)
 	{
 		admin.POST("/user/sign_up", h.AdminUserCreateHandler)
-		admin.POST("/user/activation", h.AdminUserActivate)
-		admin.POST("/user/deactivation", h.AdminUserDeactivate)
-		admin.POST("/user/password/reset", h.AdminResetPassword)
-		admin.POST("/user", h.AdminSetAdmin)
-		admin.DELETE("/user", h.AdminUnsetAdmin)
+		admin.POST("/user/activation", h.AdminUserActivateHandler)
+		admin.POST("/user/deactivation", h.AdminUserDeactivateHandler)
+		admin.POST("/user/password/reset", h.AdminResetPasswordHandler)
+		admin.POST("/user", h.AdminSetAdminHandler)
+
+		admin.DELETE("/user", h.AdminUnsetAdminHandler)
+	}
+
+	userGroups := app.Group("/groups", requireIdentityHeaders, m.RequireUserExist)
+	{
+		userGroups.GET("", h.GetGroupsListHandler)
+		userGroups.GET("/:group", m.RequireAdminRole, h.GetGroupHandler)
+
+		userGroups.POST("", m.RequireAdminRole, h.CreateGroupHandler)
+		userGroups.POST("/:group/members", m.RequireAdminRole, h.AddGroupMembersHandler)
+
+		userGroups.PUT("/:group/members/:login", m.RequireAdminRole, h.UpdateGroupMemberHandler)
+
+		userGroups.DELETE("/:group/members/:login", m.RequireAdminRole, h.DeleteGroupMemberHandler)
+		userGroups.DELETE("/:group", m.RequireAdminRole, h.DeleteGroupHandler)
 	}
 }

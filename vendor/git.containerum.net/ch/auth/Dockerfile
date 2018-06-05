@@ -5,8 +5,8 @@ RUN go build -v -ldflags="-w -s -extldflags '-static'" -tags="jsoniter" -o /bin/
 
 FROM alpine:3.7
 COPY --from=builder /bin/auth /
-ENV CH_AUTH_HTTP_LISTENADDR=0.0.0.0:8080 \
-    CH_AUTH_GRPC_LISTENADDR=0.0.0.0:8888 \
+ENV CH_AUTH_HTTP_LISTENADDR=0.0.0.0:1111 \
+    CH_AUTH_GRPC_LISTENADDR=0.0.0.0:1112 \
     CH_AUTH_LOG_MODE=text \
     CH_AUTH_LOG_LEVEL=4 \
     CH_AUTH_TOKENS=jwt \
@@ -20,6 +20,9 @@ ENV CH_AUTH_HTTP_LISTENADDR=0.0.0.0:8080 \
     CH_AUTH_BUNT_STORAGE_FILE=/storage/storage.db \
     CH_AUTH_TRACER=zipkin \
     CH_AUTH_ZIPKIN_COLLECTOR=nop
+
 VOLUME ["/keys", "/storage"]
-EXPOSE 8080 8888
+
+EXPOSE 1111 1112
+
 CMD ["/auth"]

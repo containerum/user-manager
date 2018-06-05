@@ -8,13 +8,13 @@
     ".",
     "proto"
   ]
-  revision = "7430ec8f101b19886808585f9cef3ff6e6c33016"
+  revision = "f5be2683b112903d242654db72e9b21d060555d4"
 
 [[projects]]
   branch = "develop"
   name = "git.containerum.net/ch/mail-templater"
   packages = ["pkg/models"]
-  revision = "57b7107d831d6574d6b59ce1de49dc1e9e440595"
+  revision = "50c2bcce5445f99ae6c23d62f81015c1e5dc789a"
 
 [[projects]]
   name = "github.com/containerum/cherry"
@@ -23,8 +23,14 @@
     "adaptors/cherrylog",
     "adaptors/gonic"
   ]
-  revision = "3076e36aee79538b125d060e5b671649cbb2db4e"
-  version = "v1.0.1-rc2"
+  revision = "34f7a2a139b36c20a34b93738dda33476efad47d"
+  version = "v1.0.1"
+
+[[projects]]
+  name = "github.com/containerum/kube-client"
+  packages = ["pkg/model"]
+  revision = "963ded2cea4d23dbbcd88367b7c64e8d545470b3"
+  version = "v0.19.4"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -32,8 +38,8 @@
     "httputil",
     "sqlxutil"
   ]
-  revision = "5e922affb542eaeb55ab395ff3c7161179df54b3"
-  version = "v1.0.0"
+  revision = "0d81250fc88af062d5836ecd83db9867eb6ee34c"
+  version = "v1.0.3"
 
 [[projects]]
   branch = "master"
@@ -45,7 +51,7 @@
   branch = "master"
   name = "github.com/gin-gonic/contrib"
   packages = ["ginrus"]
-  revision = "9b830a15f6abcf9e160f47ee01fc00691cc1981a"
+  revision = "6ea35d32286ce194572a0dc2a3398aac0091228d"
 
 [[projects]]
   name = "github.com/gin-gonic/gin"
@@ -85,7 +91,7 @@
     "ptypes/struct",
     "ptypes/timestamp"
   ]
-  revision = "e09c5db296004fbe3f74490e84dcd62c3c5ddb1b"
+  revision = "3a3da3a4e26776cc22a79ef46d5d58477532dede"
 
 [[projects]]
   branch = "master"
@@ -100,7 +106,6 @@
   revision = "0bae9679d4e31a54efa4b1cc61dd78eadda83b1a"
 
 [[projects]]
-  branch = "master"
   name = "github.com/grpc-ecosystem/go-grpc-middleware"
   packages = [
     ".",
@@ -110,7 +115,8 @@
     "tags",
     "tags/logrus"
   ]
-  revision = "bc175326149c6c87ca6e2b9fe58cf6d2aa1036cd"
+  revision = "c250d6563d4d4c20252cd865923440e829844f4e"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -134,7 +140,7 @@
     ".",
     "oid"
   ]
-  revision = "d34b9ff171c21ad295489235aec8b6626023cd04"
+  revision = "90697d60dd844d5ef6ff15135d0203f65d2f53b8"
 
 [[projects]]
   name = "github.com/mattes/migrate"
@@ -167,6 +173,12 @@
   version = "1.0.0"
 
 [[projects]]
+  name = "github.com/ninedraft/boxofstuff"
+  packages = ["strset"]
+  revision = "a57c6ea397e253eec08da7ff4305febfd0db5f7e"
+  version = "v0.1.1"
+
+[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
@@ -197,7 +209,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "b49d69b5da943f7ef3c9cf91c8777c1f78a0cc3c"
+  revision = "5ba7f63082460102a45837dbd1827e10f9479ac0"
 
 [[projects]]
   branch = "master"
@@ -209,13 +221,12 @@
     "http2/hpack",
     "idna",
     "internal/timeseries",
-    "lex/httplex",
     "publicsuffix",
     "trace",
     "webdav",
     "webdav/internal/xml"
   ]
-  revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
+  revision = "1e491301e022f8f977054da4c2d852decd59571f"
 
 [[projects]]
   branch = "master"
@@ -224,7 +235,7 @@
     "unix",
     "windows"
   ]
-  revision = "cbbc999da32df943dac6cd71eb3ee39e1d7838b9"
+  revision = "c11f84a56e43e20a78cee75a7c034031ecf57d1f"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -251,7 +262,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "86e600f69ee4704c6efbf6a2a40a5c10700e76c2"
+  revision = "4065a77fc542a455295382a23a996a08ed18813a"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -298,14 +309,14 @@
 [[projects]]
   name = "gopkg.in/go-playground/validator.v9"
   packages = ["."]
-  revision = "14984d91328f9612b58443cbdf4a077d4fd71091"
-  version = "v9.15.0"
+  revision = "f28cb45dc0f0f406ba2015cdb59a5203ad220bc2"
+  version = "v9.17.1"
 
 [[projects]]
   name = "gopkg.in/resty.v1"
   packages = ["."]
-  revision = "f8815663de1e64d57cdd4ee9e2b2fa96977a030e"
-  version = "v1.4"
+  revision = "fc3ad735b5565cada42d34bc298573fd3fe5adc6"
+  version = "v1.6"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
@@ -316,6 +327,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fca84219681e3d0de50b2bf67c0649719c1fc964d809322d5c0be424afa7790d"
+  inputs-digest = "385d3a5a0e6f0184fb08347fa229cb660589c29527bbe816de7cfddb2ff825a9"
   solver-name = "gps-cdcl"
   solver-version = 1

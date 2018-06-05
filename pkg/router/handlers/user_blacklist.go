@@ -17,7 +17,6 @@ import (
 
 // swagger:operation GET /user/blacklist UsersBlacklist BlacklistGetHandler
 // Users blacklist
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#blacklist-users
 //
 // ---
 // x-method-visibility: public
@@ -78,7 +77,6 @@ func BlacklistGetHandler(ctx *gin.Context) {
 
 // swagger:operation POST /user/blacklist UsersBlacklist UserToBlacklistHandler
 // Add user to blacklist.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#user-to-blacklist
 //
 // ---
 // x-method-visibility: public

@@ -20,8 +20,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-//go:generate swagger generate spec -m -i ../../swagger-basic.yml -o ../../swagger.json
-
 func initServer(c *cli.Context) error {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', tabwriter.TabIndent|tabwriter.Debug)
 	for _, f := range c.GlobalFlagNames() {
@@ -35,11 +33,11 @@ func initServer(c *cli.Context) error {
 	exitOnErr(err)
 
 	userManager, err := getUserManager(c, server.Services{
-		MailClient:            getService(getMailClient(c)).(clients.MailClient),
-		DB:                    getService(getDB(c)).(db.DB),
-		AuthClient:            getService(getAuthClient(c)).(clients.AuthClientCloser),
-		ReCaptchaClient:       getService(getReCaptchaClient(c)).(clients.ReCaptchaClient),
-		ResourceServiceClient: getService(getResourceServiceClient(c)).(clients.ResourceServiceClient),
+		MailClient:        getService(getMailClient(c)).(clients.MailClient),
+		DB:                getService(getDB(c)).(db.DB),
+		AuthClient:        getService(getAuthClient(c)).(clients.AuthClientCloser),
+		ReCaptchaClient:   getService(getReCaptchaClient(c)).(clients.ReCaptchaClient),
+		PermissionsClient: getService(getPermissionsClient(c)).(clients.PermissionsClient),
 	})
 	exitOnErr(err)
 	defer userManager.Close()

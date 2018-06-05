@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS groups_members;
+DROP TABLE IF EXISTS groups;

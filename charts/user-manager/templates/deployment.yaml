@@ -41,11 +41,11 @@ spec:
               value: "{{ .Release.Name }}-postgresql:5432"
             {{- end }}
 
-            {{- if .Values.env.local.CH_USER_RESOURCE_SERVICE_URL }}
-            - name: CH_USER_RESOURCE_SERVICE_URL
-              value: "{{ .Values.env.local.CH_USER_RESOURCE_SERVICE_URL }}"
+            {{- if .Values.env.local.CH_USER_PERMISSIONS_URL }}
+            - name: CH_USER_PERMISSIONS_URL
+              value: "{{ .Values.env.local.CH_USER_PERMISSIONS_URL }}"
             {{- else }}
-            - name: CH_USER_RESOURCE_SERVICE_URL
+            - name: CH_USER_PERMISSIONS_URL
               value: "http://{{ .Release.Name }}-permissions:4242"
             {{- end }}
 

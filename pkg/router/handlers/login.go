@@ -16,7 +16,6 @@ import (
 
 // swagger:operation POST /login/basic Login BasicLoginHandler
 // Basic login.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-in-with-login-and-password
 //
 // ---
 // x-method-visibility: public
@@ -65,7 +64,6 @@ func BasicLoginHandler(ctx *gin.Context) {
 
 // swagger:operation POST /login/token Login OneTimeTokenLoginHandler
 // Login with one-time token.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-in-with-one-time-token
 //
 // ---
 // x-method-visibility: public
@@ -109,7 +107,6 @@ func OneTimeTokenLoginHandler(ctx *gin.Context) {
 
 // swagger:operation POST /login/oauth Login OAuthLoginRequest
 // Login using oauth service.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-in-with-third-party-resource-oauth
 //
 // ---
 // x-method-visibility: public
@@ -158,7 +155,6 @@ func OAuthLoginHandler(ctx *gin.Context) {
 
 // swagger:operation POST /logout Login LogoutHandler
 // Logout for users who used one-time token login.
-// https://ch.pages.containerum.net/api-docs/modules/user-manager/index.html#sign-out
 //
 // ---
 // x-method-visibility: public
