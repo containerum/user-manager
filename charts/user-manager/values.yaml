@@ -34,13 +34,8 @@ env:
   local:
     CH_USER_PG_PASSWORD:
     CH_USER_PG_ADDR: "postgres-master.postgres.svc.cluster.local:5432"
-<<<<<<< HEAD
-    CH_USER_RESOURCE_SERVICE_URL: "http://permissions:4242"
+    CH_USER_PERMISSIONS_URL: "http://permissions:4242"
     CH_USER_AUTH_GRPC_ADDR: "auth:1112"
-=======
-    CH_USER_PERMISSIONS_URL: "http:///permissions:4242"
-    CH_USER_AUTH_GRPC_ADDR: "ch-auth:1112"
->>>>>>> a68f79e3942ebcbc7ffa6e6199545b86d1236497
     CH_USER_MAIL_URL: "mail-templater:7070"
 
 postgresql:
