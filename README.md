@@ -1,15 +1,11 @@
 # user-manager
-User manager is user service for managing users, groups, credentials, user and domain blacklists for Containerum
+User manager is a service for managing users, groups, credentials, user and domain blacklists for Containerum
 
 ## Prerequisites
-MongoDB 
+* MongoDB 
 
 
 ## Installation
-
-### Manually
-
-
 ### Using Helm
 
 ```
@@ -22,5 +18,5 @@ MongoDB
 Please submit all contributions concerning user-manager component to this repository. 
 
 ## License
-
+User-manager project is licensed under the terms of the Apache License Version 2.0. Please see LICENSE in this repository for more details.
 
