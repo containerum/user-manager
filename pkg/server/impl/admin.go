@@ -224,3 +224,49 @@ func (u *serverImpl) AdminUnsetAdmin(ctx context.Context, request models.UserLog
 
 	return nil
 }
+
+func (u *serverImpl) CreateFirstAdmin(password string) error {
+	u.log.Info("creating first admin user")
+
+	user, err := u.svc.DB.GetAnyUserByLoginWOContext("admin@local.containerum.io")
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return cherry.ErrUnableCreateUser()
+	}
+
+	if user != nil {
+		u.log.Info("updating admin password")
+		user.PasswordHash = utils.GetKey(user.Login, password, user.Salt)
+		err = u.svc.DB.UpdateUserWOContext(user)
+		if err != nil {
+			return err
+		}
+		u.log.Info("admin password updated")
+		return nil
+	}
+
+	salt := utils.GenSalt("admin@local.containerum.io", "admin@local.containerum.io", "admin@local.containerum.io") // compatibility with old client db
+	passwordHash := utils.GetKey("admin@local.containerum.io", password, salt)
+	newUser := &db.User{
+		Login:        "admin@local.containerum.io",
+		PasswordHash: passwordHash,
+		Salt:         salt,
+		Role:         "admin",
+		IsActive:     true,
+		IsDeleted:    false,
+	}
+
+	if createErr := u.svc.DB.CreateUserWOContext(newUser); createErr != nil {
+		return createErr
+	}
+
+	if createErr := u.svc.DB.CreateProfileWOContext(&db.Profile{
+		User:      newUser,
+		Access:    sql.NullString{String: "rw", Valid: true},
+		CreatedAt: pq.NullTime{Time: time.Now().UTC(), Valid: true},
+	}); createErr != nil {
+		return createErr
+	}
+	u.log.Info("admin created")
+	return nil
+}

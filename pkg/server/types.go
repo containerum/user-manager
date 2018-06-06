@@ -75,6 +75,7 @@ type UserManager interface {
 	UpdateGroupMemberAccess(ctx context.Context, group kube_types.UserGroup, username, access string) error
 	DeleteGroup(ctx context.Context, groupID string) error
 
+	CreateFirstAdmin(password string) error
 	io.Closer
 }
 

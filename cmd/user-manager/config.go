@@ -42,6 +42,7 @@ const (
 	resourceURLFlag  = "resource_service_url"
 	umFlag           = "user_manager"
 	corsFlag         = "cors"
+	adminPwdFlag     = "admin_password"
 )
 
 var flags = []cli.Flag{
@@ -160,6 +161,11 @@ var flags = []cli.Flag{
 		EnvVar: "CH_USER_CORS",
 		Name:   corsFlag,
 		Usage:  "enable CORS",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_USER_ADMIN_PASSWORD",
+		Name:   adminPwdFlag,
+		Usage:  "Admin password",
 	},
 }
 

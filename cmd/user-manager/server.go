@@ -44,6 +44,11 @@ func initServer(c *cli.Context) error {
 
 	app := router.CreateRouter(&userManager, c.Bool(corsFlag))
 
+	if c.String(adminPwdFlag) != "" {
+		err := userManager.CreateFirstAdmin(c.String(adminPwdFlag))
+		exitOnErr(err)
+	}
+
 	// graceful shutdown support
 	srv := http.Server{
 		Addr:    ":" + c.String(portFlag),
