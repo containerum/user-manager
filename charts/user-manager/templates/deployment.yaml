@@ -51,7 +51,7 @@ spec:
               value: "{{ .Values.env.local.CH_USER_AUTH_GRPC_ADDR }}"
             {{- else }}
             - name: CH_USER_AUTH_GRPC_ADDR
-              value: "http://{{ .Release.Name }}-auth:1112"
+              value: "{{ .Release.Name }}-auth:1112"
             {{- end }}
             {{- if .Values.env.local.CH_USER_MAIL_URL }}
             - name: CH_USER_MAIL_URL
