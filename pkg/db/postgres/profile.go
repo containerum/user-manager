@@ -36,6 +36,26 @@ func (pgdb *pgDB) CreateProfile(ctx context.Context, profile *db.Profile) error 
 	return err
 }
 
+func (pgdb *pgDB) CreateProfileWOContext(profile *db.Profile) error {
+	pgdb.log.Infoln("Create profile for", profile.User.Login)
+	profileData, err := jsoniter.MarshalToString(profile.Data)
+	if err != nil {
+		return err
+	}
+	rows, err := pgdb.conn.DB.Query("INSERT INTO profiles (referral, access, user_id, data, created_at) VALUES "+
+		"($1, $2, $3, $4, $5) RETURNING id, created_at", profile.Referral, profile.Access, profile.User.ID, profileData, profile.CreatedAt)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return rows.Err()
+	}
+
+	err = rows.Scan(&profile.ID, &profile.CreatedAt)
+	return err
+}
+
 func (pgdb *pgDB) GetProfileByID(ctx context.Context, id string) (*db.Profile, error) {
 	pgdb.log.Infoln("Get profile by id", id)
 	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT "+profileQueryColumnsWithUser+" FROM profiles "+

@@ -27,6 +27,7 @@ func (pgdb *pgDB) GetUserByLogin(ctx context.Context, login string) (*db.User, e
 func (pgdb *pgDB) GetAnyUserByLogin(ctx context.Context, login string) (*db.User, error) {
 	pgdb.log.Infoln("Get user by login", login)
 	var user db.User
+
 	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE login = $1", login)
 	if err != nil {
 		return nil, err
@@ -36,6 +37,22 @@ func (pgdb *pgDB) GetAnyUserByLogin(ctx context.Context, login string) (*db.User
 		return nil, rows.Err()
 	}
 	err = rows.StructScan(&user)
+	return &user, err
+}
+
+func (pgdb *pgDB) GetAnyUserByLoginWOContext(login string) (*db.User, error) {
+	pgdb.log.Infoln("Get user by login", login)
+	var user db.User
+
+	rows, err := pgdb.conn.DB.Query("SELECT id FROM users WHERE login = $1", login)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, rows.Err()
+	}
+	err = rows.Scan(&user.ID)
 	return &user, err
 }
 
@@ -85,11 +102,35 @@ func (pgdb *pgDB) CreateUser(ctx context.Context, user *db.User) error {
 	return err
 }
 
+func (pgdb *pgDB) CreateUserWOContext(user *db.User) error {
+	pgdb.log.Infoln("Create user", user.Login)
+	rows, err := pgdb.conn.DB.Query("INSERT INTO users (login, password_hash, salt, role, is_active) "+
+		"VALUES ($1, $2, $3, $4, $5) RETURNING id",
+		user.Login, user.PasswordHash, user.Salt, user.Role, user.IsActive)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return rows.Err()
+	}
+	err = rows.Scan(&user.ID)
+	return err
+}
+
 func (pgdb *pgDB) UpdateUser(ctx context.Context, user *db.User) error {
 	pgdb.log.Infoln("Update user", user.Login)
 	_, err := pgdb.eLog.ExecContext(ctx, "UPDATE users SET "+
 		"login = $2, password_hash = $3, salt = $4, role = $5, is_active = $6, is_deleted = $7 WHERE id = $1",
 		user.ID, user.Login, user.PasswordHash, user.Salt, user.Role, user.IsActive, user.IsDeleted)
+	return err
+}
+
+func (pgdb *pgDB) UpdateUserWOContext(user *db.User) error {
+	pgdb.log.Infoln("Update user", user.Login)
+	_, err := pgdb.conn.DB.Exec("UPDATE users SET "+
+		"password_hash = $2 WHERE id = $1",
+		user.ID, user.PasswordHash)
 	return err
 }
 

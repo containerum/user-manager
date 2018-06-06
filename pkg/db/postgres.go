@@ -166,6 +166,10 @@ type DB interface {
 	UpdateGroupMember(ctx context.Context, userID string, groupID string, access string) error
 	CountGroupMembers(ctx context.Context, groupID string) (*uint, error)
 
+	GetAnyUserByLoginWOContext(login string) (*User, error)
+	CreateUserWOContext(user *User) error
+	CreateProfileWOContext(profile *Profile) error
+	UpdateUserWOContext(user *User) error
 	// Perform operations inside transaction
 	// Transaction commits if `f` returns nil error, rollbacks and forwards error otherwise
 	// May return ErrTransactionBegin if transaction start failed,
