@@ -32,7 +32,6 @@ spec:
             - name: {{ $key  }}
               value: {{ $val | quote }}
             {{- end }}
-
             {{- if .Values.env.local.CH_USER_PG_ADDR }}
             - name: CH_USER_PG_ADDR
               value: "{{ .Values.env.local.CH_USER_PG_ADDR }}"
@@ -40,23 +39,20 @@ spec:
             - name: CH_USER_PG_ADDR
               value: "{{ .Release.Name }}-postgresql:5432"
             {{- end }}
-
-            {{- if .Values.env.local.CH_USER_RESOURCE_SERVICE_URL }}
-            - name: CH_USER_RESOURCE_SERVICE_URL
-              value: "{{ .Values.env.local.CH_USER_RESOURCE_SERVICE_URL }}"
+            {{- if .Values.env.local.CH_USER_PERMISSIONS_URL }}
+            - name: CH_USER_PERMISSIONS_URL
+              value: "{{ .Values.env.local.CH_USER_PERMISSIONS_URL }}"
             {{- else }}
-            - name: CH_USER_RESOURCE_SERVICE_URL
+            - name: CH_USER_PERMISSIONS_URL
               value: "http://{{ .Release.Name }}-permissions:4242"
             {{- end }}
-
             {{- if .Values.env.local.CH_USER_AUTH_GRPC_ADDR }}
             - name: CH_USER_AUTH_GRPC_ADDR
               value: "{{ .Values.env.local.CH_USER_AUTH_GRPC_ADDR }}"
             {{- else }}
             - name: CH_USER_AUTH_GRPC_ADDR
-              value: "http://{{ .Release.Name }}-auth:1112"
+              value: "{{ .Release.Name }}-auth:1112"
             {{- end }}
-
             {{- if .Values.env.local.CH_USER_MAIL_URL }}
             - name: CH_USER_MAIL_URL
               value: "{{ .Values.env.local.CH_USER_MAIL_URL }}"
@@ -64,7 +60,6 @@ spec:
             - name: CH_USER_MAIL_URL
               value: "http://{{ .Release.Name }}-mail:7070"
             {{- end }}
-
             {{- if .Values.env.local.CH_USER_PG_PASSWORD }}
             - name: CH_USER_PG_PASSWORD
               valueFrom:
@@ -77,4 +72,11 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-postgresql
                   key: postgres-password
+            {{- end }}
+            {{- if .Values.env.local.CH_USER_ADMIN_PASSWORD }}
+            - name: CH_USER_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "fullname" . }}
+                  key: admin-password
             {{- end }}
