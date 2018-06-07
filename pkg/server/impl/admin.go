@@ -236,7 +236,7 @@ func (u *serverImpl) CreateFirstAdmin(password string) error {
 
 	if user != nil {
 		u.log.Info("updating admin password")
-		user.PasswordHash = utils.GetKey(user.Login, password, user.Salt)
+		user.PasswordHash = utils.GetKey("admin@local.containerum.io", password, user.Salt)
 		err = u.svc.DB.UpdateUserWOContext(user)
 		if err != nil {
 			return err
