@@ -21,7 +21,6 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request models.LoginRequest
 	u.log.Infoln("Basic login")
 	u.log.WithFields(logrus.Fields{
 		"username": request.Login,
-		"password": request.Password,
 	}).Debugln("Basic login details")
 
 	user, err := u.svc.DB.GetUserByLogin(ctx, request.Login)

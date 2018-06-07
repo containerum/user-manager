@@ -44,7 +44,7 @@ func (pgdb *pgDB) GetAnyUserByLoginWOContext(login string) (*db.User, error) {
 	pgdb.log.Infoln("Get user by login", login)
 	var user db.User
 
-	rows, err := pgdb.conn.DB.Query("SELECT id FROM users WHERE login = $1", login)
+	rows, err := pgdb.conn.DB.Query("SELECT id, salt FROM users WHERE login = $1", login)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (pgdb *pgDB) GetAnyUserByLoginWOContext(login string) (*db.User, error) {
 	if !rows.Next() {
 		return nil, rows.Err()
 	}
-	err = rows.Scan(&user.ID)
+	err = rows.Scan(&user.ID, &user.Salt)
 	return &user, err
 }
 
