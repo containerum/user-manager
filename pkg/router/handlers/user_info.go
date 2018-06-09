@@ -44,7 +44,6 @@ func UserInfoGetHandler(ctx *gin.Context) {
 		}
 		return
 	}
-
 	ctx.JSON(http.StatusOK, resp)
 }
 

@@ -42,8 +42,8 @@ required = ["git.containerum.net/ch/auth"]
   name = "github.com/lib/pq"
 
 [[constraint]]
-  name = "github.com/mattes/migrate"
-  version = "3.0.1"
+  name = "github.com/golang-migrate/migrate"
+  version = "3.2.0"
 
 [[constraint]]
   name = "github.com/sirupsen/logrus"

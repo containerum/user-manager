@@ -61,6 +61,7 @@ type Profile struct {
 	CreatedAt     string   `json:"created_at,omitempty"`
 	DeletedAt     string   `json:"deleted_at,omitempty"`
 	BlacklistedAt string   `json:"blacklisted_at,omitempty"`
+	LastLogin     string   `json:"last_login,omitempty"`
 	Data          UserData `json:"data,omitempty"`
 }
 

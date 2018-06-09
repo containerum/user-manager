@@ -42,6 +42,7 @@ type Profile struct {
 	CreatedAt   pq.NullTime
 	BlacklistAt pq.NullTime
 	DeletedAt   pq.NullTime
+	LastLogin   pq.NullTime
 
 	User *User
 
@@ -165,6 +166,8 @@ type DB interface {
 	DeleteGroupMember(ctx context.Context, userID string, groupID string) error
 	UpdateGroupMember(ctx context.Context, userID string, groupID string, access string) error
 	CountGroupMembers(ctx context.Context, groupID string) (*uint, error)
+
+	UpdateLastLogin(ctx context.Context, profileID, lastlogin string) error
 
 	GetAnyUserByLoginWOContext(login string) (*User, error)
 	CreateUserWOContext(user *User) error

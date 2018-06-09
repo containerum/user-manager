@@ -9,11 +9,11 @@ import (
 
 	"git.containerum.net/ch/user-manager/pkg/db"
 	sqlxutil "github.com/containerum/utils/sqlxutil"
+	"github.com/golang-migrate/migrate"
+	migdrv "github.com/golang-migrate/migrate/database/postgres"
+	_ "github.com/golang-migrate/migrate/source/file" // needed to load migrations scripts from files
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // postgresql database driver
-	"github.com/mattes/migrate"
-	migdrv "github.com/mattes/migrate/database/postgres"
-	_ "github.com/mattes/migrate/source/file" // needed to load migrations scripts from files
 	"github.com/sirupsen/logrus"
 )
 

@@ -8,13 +8,19 @@
     ".",
     "proto"
   ]
-  revision = "f5be2683b112903d242654db72e9b21d060555d4"
+  revision = "cc1a56d5a34d64af5ec2f94473a66fd058d1170f"
 
 [[projects]]
   branch = "develop"
   name = "git.containerum.net/ch/mail-templater"
   packages = ["pkg/models"]
-  revision = "50c2bcce5445f99ae6c23d62f81015c1e5dc789a"
+  revision = "78a0635ddfd32818ed182120da190f68d3a40c52"
+
+[[projects]]
+  name = "github.com/blang/semver"
+  packages = ["."]
+  revision = "2ee87856327ba09384cabd113bc6b5d174e9ec0f"
+  version = "v3.5.1"
 
 [[projects]]
   name = "github.com/containerum/cherry"
@@ -29,8 +35,8 @@
 [[projects]]
   name = "github.com/containerum/kube-client"
   packages = ["pkg/model"]
-  revision = "963ded2cea4d23dbbcd88367b7c64e8d545470b3"
-  version = "v0.19.4"
+  revision = "43bc2706e4163e6d26d2be0d559591c3c9a81c6b"
+  version = "v0.19.9"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -40,6 +46,15 @@
   ]
   revision = "0d81250fc88af062d5836ecd83db9867eb6ee34c"
   version = "v1.0.3"
+
+[[projects]]
+  name = "github.com/docker/distribution"
+  packages = [
+    "digest",
+    "reference"
+  ]
+  revision = "48294d928ced5dd9b378f7fd7c6f5da3ff3f2c89"
+  version = "v2.6.2"
 
 [[projects]]
   branch = "master"
@@ -79,6 +94,18 @@
   version = "v0.16.0"
 
 [[projects]]
+  name = "github.com/golang-migrate/migrate"
+  packages = [
+    ".",
+    "database",
+    "database/postgres",
+    "source",
+    "source/file"
+  ]
+  revision = "22f249514de9aa3f8a720a7cabbdd45d294f83a1"
+  version = "v3.2.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = [
@@ -91,7 +118,7 @@
     "ptypes/struct",
     "ptypes/timestamp"
   ]
-  revision = "3a3da3a4e26776cc22a79ef46d5d58477532dede"
+  revision = "05f48f4eaf0e05663b562bab533cdd472238ce29"
 
 [[projects]]
   branch = "master"
@@ -141,18 +168,6 @@
     "oid"
   ]
   revision = "90697d60dd844d5ef6ff15135d0203f65d2f53b8"
-
-[[projects]]
-  name = "github.com/mattes/migrate"
-  packages = [
-    ".",
-    "database",
-    "database/postgres",
-    "source",
-    "source/file"
-  ]
-  revision = "035c07716cd373d88456ec4d701402df52584cb4"
-  version = "v3.0.1"
 
 [[projects]]
   name = "github.com/mattn/go-isatty"
@@ -209,7 +224,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "5ba7f63082460102a45837dbd1827e10f9479ac0"
+  revision = "b47b1587369238182299fe4dad77d05b8b461e06"
 
 [[projects]]
   branch = "master"
@@ -235,7 +250,7 @@
     "unix",
     "windows"
   ]
-  revision = "c11f84a56e43e20a78cee75a7c034031ecf57d1f"
+  revision = "9527bec2660bd847c050fda93a0f0c6dee0800bb"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -262,7 +277,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "4065a77fc542a455295382a23a996a08ed18813a"
+  revision = "81158efcc9f219c511e4d3c0d61a0e6e49c01a24"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -327,6 +342,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "385d3a5a0e6f0184fb08347fa229cb660589c29527bbe816de7cfddb2ff825a9"
+  inputs-digest = "f94d93751e5893d1abee35a603a4dfbdcc81602c32c098ace93efe0d297b6f47"
   solver-name = "gps-cdcl"
   solver-version = 1

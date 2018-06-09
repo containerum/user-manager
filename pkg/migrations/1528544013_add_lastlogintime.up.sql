@@ -1,0 +1,2 @@
+ALTER TABLE profiles
+  ADD COLUMN "last_login" TIMESTAMP WITHOUT TIME ZONE;
