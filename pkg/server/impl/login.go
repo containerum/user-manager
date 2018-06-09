@@ -41,7 +41,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request models.LoginRequest
 
 	if !utils.CheckPassword(request.Login, request.Password, user.Salt, user.PasswordHash) {
 		u.log.WithError(cherry.ErrInvalidLogin())
-		return resp, cherry.ErrInvalidLogin()
+		return nil, cherry.ErrInvalidLogin()
 	}
 	if user.IsInBlacklist {
 		return nil, cherry.ErrAccountBlocked()
@@ -95,6 +95,11 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request models.OneTi
 			return nil, err
 		}
 
+		profile, err := u.svc.DB.GetProfileByUser(ctx, token.User)
+		if dbErr := u.handleDBError(err); dbErr != nil {
+			u.log.WithError(dbErr)
+			return nil, cherry.ErrLoginFailed()
+		}
 		var tokens *authProto.CreateTokenResponse
 		token.IsActive = false
 		//TODO Do something with session ID
@@ -107,11 +112,18 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request models.OneTi
 			u.log.WithError(err)
 			return nil, cherry.ErrLoginFailed()
 		}
-		tokens, err := u.createTokens(ctx, token.User)
+		tokens, err = u.createTokens(ctx, token.User)
 		if err != nil {
 			u.log.WithError(err)
 			return nil, cherry.ErrLoginFailed()
 		}
+		loginerr := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+			return tx.UpdateLastLogin(ctx, profile.ID.String, time.Now().Format(time.RFC3339))
+		})
+		if loginerr := u.handleDBError(loginerr); loginerr != nil {
+			u.log.WithError(loginerr)
+		}
+
 		return tokens, nil
 	}
 	return nil, cherry.ErrInvalidLogin()
@@ -140,6 +152,12 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request models.OAuthLoginRe
 		u.log.WithError(err)
 		return nil, cherry.ErrLoginFailed()
 	}
+
+	profile, err := u.svc.DB.GetProfileByUser(ctx, user)
+	if dbErr := u.handleDBError(err); dbErr != nil {
+		u.log.WithError(dbErr)
+		return nil, cherry.ErrLoginFailed()
+	}
 	if err = u.loginUserChecks(ctx, user); err != nil {
 		u.log.Info("User is not found by email. Checking bound accounts")
 		if info.UserID != "" {
@@ -163,6 +181,13 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request models.OAuthLoginRe
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrLoginFailed()
+	}
+
+	loginerr := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+		return tx.UpdateLastLogin(ctx, profile.ID.String, time.Now().Format(time.RFC3339))
+	})
+	if loginerr := u.handleDBError(loginerr); loginerr != nil {
+		u.log.WithError(loginerr)
 	}
 	return u.createTokens(ctx, user)
 }
