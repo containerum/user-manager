@@ -127,6 +127,15 @@ func (pgdb *pgDB) DeleteGroupMember(ctx context.Context, userID string, groupID 
 	return nil
 }
 
+func (pgdb *pgDB) DeleteGroupMemberFromAllGroups(ctx context.Context, userID string) error {
+	pgdb.log.Infoln("Delete member", userID)
+	_, err := pgdb.eLog.ExecContext(ctx, "DELETE FROM groups_members WHERE user_id = $1", userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (pgdb *pgDB) UpdateGroupMember(ctx context.Context, userID string, groupID string, access string) error {
 	pgdb.log.WithField("userID", userID).WithField("access", access).Infoln("Update member access")
 	res, err := pgdb.eLog.ExecContext(ctx, "UPDATE groups_members SET default_access = $3 WHERE group_id = $1 AND user_id = $2", groupID, userID, access)

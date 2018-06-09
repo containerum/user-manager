@@ -164,6 +164,7 @@ type DB interface {
 
 	AddGroupMembers(ctx context.Context, member *UserGroupMember) error
 	DeleteGroupMember(ctx context.Context, userID string, groupID string) error
+	DeleteGroupMemberFromAllGroups(ctx context.Context, userID string) error
 	UpdateGroupMember(ctx context.Context, userID string, groupID string, access string) error
 	CountGroupMembers(ctx context.Context, groupID string) (*uint, error)
 
