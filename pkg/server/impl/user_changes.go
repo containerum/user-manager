@@ -207,6 +207,14 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request models.UserLogin
 		return cherry.ErrUnableBlacklistUser()
 	}
 
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+		return tx.DeleteGroupMemberFromAllGroups(ctx, user.ID)
+	})
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return cherry.ErrUnableDeleteUser()
+	}
+
 	go func() {
 		err := u.svc.MailClient.SendBlockedMail(ctx, &mttypes.Recipient{
 			ID:    user.ID,
@@ -333,6 +341,14 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		u.log.WithError(err)
 	}
 
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+		return tx.DeleteGroupMemberFromAllGroups(ctx, user.ID)
+	})
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return cherry.ErrUnableDeleteUser()
+	}
+
 	go func() {
 		err := u.svc.MailClient.SendAccDeletedMail(ctx, &mttypes.Recipient{
 			ID:        user.ID,
@@ -361,6 +377,14 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 	}
 	if !user.IsDeleted {
 		u.log.WithError(cherry.ErrUnableDeleteUser())
+		return cherry.ErrUnableDeleteUser()
+	}
+
+	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+		return tx.DeleteGroupMemberFromAllGroups(ctx, user.ID)
+	})
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
 		return cherry.ErrUnableDeleteUser()
 	}
 
