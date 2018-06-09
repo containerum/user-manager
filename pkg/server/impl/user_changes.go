@@ -294,7 +294,7 @@ func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interfac
 		},
 		Profile: &models.Profile{
 			Data:      profile.Data,
-			CreatedAt: profile.CreatedAt.Time.String(),
+			CreatedAt: profile.CreatedAt.Time.Format(time.RFC3339),
 		},
 		Role:     user.Role,
 		IsActive: user.IsActive,

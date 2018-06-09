@@ -66,19 +66,24 @@ func (u *serverImpl) GetUserInfo(ctx context.Context) (*models.User, error) {
 	if err := u.handleDBError(err); err != nil {
 		return nil, cherry.ErrUnableGetUserInfo()
 	}
+	if profile == nil {
+		u.log.WithError(cherry.ErrUserNotExist())
+		return nil, cherry.ErrUnableGetUserInfo()
+	}
 
-	return &models.User{
+	ret := models.User{
 		UserLogin: &models.UserLogin{
 			Login: user.Login,
 			ID:    user.ID,
 		},
 		Profile: &models.Profile{
 			Data:      profile.Data,
-			CreatedAt: profile.CreatedAt.Time.String(),
+			CreatedAt: profile.CreatedAt.Time.Format(time.RFC3339),
 		},
 		Role:     user.Role,
 		IsActive: user.IsActive,
-	}, nil
+	}
+	return &ret, nil
 }
 
 func (u *serverImpl) GetUserInfoByID(ctx context.Context, userID string) (*models.User, error) {
@@ -207,15 +212,19 @@ func (u *serverImpl) GetUsers(ctx context.Context, page int, perPage int, filter
 		}
 
 		if !v.Profile.CreatedAt.Time.IsZero() {
-			user.CreatedAt = v.Profile.CreatedAt.Time.String()
+			user.CreatedAt = v.Profile.CreatedAt.Time.Format(time.RFC3339)
 		}
 
 		if !v.Profile.DeletedAt.Time.IsZero() {
-			user.DeletedAt = v.Profile.DeletedAt.Time.String()
+			user.DeletedAt = v.Profile.DeletedAt.Time.Format(time.RFC3339)
 		}
 
 		if !v.Profile.BlacklistAt.Time.IsZero() {
-			user.BlacklistedAt = v.Profile.BlacklistAt.Time.String()
+			user.BlacklistedAt = v.Profile.BlacklistAt.Time.Format(time.RFC3339)
+		}
+
+		if !v.Profile.LastLogin.Time.IsZero() {
+			user.LastLogin = v.Profile.LastLogin.Time.Format(time.RFC3339)
 		}
 
 		resp.Users = append(resp.Users, user)

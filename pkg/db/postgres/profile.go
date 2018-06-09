@@ -9,12 +9,12 @@ import (
 	"database/sql"
 )
 
-const profileQueryColumnsWithUserAndAccounts = "profiles.id, profiles.referral, profiles.access, profiles.created_at, profiles.blacklist_at, profiles.deleted_at, " +
+const profileQueryColumnsWithUserAndAccounts = "profiles.id, profiles.referral, profiles.access, profiles.created_at, profiles.blacklist_at, profiles.deleted_at, profiles.last_login, " +
 	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist, profiles.data, accounts.github, accounts.google, accounts.facebook"
-const profileQueryColumnsWithUser = "profiles.id, profiles.referral, profiles.access, profiles.created_at, profiles.blacklist_at, profiles.deleted_at, " +
+const profileQueryColumnsWithUser = "profiles.id, profiles.referral, profiles.access, profiles.created_at, profiles.blacklist_at, profiles.deleted_at, profiles.last_login, " +
 	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist, profiles.data"
 
-const profileQueryColumns = "id, referral, access, created_at, blacklist_at, deleted_at, data"
+const profileQueryColumns = "id, referral, access, created_at, blacklist_at, deleted_at, last_login, data"
 
 func (pgdb *pgDB) CreateProfile(ctx context.Context, profile *db.Profile) error {
 	pgdb.log.Infoln("Create profile for", profile.User.Login)
@@ -71,7 +71,7 @@ func (pgdb *pgDB) GetProfileByID(ctx context.Context, id string) (*db.Profile, e
 	profile := db.Profile{User: &db.User{}}
 	var profileData string
 	err = rows.Scan(
-		&profile.ID, &profile.Referral, &profile.Access, &profile.CreatedAt, &profile.BlacklistAt, &profile.DeletedAt,
+		&profile.ID, &profile.Referral, &profile.Access, &profile.CreatedAt, &profile.BlacklistAt, &profile.DeletedAt, &profile.LastLogin,
 		&profile.User.ID, &profile.User.Login, &profile.User.PasswordHash, &profile.User.Salt, &profile.User.Role,
 		&profile.User.IsActive, &profile.User.IsDeleted, &profile.User.IsInBlacklist,
 		&profileData,
@@ -100,7 +100,7 @@ func (pgdb *pgDB) GetProfileByUser(ctx context.Context, user *db.User) (*db.Prof
 	profile := db.Profile{User: user}
 	var profileData string
 
-	err = rows.Scan(&profile.ID, &profile.Referral, &profile.Access, &profile.CreatedAt, &profile.BlacklistAt, &profile.DeletedAt, &profileData)
+	err = rows.Scan(&profile.ID, &profile.Referral, &profile.Access, &profile.CreatedAt, &profile.BlacklistAt, &profile.DeletedAt, &profile.LastLogin, &profileData)
 	if err != nil {
 		return nil, err
 	}
@@ -122,6 +122,13 @@ func (pgdb *pgDB) UpdateProfile(ctx context.Context, profile *db.Profile) error 
 	return err
 }
 
+func (pgdb *pgDB) UpdateLastLogin(ctx context.Context, profileID, lastlogin string) error {
+	pgdb.log.Infof("Update profile last login %v", lastlogin)
+	_, err := pgdb.eLog.ExecContext(ctx, "UPDATE profiles SET last_login = $2 WHERE id = $1",
+		profileID, lastlogin)
+	return err
+}
+
 func (pgdb *pgDB) GetAllProfiles(ctx context.Context, perPage, offset int) ([]db.UserProfileAccounts, error) {
 	pgdb.log.Infoln("Get all profiles")
 	profiles := make([]db.UserProfileAccounts, 0) // return empty slice instead of nil if no records found
@@ -138,7 +145,7 @@ func (pgdb *pgDB) GetAllProfiles(ctx context.Context, perPage, offset int) ([]db
 		profile := db.UserProfileAccounts{User: &db.User{}, Accounts: &db.Accounts{}, Profile: &db.Profile{}}
 		var profileData sql.NullString
 		err := rows.Scan(
-			&profile.Profile.ID, &profile.Profile.Referral, &profile.Profile.Access, &profile.Profile.CreatedAt, &profile.Profile.BlacklistAt, &profile.Profile.DeletedAt,
+			&profile.Profile.ID, &profile.Profile.Referral, &profile.Profile.Access, &profile.Profile.CreatedAt, &profile.Profile.BlacklistAt, &profile.Profile.DeletedAt, &profile.Profile.LastLogin,
 			&profile.User.ID, &profile.User.Login, &profile.User.PasswordHash, &profile.User.Salt, &profile.User.Role,
 			&profile.User.IsActive, &profile.User.IsDeleted, &profile.User.IsInBlacklist,
 			&profileData, &profile.Accounts.Github, &profile.Accounts.Google, &profile.Accounts.Facebook,

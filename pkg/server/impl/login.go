@@ -29,6 +29,12 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request models.LoginRequest
 		return resp, cherry.ErrLoginFailed()
 	}
 
+	profile, err := u.svc.DB.GetProfileByUser(ctx, user)
+	if dbErr := u.handleDBError(err); dbErr != nil {
+		u.log.WithError(dbErr)
+		return resp, cherry.ErrLoginFailed()
+	}
+
 	if err = u.loginUserChecks(ctx, user); err != nil {
 		return nil, err
 	}
@@ -64,6 +70,13 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request models.LoginRequest
 		}
 		go u.linkSend(ctx, link)
 		return nil, cherry.ErrNotActivated()
+	}
+
+	loginerr := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
+		return tx.UpdateLastLogin(ctx, profile.ID.String, time.Now().Format(time.RFC3339))
+	})
+	if loginerr := u.handleDBError(loginerr); loginerr != nil {
+		u.log.WithError(loginerr)
 	}
 	resp, err = u.createTokens(ctx, user)
 	return
