@@ -129,8 +129,11 @@ func (pgdb *pgDB) DeleteGroupMember(ctx context.Context, userID string, groupID 
 
 func (pgdb *pgDB) DeleteGroupMemberFromAllGroups(ctx context.Context, userID string) error {
 	pgdb.log.Infoln("Delete member", userID)
-	_, err := pgdb.eLog.ExecContext(ctx, "DELETE FROM groups_members WHERE user_id = $1", userID)
-	if err != nil {
+	if _, err := pgdb.eLog.ExecContext(ctx, "DELETE FROM groups_members WHERE user_id = $1", userID); err != nil {
+		return err
+	}
+
+	if _, err := pgdb.eLog.ExecContext(ctx, "DELETE FROM groups WHERE owner_user_id = $1", userID); err != nil {
 		return err
 	}
 	return nil
