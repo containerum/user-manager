@@ -10,6 +10,7 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/db"
 	sqlxutil "github.com/containerum/utils/sqlxutil"
 	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/database"
 	migdrv "github.com/golang-migrate/migrate/database/postgres"
 	_ "github.com/golang-migrate/migrate/source/file" // needed to load migrations scripts from files
 	"github.com/jmoiron/sqlx"
@@ -67,8 +68,24 @@ func (pgdb *pgDB) migrateUp(path string) (*migrate.Migrate, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return nil, err
+
+	retries := 3
+	for {
+		err := m.Up()
+		switch err {
+		case nil, migrate.ErrNoChange:
+			//OK
+			return m, nil
+		case database.ErrLocked:
+			pgdb.log.WithError(err).Infof("Retrying after %v", m.LockTimeout)
+			if retries == 0 {
+				return nil, err
+			}
+			retries--
+			time.Sleep(m.LockTimeout)
+		default:
+			return nil, err
+		}
 	}
 	return m, nil
 }
