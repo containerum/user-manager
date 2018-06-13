@@ -14,7 +14,7 @@
   branch = "develop"
   name = "git.containerum.net/ch/mail-templater"
   packages = ["pkg/models"]
-  revision = "78a0635ddfd32818ed182120da190f68d3a40c52"
+  revision = "8bdde8f78056112fa176f2eb4eeca6e1416afb02"
 
 [[projects]]
   name = "github.com/blang/semver"
@@ -35,8 +35,8 @@
 [[projects]]
   name = "github.com/containerum/kube-client"
   packages = ["pkg/model"]
-  revision = "43bc2706e4163e6d26d2be0d559591c3c9a81c6b"
-  version = "v0.19.9"
+  revision = "793f2f89fed79428786d0a335aa16777384e323c"
+  version = "v0.20.1"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -118,7 +118,7 @@
     "ptypes/struct",
     "ptypes/timestamp"
   ]
-  revision = "05f48f4eaf0e05663b562bab533cdd472238ce29"
+  revision = "5831880292e721c76b58a16ecc60adc27d8e6355"
 
 [[projects]]
   branch = "master"
@@ -224,7 +224,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "b47b1587369238182299fe4dad77d05b8b461e06"
+  revision = "8ac0e0d97ce45cd83d1d7243c060cb8461dda5e9"
 
 [[projects]]
   branch = "master"
@@ -241,7 +241,7 @@
     "webdav",
     "webdav/internal/xml"
   ]
-  revision = "1e491301e022f8f977054da4c2d852decd59571f"
+  revision = "db08ff08e8622530d9ed3a0e8ac279f6d4c02196"
 
 [[projects]]
   branch = "master"
@@ -250,7 +250,7 @@
     "unix",
     "windows"
   ]
-  revision = "9527bec2660bd847c050fda93a0f0c6dee0800bb"
+  revision = "a9e25c09b96b8870693763211309e213c6ef299d"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -277,7 +277,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "81158efcc9f219c511e4d3c0d61a0e6e49c01a24"
+  revision = "32ee49c4dd805befd833990acba36cb75042378c"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -342,6 +342,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f94d93751e5893d1abee35a603a4dfbdcc81602c32c098ace93efe0d297b6f47"
+  inputs-digest = "bc6f8aeed163949cf2e0cabb2b623dcc0df136c8b8d3916f5f0c28a5570726ad"
   solver-name = "gps-cdcl"
   solver-version = 1

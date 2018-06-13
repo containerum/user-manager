@@ -141,6 +141,7 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 
 		newMember := kube_types.UserGroupMember{
 			Username: usr.Login,
+			ID:       member.UserID,
 			Access:   kube_types.UserGroupAccess(member.Access),
 		}
 		ret.Members = append(ret.Members, newMember)
