@@ -81,11 +81,6 @@ func GetGroupHandler(ctx *gin.Context) {
 		return
 	}
 
-	if resp.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) {
-		gonic.Gonic(umErrors.ErrNotGroupOwner(), ctx)
-		return
-	}
-
 	ctx.JSON(http.StatusOK, resp)
 }
 
