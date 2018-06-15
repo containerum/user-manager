@@ -184,7 +184,7 @@ func (pgdb *pgDB) UnBlacklistUser(ctx context.Context, user *db.User) error {
 }
 
 func (pgdb *pgDB) GetUsersLoginID(ctx context.Context, ids []string) ([]db.User, error) {
-	pgdb.log.Infoln("Get all users")
+	pgdb.log.Infoln("Get all users logins")
 	users := make([]db.User, 0) // return empty slice instead of nil if no records found
 	query, args, err := sqlx.In("SELECT id, login FROM users WHERE id IN (?)", ids)
 	if err != nil {

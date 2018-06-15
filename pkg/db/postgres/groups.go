@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"git.containerum.net/ch/user-manager/pkg/db"
+	"github.com/jmoiron/sqlx"
 )
 
 func (pgdb *pgDB) CreateGroup(ctx context.Context, group *db.UserGroup) error {
@@ -161,4 +162,30 @@ func (pgdb *pgDB) DeleteGroup(ctx context.Context, groupID string) error {
 		return err
 	}
 	return nil
+}
+
+func (pgdb *pgDB) GetGroupListLabelID(ctx context.Context, ids []string) ([]db.UserGroup, error) {
+	pgdb.log.Infoln("Get all groups labels")
+	groups := make([]db.UserGroup, 0) // return empty slice instead of nil if no records found
+	query, args, err := sqlx.In("SELECT id, label FROM groups WHERE id IN (?)", ids)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := pgdb.qLog.QueryxContext(ctx, pgdb.conn.Rebind(query), args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		group := db.UserGroup{}
+		err := rows.Scan(
+			&group.ID, &group.Label,
+		)
+		if err != nil {
+			return nil, err
+		}
+		groups = append(groups, group)
+	}
+
+	return groups, rows.Err()
 }
