@@ -244,7 +244,7 @@ func getPermissionsClient(c *cli.Context) (clients.PermissionsClient, error) {
 	case serviceClientHTTP:
 		return clients.NewHTTPPermissionsClient(c.String(resourceURLFlag)), nil
 	default:
-		return nil, errors.New("invalid resource service client")
+		return nil, errors.New("invalid permissions client")
 	}
 }
 

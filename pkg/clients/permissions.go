@@ -44,7 +44,7 @@ func NewHTTPPermissionsClient(serverURL string) PermissionsClient {
 }
 
 func (c *httpPermissionsClient) GetUserAccess(ctx context.Context, user *db.User) (*authProto.ResourcesAccess, error) {
-	c.log.WithField("user_id", user.ID).Info("Getting user access from resource service")
+	c.log.WithField("user_id", user.ID).Info("Getting user access from permissions service")
 	headersMap := utils.RequestHeadersMap(ctx)
 	headersMap[headers.UserIDXHeader] = user.ID
 	headersMap[headers.UserRoleXHeader] = user.Role
