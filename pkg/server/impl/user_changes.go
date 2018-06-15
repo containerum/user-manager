@@ -335,7 +335,9 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 	_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
 		UserId: user.ID,
 	})
-	return authErr
+	if authErr != nil {
+		return authErr
+	}
 
 	if err := u.svc.PermissionsClient.DeleteUserNamespaces(ctx, user); err != nil {
 		u.log.WithError(err)

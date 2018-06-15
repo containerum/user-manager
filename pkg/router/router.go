@@ -66,26 +66,39 @@ func initRoutes(app *gin.Engine) {
 		user.POST("/sign_up", requireLoginHeaders, h.UserCreateHandler)
 		user.POST("/sign_up/resend", h.LinkResendHandler)
 		user.POST("/activation", requireLoginHeaders, h.ActivateHandler)
-		user.POST("/delete/partial", requireIdentityHeaders, m.RequireUserExist, h.PartialDeleteHandler)
-		user.POST("/delete/complete", requireIdentityHeaders, m.RequireAdminRole, h.CompleteDeleteHandler)
-
-		user.GET("/info/id/:user_id", h.UserGetByIDHandler)
-		user.GET("/info/login/:login", h.UserGetByLoginHandler)
-		user.GET("/info", requireIdentityHeaders, m.RequireUserExist, h.UserInfoGetHandler)
-		user.PUT("/info", requireIdentityHeaders, m.RequireUserExist, h.UserInfoUpdateHandler)
 
 		user.GET("/list", requireIdentityHeaders, m.RequireAdminRole, h.UserListGetHandler)
-		user.POST("/loginid", h.UserListLoginID)
-
 		user.GET("/links/:user_id", requireIdentityHeaders, m.RequireAdminRole, h.LinksGetHandler)
 
-		user.GET("/bound_accounts", requireIdentityHeaders, m.RequireUserExist, h.GetBoundAccountsHandler)
-		user.POST("/bound_accounts", requireIdentityHeaders, m.RequireUserExist, h.AddBoundAccountHandler)
-		user.DELETE("/bound_accounts", requireIdentityHeaders, m.RequireUserExist, h.DeleteBoundAccountHandler)
+		user.POST("/loginid", h.UserListLoginID)
 
-		user.GET("/blacklist", requireIdentityHeaders, m.RequireAdminRole, h.BlacklistGetHandler)
-		user.POST("/blacklist", requireIdentityHeaders, m.RequireAdminRole, h.UserToBlacklistHandler)
-		user.DELETE("/blacklist", requireIdentityHeaders, m.RequireAdminRole, h.UserDeleteFromBlacklistHandler)
+		deleteuser := user.Group("/delete", requireIdentityHeaders)
+		{
+			deleteuser.POST("/partial", m.RequireUserExist, h.PartialDeleteHandler)
+			deleteuser.POST("/complete", m.RequireAdminRole, h.CompleteDeleteHandler)
+		}
+
+		info := user.Group("/info")
+		{
+			info.GET("/id/:user_id", h.UserGetByIDHandler)
+			info.GET("/login/:login", h.UserGetByLoginHandler)
+			info.GET("", requireIdentityHeaders, m.RequireUserExist, h.UserInfoGetHandler)
+			info.PUT("", requireIdentityHeaders, m.RequireUserExist, h.UserInfoUpdateHandler)
+		}
+
+		accounts := user.Group("/bound_accounts", requireIdentityHeaders, m.RequireUserExist)
+		{
+			accounts.GET("", h.GetBoundAccountsHandler)
+			accounts.POST("", h.AddBoundAccountHandler)
+			accounts.DELETE("", h.DeleteBoundAccountHandler)
+		}
+
+		blacklist := user.Group("/blacklist", requireIdentityHeaders, m.RequireAdminRole)
+		{
+			blacklist.GET("", h.BlacklistGetHandler)
+			blacklist.POST("", h.UserToBlacklistHandler)
+			blacklist.DELETE("", h.UserDeleteFromBlacklistHandler)
+		}
 	}
 
 	login := app.Group("/login", requireLoginHeaders)
@@ -97,31 +110,31 @@ func initRoutes(app *gin.Engine) {
 
 	password := app.Group("/password")
 	{
-		password.PUT("/change", requireIdentityHeaders, m.RequireUserExist, h.PasswordChangeHandler)
-
 		password.POST("/reset", h.PasswordResetHandler)
 		password.POST("/restore", h.PasswordRestoreHandler)
+
+		password.PUT("/change", requireIdentityHeaders, m.RequireUserExist, h.PasswordChangeHandler)
 	}
 
 	domainBlacklist := app.Group("/domain", requireIdentityHeaders, m.RequireAdminRole)
 	{
-		domainBlacklist.POST("", h.BlacklistDomainAddHandler)
-
 		domainBlacklist.GET("", h.BlacklistDomainsListGetHandler)
 		domainBlacklist.GET("/:domain", h.BlacklistDomainGetHandler)
+
+		domainBlacklist.POST("", h.BlacklistDomainAddHandler)
 
 		domainBlacklist.DELETE("/:domain", h.BlacklistDomainDeleteHandler)
 	}
 
-	admin := app.Group("/admin", requireIdentityHeaders, m.RequireAdminRole)
+	admin := app.Group("/admin/user", requireIdentityHeaders, m.RequireAdminRole)
 	{
-		admin.POST("/user/sign_up", h.AdminUserCreateHandler)
-		admin.POST("/user/activation", h.AdminUserActivateHandler)
-		admin.POST("/user/deactivation", h.AdminUserDeactivateHandler)
-		admin.POST("/user/password/reset", h.AdminResetPasswordHandler)
-		admin.POST("/user", h.AdminSetAdminHandler)
+		admin.POST("/sign_up", h.AdminUserCreateHandler)
+		admin.POST("/activation", h.AdminUserActivateHandler)
+		admin.POST("/deactivation", h.AdminUserDeactivateHandler)
+		admin.POST("/password/reset", h.AdminResetPasswordHandler)
+		admin.POST("", h.AdminSetAdminHandler)
 
-		admin.DELETE("/user", h.AdminUnsetAdminHandler)
+		admin.DELETE("", h.AdminUnsetAdminHandler)
 	}
 
 	userGroups := app.Group("/groups", requireIdentityHeaders, m.RequireUserExist)
