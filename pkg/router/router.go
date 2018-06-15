@@ -144,6 +144,8 @@ func initRoutes(app *gin.Engine) {
 
 		userGroups.POST("", m.RequireAdminRole, h.CreateGroupHandler)
 		userGroups.POST("/:group/members", m.RequireAdminRole, h.AddGroupMembersHandler)
+		//TODO Really weird workaround. Real route is "/labelid"
+		userGroups.POST("/:group", h.GroupListLabelID)
 
 		userGroups.PUT("/:group/members/:login", m.RequireAdminRole, h.UpdateGroupMemberHandler)
 

@@ -224,7 +224,7 @@ func UserListGetHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
-// swagger:operation GET /user/loginid UserInfo UserListLoginID
+// swagger:operation POST /user/loginid UserInfo UserListLoginID
 // Get users list.
 //
 // ---

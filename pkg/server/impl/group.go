@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"git.containerum.net/ch/user-manager/pkg/db"
+	"git.containerum.net/ch/user-manager/pkg/models"
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	"github.com/containerum/utils/httputil"
@@ -256,4 +257,21 @@ func (u *serverImpl) DeleteGroup(ctx context.Context, groupID string) error {
 	}
 
 	return nil
+}
+
+func (u *serverImpl) GetGroupListLabelID(ctx context.Context, ids []string) (*models.LoginID, error) {
+	u.log.Info("get groups list")
+	users, err := u.svc.DB.GetGroupListLabelID(ctx, ids)
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return nil, cherry.ErrUnableGetUsersList()
+	}
+
+	resp := make(models.LoginID, 0)
+
+	for _, v := range users {
+		resp[v.ID] = v.Label
+	}
+
+	return &resp, nil
 }
