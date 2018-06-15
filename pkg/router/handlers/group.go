@@ -403,6 +403,11 @@ func DeleteGroupHandler(ctx *gin.Context) {
 func GroupListLabelID(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
+	if ctx.Param("group") != "labelid" {
+		ctx.Status(http.StatusNotFound)
+		return
+	}
+
 	var ids models.IDList
 	if err := ctx.ShouldBindWith(&ids, binding.JSON); err != nil {
 		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
