@@ -383,11 +383,25 @@ func DeleteGroupHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-// swagger:operation POST /groups/labelid UserGroups GroupListLabelID
-// Get groups list.
+func GroupListLabelID(ctx *gin.Context) {
+	switch ctx.Param("group") {
+	case "labelid":
+		getGroupID(ctx)
+		return
+	case "labelidfull":
+		getGroupIDFull(ctx)
+		return
+	default:
+		ctx.Status(http.StatusNotFound)
+		return
+	}
+}
+
+// swagger:operation POST /groups/labelid UserGroups getGroupID
+// Get groups labels list.
 //
 // ---
-// x-method-visibility: public
+// x-method-visibility: private
 // parameters:
 //  - name: body
 //    in: body
@@ -400,13 +414,8 @@ func DeleteGroupHandler(ctx *gin.Context) {
 //      $ref: '#/definitions/LoginID'
 //  default:
 //    $ref: '#/responses/error'
-func GroupListLabelID(ctx *gin.Context) {
+func getGroupID(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
-
-	if ctx.Param("group") != "labelid" {
-		ctx.Status(http.StatusNotFound)
-		return
-	}
 
 	var ids models.IDList
 	if err := ctx.ShouldBindWith(&ids, binding.JSON); err != nil {
@@ -429,6 +438,49 @@ func GroupListLabelID(ctx *gin.Context) {
 		}
 		return
 	}
+	ctx.JSON(http.StatusOK, resp)
+}
 
+// swagger:operation POST /groups/labelidfull UserGroups getGroupIDFull
+// Get groups list with full details.
+//
+// ---
+// x-method-visibility: private
+// parameters:
+//  - name: body
+//    in: body
+//    schema:
+//      $ref: '#/definitions/IDList'
+// responses:
+//  '200':
+//    description: groups list
+//    schema:
+//      $ref: '#/definitions/UserGroups'
+//  default:
+//    $ref: '#/responses/error'
+func getGroupIDFull(ctx *gin.Context) {
+	um := ctx.MustGet(m.UMServices).(server.UserManager)
+
+	var ids models.IDList
+	if err := ctx.ShouldBindWith(&ids, binding.JSON); err != nil {
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		return
+	}
+
+	if len(ids) < 1 {
+		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetails("no group ids in request"), ctx)
+		return
+	}
+
+	resp, err := um.GetGroupListByIDs(ctx.Request.Context(), ids)
+	if err != nil {
+		if cherr, ok := err.(*cherry.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(umErrors.ErrUnableGetUsersList(), ctx)
+		}
+		return
+	}
 	ctx.JSON(http.StatusOK, resp)
 }
