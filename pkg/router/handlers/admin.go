@@ -183,7 +183,7 @@ func AdminSetAdminHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-// swagger:operation DELETE /admin Admin AdminSetAdminHandler
+// swagger:operation DELETE /admin Admin AdminUnsetAdminHandler
 // Make admin user.
 //
 // ---

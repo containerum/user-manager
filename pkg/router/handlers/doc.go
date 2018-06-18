@@ -2,6 +2,7 @@
 //
 // User-Manager service is service for managing users.
 //
+//  Version: 0.0.1
 //	Consumes:
 //	- application/json
 //

@@ -14,7 +14,7 @@
   branch = "develop"
   name = "git.containerum.net/ch/mail-templater"
   packages = ["pkg/models"]
-  revision = "8bdde8f78056112fa176f2eb4eeca6e1416afb02"
+  revision = "77986bb4abf1c592bbb23f50f9be2858cb7b3b29"
 
 [[projects]]
   name = "github.com/blang/semver"
@@ -35,8 +35,8 @@
 [[projects]]
   name = "github.com/containerum/kube-client"
   packages = ["pkg/model"]
-  revision = "793f2f89fed79428786d0a335aa16777384e323c"
-  version = "v0.20.1"
+  revision = "dbfd7cb7735022ac3e819a199a4e07a44772bb45"
+  version = "v0.23.2"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -66,7 +66,7 @@
   branch = "master"
   name = "github.com/gin-gonic/contrib"
   packages = ["ginrus"]
-  revision = "6ea35d32286ce194572a0dc2a3398aac0091228d"
+  revision = "39cfb9727134fef3120d2458fce5fab14265a46c"
 
 [[projects]]
   name = "github.com/gin-gonic/gin"
@@ -118,7 +118,7 @@
     "ptypes/struct",
     "ptypes/timestamp"
   ]
-  revision = "5831880292e721c76b58a16ecc60adc27d8e6355"
+  revision = "9f81198da99b79e14d70ca2c3cc1bbe44c6e69b6"
 
 [[projects]]
   branch = "master"
@@ -152,7 +152,7 @@
     ".",
     "reflectx"
   ]
-  revision = "2aeb6a910c2b94f2d5eb53d9895d80e27264ec41"
+  revision = "0dae4fefe7c0e190f7b5a78dac28a1c82cc8d849"
 
 [[projects]]
   name = "github.com/json-iterator/go"
@@ -224,7 +224,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "8ac0e0d97ce45cd83d1d7243c060cb8461dda5e9"
+  revision = "027cca12c2d63e3d62b670d901e8a2c95854feec"
 
 [[projects]]
   branch = "master"
@@ -250,7 +250,7 @@
     "unix",
     "windows"
   ]
-  revision = "a9e25c09b96b8870693763211309e213c6ef299d"
+  revision = "6c888cc515d3ed83fc103cf1d84468aad274b0a7"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -342,6 +342,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bc6f8aeed163949cf2e0cabb2b623dcc0df136c8b8d3916f5f0c28a5570726ad"
+  inputs-digest = "8ef299ce3ebbfba1986e70561a9e08d02366cd2d05eb459cf5dbe2abb1ff65d7"
   solver-name = "gps-cdcl"
   solver-version = 1
