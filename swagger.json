@@ -572,8 +572,8 @@
         "tags": [
           "UserGroups"
         ],
-        "summary": "Get groups list.",
-        "operationId": "GroupListLabelID",
+        "summary": "Get groups labels list.",
+        "operationId": "getGroupID",
         "parameters": [
           {
             "name": "body",
@@ -597,7 +597,40 @@
             }
           }
         },
-        "x-method-visibility": "public"
+        "x-method-visibility": "private"
+      }
+    },
+    "/groups/labelidfull": {
+      "post": {
+        "tags": [
+          "UserGroups"
+        ],
+        "summary": "Get groups list with full details.",
+        "operationId": "getGroupIDFull",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/IDList"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "groups list",
+            "schema": {
+              "$ref": "#/definitions/UserGroups"
+            }
+          },
+          "default": {
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
+          }
+        },
+        "x-method-visibility": "private"
       }
     },
     "/groups/{group}": {

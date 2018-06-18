@@ -261,7 +261,7 @@ func (u *serverImpl) DeleteGroup(ctx context.Context, groupID string) error {
 
 func (u *serverImpl) GetGroupListLabelID(ctx context.Context, ids []string) (*models.LoginID, error) {
 	u.log.Info("get groups list")
-	users, err := u.svc.DB.GetGroupListLabelID(ctx, ids)
+	groups, err := u.svc.DB.GetGroupListLabelID(ctx, ids)
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetUsersList()
@@ -269,9 +269,61 @@ func (u *serverImpl) GetGroupListLabelID(ctx context.Context, ids []string) (*mo
 
 	resp := make(models.LoginID, 0)
 
-	for _, v := range users {
+	for _, v := range groups {
 		resp[v.ID] = v.Label
 	}
 
 	return &resp, nil
+}
+
+func (u *serverImpl) GetGroupListByIDs(ctx context.Context, ids []string) (*kube_types.UserGroups, error) {
+	u.log.Info("get groups list by ids")
+	groups, err := u.svc.DB.GetGroupListByIDs(ctx, ids)
+	if err := u.handleDBError(err); err != nil {
+		u.log.WithError(err)
+		return nil, cherry.ErrUnableGetUsersList()
+	}
+
+	resp := make([]kube_types.UserGroup, 0)
+
+	for _, v := range groups {
+		group := kube_types.UserGroup{
+			ID:         v.ID,
+			Label:      v.Label,
+			OwnerID:    v.OwnerID,
+			OwnerLogin: v.OwnerLogin,
+			CreatedAt:  v.CreatedAt.Time.Format(time.RFC3339),
+		}
+
+		var members []db.UserGroupMember
+		members, err = u.svc.DB.GetGroupMembers(ctx, v.ID)
+		if err != nil {
+			u.log.WithError(err)
+			return nil, cherry.ErrUnableGetGroup()
+		}
+		group.UserGroupMembers = &kube_types.UserGroupMembers{Members: make([]kube_types.UserGroupMember, 0)}
+		for _, member := range members {
+			usr, err := u.svc.DB.GetUserByID(ctx, member.UserID)
+			if err != nil {
+				u.log.WithError(err)
+				continue
+			}
+
+			if usr == nil {
+				u.log.WithError(errors.New("user not found"))
+				continue
+			}
+
+			newMember := kube_types.UserGroupMember{
+				Username: usr.Login,
+				ID:       member.UserID,
+				Access:   kube_types.UserGroupAccess(member.Access),
+			}
+			group.Members = append(group.Members, newMember)
+		}
+
+		resp = append(resp, group)
+	}
+
+	return &kube_types.UserGroups{resp}, nil
 }

@@ -160,6 +160,7 @@ type DB interface {
 	GetGroupMembers(ctx context.Context, groupID string) ([]UserGroupMember, error)
 	GetUserGroupsIDsAccesses(ctx context.Context, userID string) (map[string]string, error)
 	GetGroupListLabelID(ctx context.Context, ids []string) ([]UserGroup, error)
+	GetGroupListByIDs(ctx context.Context, ids []string) ([]UserGroup, error)
 	CreateGroup(ctx context.Context, group *UserGroup) error
 	DeleteGroup(ctx context.Context, groupID string) error
 
