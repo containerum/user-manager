@@ -118,8 +118,7 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 		CreatedAt:  group.CreatedAt.Time.Format(time.RFC3339),
 	}
 
-	var members []db.UserGroupMember
-	members, err = u.svc.DB.GetGroupMembers(ctx, groupID)
+	members, err := u.svc.DB.GetGroupMembers(ctx, groupID)
 	if err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetGroup()
@@ -127,12 +126,11 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 
 	ret.UserGroupMembers = &kube_types.UserGroupMembers{Members: make([]kube_types.UserGroupMember, 0)}
 	for _, member := range members {
-		newMember := kube_types.UserGroupMember{
+		ret.Members = append(ret.Members, kube_types.UserGroupMember{
 			Username: member.Login,
 			ID:       member.UserID,
 			Access:   kube_types.UserGroupAccess(member.Access),
-		}
-		ret.Members = append(ret.Members, newMember)
+		})
 	}
 	return &ret, nil
 }
@@ -282,8 +280,7 @@ func (u *serverImpl) GetGroupListByIDs(ctx context.Context, ids []string) (*kube
 			CreatedAt:  v.CreatedAt.Time.Format(time.RFC3339),
 		}
 
-		var members []db.UserGroupMember
-		members, err = u.svc.DB.GetGroupMembers(ctx, v.ID)
+		members, err := u.svc.DB.GetGroupMembers(ctx, v.ID)
 		if err != nil {
 			u.log.WithError(err)
 			return nil, cherry.ErrUnableGetGroup()
@@ -291,12 +288,11 @@ func (u *serverImpl) GetGroupListByIDs(ctx context.Context, ids []string) (*kube
 
 		group.UserGroupMembers = &kube_types.UserGroupMembers{Members: make([]kube_types.UserGroupMember, 0)}
 		for _, member := range members {
-			newMember := kube_types.UserGroupMember{
+			group.Members = append(group.Members, kube_types.UserGroupMember{
 				Username: member.Login,
 				ID:       member.UserID,
 				Access:   kube_types.UserGroupAccess(member.Access),
-			}
-			group.Members = append(group.Members, newMember)
+			})
 		}
 
 		resp = append(resp, group)
