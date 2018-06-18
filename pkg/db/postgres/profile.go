@@ -59,7 +59,7 @@ func (pgdb *pgDB) CreateProfileWOContext(profile *db.Profile) error {
 func (pgdb *pgDB) GetProfileByID(ctx context.Context, id string) (*db.Profile, error) {
 	pgdb.log.Infoln("Get profile by id", id)
 	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT "+profileQueryColumnsWithUser+" FROM profiles "+
-		"JOIN users ON profiles.user_id = user.id "+
+		"JOIN users ON profiles.user_id = users.id "+
 		"WHERE profiles.id = $1", id)
 	if err != nil {
 		return nil, err

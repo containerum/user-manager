@@ -3,8 +3,6 @@ package impl
 import (
 	"context"
 
-	"errors"
-
 	"time"
 
 	"git.containerum.net/ch/user-manager/pkg/db"
@@ -129,19 +127,8 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 
 	ret.UserGroupMembers = &kube_types.UserGroupMembers{Members: make([]kube_types.UserGroupMember, 0)}
 	for _, member := range members {
-		usr, err := u.svc.DB.GetUserByID(ctx, member.UserID)
-		if err != nil {
-			u.log.WithError(err)
-			continue
-		}
-
-		if usr == nil {
-			u.log.WithError(errors.New("user not found"))
-			continue
-		}
-
 		newMember := kube_types.UserGroupMember{
-			Username: usr.Login,
+			Username: member.Login,
 			ID:       member.UserID,
 			Access:   kube_types.UserGroupAccess(member.Access),
 		}
@@ -301,21 +288,11 @@ func (u *serverImpl) GetGroupListByIDs(ctx context.Context, ids []string) (*kube
 			u.log.WithError(err)
 			return nil, cherry.ErrUnableGetGroup()
 		}
+
 		group.UserGroupMembers = &kube_types.UserGroupMembers{Members: make([]kube_types.UserGroupMember, 0)}
 		for _, member := range members {
-			usr, err := u.svc.DB.GetUserByID(ctx, member.UserID)
-			if err != nil {
-				u.log.WithError(err)
-				continue
-			}
-
-			if usr == nil {
-				u.log.WithError(errors.New("user not found"))
-				continue
-			}
-
 			newMember := kube_types.UserGroupMember{
-				Username: usr.Login,
+				Username: member.Login,
 				ID:       member.UserID,
 				Access:   kube_types.UserGroupAccess(member.Access),
 			}
@@ -325,5 +302,5 @@ func (u *serverImpl) GetGroupListByIDs(ctx context.Context, ids []string) (*kube
 		resp = append(resp, group)
 	}
 
-	return &kube_types.UserGroups{resp}, nil
+	return &kube_types.UserGroups{Groups: resp}, nil
 }

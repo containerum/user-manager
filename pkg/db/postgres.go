@@ -101,6 +101,7 @@ type UserGroup struct {
 // UserGroupMember describes user group member model. It should be used only inside this project.
 type UserGroupMember struct {
 	ID      string      `db:"id"`
+	Login   string      `db:"login"`
 	GroupID string      `db:"group_id"`
 	UserID  string      `db:"user_id"`
 	Access  string      `db:"default_access"`

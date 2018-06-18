@@ -57,15 +57,14 @@ func (pgdb *pgDB) GetGroupMembers(ctx context.Context, groupID string) ([]db.Use
 	pgdb.log.Infoln("Get group users", groupID)
 	resp := make([]db.UserGroupMember, 0)
 
-	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT * FROM groups_members WHERE group_id = $1", groupID)
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT groups_members.user_id, groups_members.default_access, users.login FROM groups_members JOIN users ON groups_members.user_id = users.id WHERE group_id = $1", groupID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var member db.UserGroupMember
-		err := rows.StructScan(&member)
-		if err != nil {
+		if err := rows.StructScan(&member); err != nil {
 			return nil, err
 		}
 		resp = append(resp, member)
