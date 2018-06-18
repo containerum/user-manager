@@ -46,7 +46,7 @@ func GetBoundAccountsHandler(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
-// swagger:operation POST /user/bound_accounts BoundAccounts GetBoundAccountsHandler
+// swagger:operation POST /user/bound_accounts BoundAccounts AddBoundAccountHandler
 // Bind account.
 //
 // ---

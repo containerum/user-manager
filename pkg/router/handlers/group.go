@@ -383,7 +383,7 @@ func DeleteGroupHandler(ctx *gin.Context) {
 	ctx.Status(http.StatusAccepted)
 }
 
-// swagger:operation POST /groups/loginid UserGroups GroupListLabelID
+// swagger:operation POST /groups/labelid UserGroups GroupListLabelID
 // Get groups list.
 //
 // ---

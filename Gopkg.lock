@@ -14,7 +14,7 @@
   branch = "develop"
   name = "git.containerum.net/ch/mail-templater"
   packages = ["pkg/models"]
-  revision = "eb4af6cdcf362ce898397b905367ed6ca56cd09b"
+  revision = "77986bb4abf1c592bbb23f50f9be2858cb7b3b29"
 
 [[projects]]
   name = "github.com/blang/semver"

@@ -8,7 +8,8 @@
   "swagger": "2.0",
   "info": {
     "description": "User-Manager service is service for managing users.",
-    "title": "User-Manager"
+    "title": "User-Manager",
+    "version": "0.0.1"
   },
   "paths": {
     "/admin": {
@@ -62,7 +63,7 @@
           "Admin"
         ],
         "summary": "Make admin user.",
-        "operationId": "AdminSetAdminHandler",
+        "operationId": "AdminUnsetAdminHandler",
         "parameters": [
           {
             "enum": [
@@ -566,7 +567,7 @@
         "x-method-visibility": "public"
       }
     },
-    "/groups/loginid": {
+    "/groups/labelid": {
       "post": {
         "tags": [
           "UserGroups"
@@ -1399,7 +1400,7 @@
           "BoundAccounts"
         ],
         "summary": "Bind account.",
-        "operationId": "GetBoundAccountsHandler",
+        "operationId": "AddBoundAccountHandler",
         "parameters": [
           {
             "enum": [
