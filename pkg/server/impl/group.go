@@ -3,8 +3,6 @@ package impl
 import (
 	"context"
 
-	"errors"
-
 	"time"
 
 	"git.containerum.net/ch/user-manager/pkg/db"
@@ -120,8 +118,7 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 		CreatedAt:  group.CreatedAt.Time.Format(time.RFC3339),
 	}
 
-	var members []db.UserGroupMember
-	members, err = u.svc.DB.GetGroupMembers(ctx, groupID)
+	members, err := u.svc.DB.GetGroupMembers(ctx, groupID)
 	if err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetGroup()
@@ -129,23 +126,11 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 
 	ret.UserGroupMembers = &kube_types.UserGroupMembers{Members: make([]kube_types.UserGroupMember, 0)}
 	for _, member := range members {
-		usr, err := u.svc.DB.GetUserByID(ctx, member.UserID)
-		if err != nil {
-			u.log.WithError(err)
-			continue
-		}
-
-		if usr == nil {
-			u.log.WithError(errors.New("user not found"))
-			continue
-		}
-
-		newMember := kube_types.UserGroupMember{
-			Username: usr.Login,
+		ret.Members = append(ret.Members, kube_types.UserGroupMember{
+			Username: member.Login,
 			ID:       member.UserID,
 			Access:   kube_types.UserGroupAccess(member.Access),
-		}
-		ret.Members = append(ret.Members, newMember)
+		})
 	}
 	return &ret, nil
 }
@@ -295,35 +280,23 @@ func (u *serverImpl) GetGroupListByIDs(ctx context.Context, ids []string) (*kube
 			CreatedAt:  v.CreatedAt.Time.Format(time.RFC3339),
 		}
 
-		var members []db.UserGroupMember
-		members, err = u.svc.DB.GetGroupMembers(ctx, v.ID)
+		members, err := u.svc.DB.GetGroupMembers(ctx, v.ID)
 		if err != nil {
 			u.log.WithError(err)
 			return nil, cherry.ErrUnableGetGroup()
 		}
+
 		group.UserGroupMembers = &kube_types.UserGroupMembers{Members: make([]kube_types.UserGroupMember, 0)}
 		for _, member := range members {
-			usr, err := u.svc.DB.GetUserByID(ctx, member.UserID)
-			if err != nil {
-				u.log.WithError(err)
-				continue
-			}
-
-			if usr == nil {
-				u.log.WithError(errors.New("user not found"))
-				continue
-			}
-
-			newMember := kube_types.UserGroupMember{
-				Username: usr.Login,
+			group.Members = append(group.Members, kube_types.UserGroupMember{
+				Username: member.Login,
 				ID:       member.UserID,
 				Access:   kube_types.UserGroupAccess(member.Access),
-			}
-			group.Members = append(group.Members, newMember)
+			})
 		}
 
 		resp = append(resp, group)
 	}
 
-	return &kube_types.UserGroups{resp}, nil
+	return &kube_types.UserGroups{Groups: resp}, nil
 }
