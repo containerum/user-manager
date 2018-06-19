@@ -46,12 +46,12 @@ spec:
             - name: CH_USER_PERMISSIONS_URL
               value: "http://{{ .Release.Name }}-permissions:4242"
             {{- end }}
-            {{- if .Values.env.local.CH_USER_AUTH_GRPC_ADDR }}
-            - name: CH_USER_AUTH_GRPC_ADDR
-              value: "{{ .Values.env.local.CH_USER_AUTH_GRPC_ADDR }}"
+            {{- if .Values.env.local.CH_USER_AUTH_HTTP_ADDR }}
+            - name: CH_USER_AUTH_HTTP_ADDR
+              value: "{{ .Values.env.local.CH_USER_AUTH_HTTP_ADDR }}"
             {{- else }}
-            - name: CH_USER_AUTH_GRPC_ADDR
-              value: "{{ .Release.Name }}-auth:1112"
+            - name: CH_USER_AUTH_HTTP_ADDR
+              value: "http://{{ .Release.Name }}-auth:1111"
             {{- end }}
             {{- if .Values.env.local.CH_USER_MAIL_URL }}
             - name: CH_USER_MAIL_URL
