@@ -85,7 +85,7 @@ type UserManager interface {
 type Services struct {
 	MailClient        clients.MailClient
 	DB                db.DB
-	AuthClient        clients.AuthClientCloser
+	AuthClient        clients.AuthClient
 	ReCaptchaClient   clients.ReCaptchaClient
 	PermissionsClient clients.PermissionsClient
 }

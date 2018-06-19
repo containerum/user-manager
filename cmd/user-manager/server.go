@@ -35,7 +35,7 @@ func initServer(c *cli.Context) error {
 	userManager, err := getUserManager(c, server.Services{
 		MailClient:        getService(getMailClient(c)).(clients.MailClient),
 		DB:                getService(getDB(c)).(db.DB),
-		AuthClient:        getService(getAuthClient(c)).(clients.AuthClientCloser),
+		AuthClient:        getService(getAuthClient(c)).(clients.AuthClient),
 		ReCaptchaClient:   getService(getReCaptchaClient(c)).(clients.ReCaptchaClient),
 		PermissionsClient: getService(getPermissionsClient(c)).(clients.PermissionsClient),
 	})
