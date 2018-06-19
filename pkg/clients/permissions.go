@@ -14,9 +14,9 @@ import (
 	"gopkg.in/resty.v1"
 )
 
-// PermissionsClient is an interface to resource-service.
+// PermissionsClient is an interface to permissions service.
 type PermissionsClient interface {
-	// GetUserAccess returns information about user access to resources (namespace, volumes) needed for token creation.
+	// GetUserAccess returns information about user access to namespaces needed for token creation.
 	GetUserAccess(ctx context.Context, user *db.User) (*authProto.ResourcesAccess, error)
 	DeleteUserNamespaces(ctx context.Context, user *db.User) error
 }
@@ -26,9 +26,9 @@ type httpPermissionsClient struct {
 	log  *logrus.Entry
 }
 
-// NewHTTPPermissionsClient returns client for resource-service working via restful api
+// NewHTTPPermissionsClient returns client for permissions service working via restful api
 func NewHTTPPermissionsClient(serverURL string) PermissionsClient {
-	log := logrus.WithField("component", "resource_service_client")
+	log := logrus.WithField("component", "permissions_client")
 	client := resty.New().
 		SetHostURL(serverURL).
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).

@@ -28,7 +28,7 @@ type httpAuthClient struct {
 
 // NewHTTPAuthClient returns client for auth service works using http protocol
 func NewHTTPAuthClient(serverURL string) (AuthClient, error) {
-	log := logrus.WithField("component", "resource_service_client")
+	log := logrus.WithField("component", "auth_client")
 	client := resty.New().
 		SetHostURL(serverURL).
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).

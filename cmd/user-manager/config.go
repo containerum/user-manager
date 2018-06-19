@@ -21,28 +21,30 @@ const (
 )
 
 const (
-	portFlag         = "port"
-	debugFlag        = "debug"
-	textlogFlag      = "textlog"
-	dbFlag           = "db"
-	dbPGLoginFlag    = "db_pg_login"
-	dbPGPasswordFlag = "db_pg_password"
-	dbPGAddrFlag     = "db_pg_addr"
-	dbPGNameFlag     = "db_pg_dbname"
-	dbPGNoSSLFlag    = "db_pg_nossl"
-	dbMigrationsFlag = "db_migrations"
-	mailFlag         = "mail"
-	mailURLFlag      = "mail_url"
-	recaptchaFlag    = "racaptcha"
-	recaptchaKeyFlag = "recaptcha_key"
-	oauthClientsFlag = "oauth_clients"
-	authFlag         = "auth"
-	authHTTPAddrFlag = "auth_http_addr"
-	resourceFlag     = "resource_service"
-	resourceURLFlag  = "resource_service_url"
-	umFlag           = "user_manager"
-	corsFlag         = "cors"
-	adminPwdFlag     = "admin_password"
+	portFlag           = "port"
+	debugFlag          = "debug"
+	textlogFlag        = "textlog"
+	dbFlag             = "db"
+	dbPGLoginFlag      = "db_pg_login"
+	dbPGPasswordFlag   = "db_pg_password"
+	dbPGAddrFlag       = "db_pg_addr"
+	dbPGNameFlag       = "db_pg_dbname"
+	dbPGNoSSLFlag      = "db_pg_nossl"
+	dbMigrationsFlag   = "db_migrations"
+	mailFlag           = "mail"
+	mailURLFlag        = "mail_url"
+	recaptchaFlag      = "racaptcha"
+	recaptchaKeyFlag   = "recaptcha_key"
+	oauthClientsFlag   = "oauth_clients"
+	authFlag           = "auth"
+	authHTTPAddrFlag   = "auth_http_addr"
+	resourceFlag       = "resource_service"
+	resourceURLFlag    = "resource_service_url"
+	permissionsFlag    = "permissions"
+	permissionsURLFlag = "permissions_url"
+	umFlag             = "user_manager"
+	corsFlag           = "cors"
+	adminPwdFlag       = "admin_password"
 )
 
 var flags = []cli.Flag{
@@ -141,15 +143,27 @@ var flags = []cli.Flag{
 	},
 	cli.StringFlag{
 		EnvVar: "CH_USER_PERMISSIONS",
-		Name:   resourceFlag,
+		Name:   permissionsFlag,
 		Value:  serviceClientHTTP,
 		Usage:  "Permissions service kind",
 	},
 	cli.StringFlag{
 		EnvVar: "CH_USER_PERMISSIONS_URL",
-		Name:   resourceURLFlag,
+		Name:   permissionsURLFlag,
 		Value:  "http://permissions:4242",
 		Usage:  "Permissions service URL",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_USER_RESOURCE_SERVICE",
+		Name:   resourceFlag,
+		Value:  serviceClientHTTP,
+		Usage:  "Permissions service kind (Deprecated)",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_USER_RESOURCE_SERVICE_URL",
+		Name:   resourceURLFlag,
+		Value:  "http://permissions:4242",
+		Usage:  "Permissions service URL (Deprecated)",
 	},
 	cli.StringFlag{
 		EnvVar: "CH_USER_USER_MANAGER",
@@ -240,9 +254,18 @@ func getAuthClient(c *cli.Context) (clients.AuthClient, error) {
 }
 
 func getPermissionsClient(c *cli.Context) (clients.PermissionsClient, error) {
-	switch c.String(resourceFlag) {
+	perm := c.String(permissionsFlag)
+	if perm == "" {
+		perm = c.String(resourceFlag)
+	}
+	permUrl := c.String(permissionsURLFlag)
+	if permUrl == "" {
+		permUrl = c.String(permissionsURLFlag)
+	}
+
+	switch perm {
 	case serviceClientHTTP:
-		return clients.NewHTTPPermissionsClient(c.String(resourceURLFlag)), nil
+		return clients.NewHTTPPermissionsClient(permUrl), nil
 	default:
 		return nil, errors.New("invalid permissions client")
 	}
