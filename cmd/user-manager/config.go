@@ -37,7 +37,7 @@ const (
 	recaptchaKeyFlag = "recaptcha_key"
 	oauthClientsFlag = "oauth_clients"
 	authFlag         = "auth"
-	authGRPCAddrFlag = "auth_grpc_addr"
+	authHTTPAddrFlag = "auth_http_addr"
 	resourceFlag     = "resource_service"
 	resourceURLFlag  = "resource_service_url"
 	umFlag           = "user_manager"
@@ -131,12 +131,12 @@ var flags = []cli.Flag{
 	cli.StringFlag{
 		EnvVar: "CH_USER_AUTH",
 		Name:   authFlag,
-		Value:  "grpc",
+		Value:  "http",
 		Usage:  "Recaptcha kind",
 	},
 	cli.StringFlag{
 		EnvVar: "CH_USER_AUTH_GRPC_ADDR",
-		Name:   authGRPCAddrFlag,
+		Name:   authHTTPAddrFlag,
 		Usage:  "Recaptcha key",
 	},
 	cli.StringFlag{
@@ -230,10 +230,10 @@ func oauthClientsSetup(c *cli.Context) error {
 	return nil
 }
 
-func getAuthClient(c *cli.Context) (clients.AuthClientCloser, error) {
+func getAuthClient(c *cli.Context) (clients.AuthClient, error) {
 	switch c.String(authFlag) {
-	case "grpc":
-		return clients.NewGRPCAuthClient(c.String(authGRPCAddrFlag))
+	case "http":
+		return clients.NewHTTPAuthClient(c.String(authHTTPAddrFlag))
 	default:
 		return nil, errors.New("invalid auth client")
 	}
