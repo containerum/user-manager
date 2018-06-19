@@ -131,13 +131,13 @@ var flags = []cli.Flag{
 	cli.StringFlag{
 		EnvVar: "CH_USER_AUTH",
 		Name:   authFlag,
-		Value:  "http",
-		Usage:  "Recaptcha kind",
+		Value:  serviceClientHTTP,
+		Usage:  "Auth client kind",
 	},
 	cli.StringFlag{
-		EnvVar: "CH_USER_AUTH_GRPC_ADDR",
+		EnvVar: "CH_USER_AUTH_HTTP_ADDR",
 		Name:   authHTTPAddrFlag,
-		Usage:  "Recaptcha key",
+		Usage:  "Auth HTTP server address",
 	},
 	cli.StringFlag{
 		EnvVar: "CH_USER_PERMISSIONS",
@@ -232,7 +232,7 @@ func oauthClientsSetup(c *cli.Context) error {
 
 func getAuthClient(c *cli.Context) (clients.AuthClient, error) {
 	switch c.String(authFlag) {
-	case "http":
+	case serviceClientHTTP:
 		return clients.NewHTTPAuthClient(c.String(authHTTPAddrFlag))
 	default:
 		return nil, errors.New("invalid auth client")
