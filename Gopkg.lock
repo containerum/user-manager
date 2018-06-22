@@ -8,7 +8,7 @@
     ".",
     "proto"
   ]
-  revision = "cc1a56d5a34d64af5ec2f94473a66fd058d1170f"
+  revision = "fedb35e2736478939249210ce458bf136fd1bdf5"
 
 [[projects]]
   branch = "develop"
@@ -35,8 +35,8 @@
 [[projects]]
   name = "github.com/containerum/kube-client"
   packages = ["pkg/model"]
-  revision = "dbfd7cb7735022ac3e819a199a4e07a44772bb45"
-  version = "v0.23.2"
+  revision = "f2a038b8d89980f642671645b07eda421bd03e12"
+  version = "v0.25.0"
 
 [[projects]]
   name = "github.com/containerum/utils"
@@ -44,8 +44,8 @@
     "httputil",
     "sqlxutil"
   ]
-  revision = "0d81250fc88af062d5836ecd83db9867eb6ee34c"
-  version = "v1.0.3"
+  revision = "f396ca4039012a63f7025cba99a5d514d2824421"
+  version = "v1.0.6"
 
 [[projects]]
   name = "github.com/docker/distribution"
@@ -102,23 +102,21 @@
     "source",
     "source/file"
   ]
-  revision = "22f249514de9aa3f8a720a7cabbdd45d294f83a1"
-  version = "v3.2.0"
+  revision = "bcd996f3df28363f43e2d0935484c4559537a3eb"
+  version = "v3.3.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/golang/protobuf"
   packages = [
-    "jsonpb",
     "proto",
     "ptypes",
     "ptypes/any",
     "ptypes/duration",
     "ptypes/empty",
-    "ptypes/struct",
     "ptypes/timestamp"
   ]
-  revision = "9f81198da99b79e14d70ca2c3cc1bbe44c6e69b6"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -131,19 +129,6 @@
   name = "github.com/goware/emailx"
   packages = ["."]
   revision = "0bae9679d4e31a54efa4b1cc61dd78eadda83b1a"
-
-[[projects]]
-  name = "github.com/grpc-ecosystem/go-grpc-middleware"
-  packages = [
-    ".",
-    "logging",
-    "logging/logrus",
-    "logging/logrus/ctxlogrus",
-    "tags",
-    "tags/logrus"
-  ]
-  revision = "c250d6563d4d4c20252cd865923440e829844f4e"
-  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -188,12 +173,6 @@
   version = "1.0.0"
 
 [[projects]]
-  name = "github.com/ninedraft/boxofstuff"
-  packages = ["strset"]
-  revision = "a57c6ea397e253eec08da7ff4305febfd0db5f7e"
-  version = "v0.1.1"
-
-[[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
@@ -224,7 +203,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "027cca12c2d63e3d62b670d901e8a2c95854feec"
+  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
   branch = "master"
@@ -241,7 +220,7 @@
     "webdav",
     "webdav/internal/xml"
   ]
-  revision = "db08ff08e8622530d9ed3a0e8ac279f6d4c02196"
+  revision = "afe8f62b1d6bbd81f31868121a50b06d8188e1f9"
 
 [[projects]]
   branch = "master"
@@ -250,7 +229,7 @@
     "unix",
     "windows"
   ]
-  revision = "6c888cc515d3ed83fc103cf1d84468aad274b0a7"
+  revision = "63fc586f45fe72d95d5240a5d5eb95e6503907d3"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -277,7 +256,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "32ee49c4dd805befd833990acba36cb75042378c"
+  revision = "80063a038e333bbe006c878e4c5ce4c74d055498"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -342,6 +321,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8ef299ce3ebbfba1986e70561a9e08d02366cd2d05eb459cf5dbe2abb1ff65d7"
+  inputs-digest = "c8910c1fdba3f8aa76ea6700666c0dc64f60bf5a530df49b73656ca0fb7d400a"
   solver-name = "gps-cdcl"
   solver-version = 1

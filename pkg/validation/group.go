@@ -22,7 +22,7 @@ func ValidateCreateGroup(group kube_types.UserGroup) []error {
 func ValidateAddMembers(members kube_types.UserGroupMembers) []error {
 	var errs []error
 	for i, m := range members.Members {
-		if m.Access == "" {
+		if m.Access == 0 {
 			errs = append(errs, fmt.Errorf(isRequiredSlice, "access", i+1))
 		}
 		if m.Username == "" {
@@ -38,7 +38,7 @@ func ValidateAddMembers(members kube_types.UserGroupMembers) []error {
 //ValidateAddMembers validates add group members request
 func ValidateUpdateMember(member kube_types.UserGroupMember) []error {
 	var errs []error
-	if member.Access == "" {
+	if member.Access == 0 {
 		errs = append(errs, fmt.Errorf(isRequired, "access"))
 	}
 	if len(errs) > 0 {

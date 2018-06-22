@@ -10,7 +10,6 @@ service Auth {
     rpc CreateToken (CreateTokenRequest) returns (CreateTokenResponse) {} // Makes access and refresh token for user, and save it In-Memory DB.
     rpc CheckToken (CheckTokenRequest) returns (CheckTokenResponse) {} // Checks JWT token, user ip and return user access data.
     rpc ExtendToken (ExtendTokenRequest) returns (ExtendTokenResponse) {} // Check refresh_token, user agent and fingerprint. If it's correct returns new extended access and refresh token. Old access and refresh token become inactive.
-    rpc UpdateAccess (UpdateAccessRequest) returns (google.protobuf.Empty) {} // Rewrite all access in token for user, if token has rw-access true.
     rpc GetUserTokens (GetUserTokensRequest) returns (GetUserTokensResponse) {} // Returns all active User-Agent's, IP's and times. Filtered by user active refresh token.
     rpc DeleteToken (DeleteTokenRequest) returns (google.protobuf.Empty) {} // Delete user access and refresh token by token id.
     rpc DeleteUserTokens (DeleteUserTokensRequest) returns (google.protobuf.Empty) {} // Delete all user access and refresh tokens by user id.
@@ -27,9 +26,9 @@ message CreateTokenRequest {
     string user_ip = 4;
     string user_role = 5;
     bool rw_access = 6;
-    ResourcesAccess access = 7;
+    //ResourcesAccess access = 7;
     // @inject_tag: binding:"omitempty,uuid"
-    string part_token_id = 8;
+    //string part_token_id = 8;
 }
 
 // CreateTokenResponse contains access and refresh token.
@@ -51,7 +50,7 @@ message CheckTokenRequest {
 
 //swagger:ignore
 message CheckTokenResponse {
-    ResourcesAccess access = 1;
+    //ResourcesAccess access = 1;
     // @inject_tag: binding:"uuid"
     string user_id = 2;
     string user_role = 3;
@@ -73,22 +72,6 @@ message ExtendTokenRequest {
 message ExtendTokenResponse {
     string access_token = 1;
     string refresh_token = 2;
-}
-
-// UpdateAccessRequestElement describes element for updating user resources accesses.
-//
-// swagger:model
-message UpdateAccessRequestElement {
-    // @inject_tag: binding:"uuid"
-    string user_id = 1;
-    ResourcesAccess access = 2;
-}
-
-// UpdateAccessRequest describes request for updating user resources accesses.
-//
-// swagger:model
-message UpdateAccessRequest {
-    repeated UpdateAccessRequestElement users = 1;
 }
 
 //swagger:ignore
