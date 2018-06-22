@@ -55,7 +55,6 @@ func (c *httpAuthClient) CreateToken(ctx context.Context, in *authProto.CreateTo
 	resp, err := c.client.R().
 		SetContext(ctx).
 		SetHeaders(headersMap).
-		SetBody(map[string]interface{}{"access": in.GetAccess()}).
 		SetResult(authProto.CreateTokenResponse{}).
 		Post("/token")
 	if err != nil {

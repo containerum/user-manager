@@ -38,7 +38,7 @@ func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGro
 	newGroupAdmin := &db.UserGroupMember{
 		UserID:  httputil.MustGetUserID(ctx),
 		GroupID: newGroup.ID,
-		Access:  string(kube_types.OwnerAccess),
+		Access:  kube_types.AccessAdmin.String(),
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
@@ -126,10 +126,14 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 
 	ret.UserGroupMembers = &kube_types.UserGroupMembers{Members: make([]kube_types.UserGroupMember, 0)}
 	for _, member := range members {
+		access, err := kube_types.UserGroupAccessString(member.Access)
+		if err != nil {
+			access = kube_types.AccessNone
+		}
 		ret.Members = append(ret.Members, kube_types.UserGroupMember{
 			Username: member.Login,
 			ID:       member.UserID,
-			Access:   kube_types.UserGroupAccess(member.Access),
+			Access:   access,
 		})
 	}
 	return &ret, nil
@@ -156,8 +160,12 @@ func (u *serverImpl) GetGroupsList(ctx context.Context, userID string) (*kube_ty
 			u.log.WithError(err)
 			return nil, cherry.ErrUnableGetGroup()
 		}
+		access, err := kube_types.UserGroupAccessString(perm)
+		if err != nil {
+			access = kube_types.AccessNone
+		}
 		userGroup := kube_types.UserGroup{
-			UserAccess:   kube_types.UserGroupAccess(perm),
+			UserAccess:   access,
 			ID:           group.ID,
 			Label:        group.Label,
 			OwnerID:      group.OwnerID,
@@ -288,10 +296,14 @@ func (u *serverImpl) GetGroupListByIDs(ctx context.Context, ids []string) (*kube
 
 		group.UserGroupMembers = &kube_types.UserGroupMembers{Members: make([]kube_types.UserGroupMember, 0)}
 		for _, member := range members {
+			access, err := kube_types.UserGroupAccessString(member.Access)
+			if err != nil {
+				access = kube_types.AccessNone
+			}
 			group.Members = append(group.Members, kube_types.UserGroupMember{
 				Username: member.Login,
 				ID:       member.UserID,
-				Access:   kube_types.UserGroupAccess(member.Access),
+				Access:   access,
 			})
 		}
 

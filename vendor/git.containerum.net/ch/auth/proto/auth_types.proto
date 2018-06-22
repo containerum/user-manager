@@ -19,37 +19,18 @@ message StoredToken {
     // @inject_tag: binding:"uuid"
     string user_id = 5;
     string user_role = 6;
-    string user_namespace = 7;
-    string user_volume = 8;
-    bool rw_access = 9;
+    //string user_namespace = 7;
+    //string user_volume = 8;
+    //bool rw_access = 9;
     // swagger:strfmt ip
     // @inject_tag: binding:"ip"
     string user_ip = 10;
     // swagger:strfmt uuid
     // @inject_tag: binding:"omitempty,uuid"
-    string part_token_id = 11;
+    //string part_token_id = 11;
     google.protobuf.Timestamp created_at = 12;
     google.protobuf.Duration life_time = 13;
     string raw_refresh_token = 14;
-}
-
-// AccessObject represents user access to resource
-//
-// swagger:model
-message AccessObject {
-    string label = 1;
-    // swagger:strfmt uuid
-    // @inject_tag: binding:"uuid"
-    string id = 2;
-    string access = 3;
-}
-
-// ResourceAccesses contains user accesses to resources
-//
-// swagger:model
-message ResourcesAccess {
-    repeated AccessObject namespace = 1;
-    repeated AccessObject volume = 2;
 }
 
 // StoredTokenForUser is an information about token sent to user

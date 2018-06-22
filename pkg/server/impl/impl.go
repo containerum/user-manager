@@ -89,12 +89,6 @@ func (u *serverImpl) linkSend(ctx context.Context, link *db.Link) {
 }
 
 func (u *serverImpl) createTokens(ctx context.Context, user *db.User) (resp *authProto.CreateTokenResponse, err error) {
-	access, err := u.svc.PermissionsClient.GetUserAccess(ctx, user)
-	if err != nil {
-		u.log.WithError(err).Warning(resourceAccessGetFailed)
-		return nil, errors.New(resourceAccessGetFailed)
-	}
-
 	resp, err = u.svc.AuthClient.CreateToken(ctx, &authProto.CreateTokenRequest{
 		Fingerprint: httputil.MustGetFingerprint(ctx),
 		UserAgent:   httputil.MustGetUserAgent(ctx),
@@ -102,7 +96,6 @@ func (u *serverImpl) createTokens(ctx context.Context, user *db.User) (resp *aut
 		UserIp:      httputil.MustGetClientIP(ctx),
 		UserRole:    user.Role,
 		RwAccess:    true,
-		Access:      access,
 	})
 	return
 }

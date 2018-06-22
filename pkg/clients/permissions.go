@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"git.containerum.net/ch/auth/proto"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"github.com/containerum/cherry"
 	headers "github.com/containerum/utils/httputil"
@@ -16,8 +15,6 @@ import (
 
 // PermissionsClient is an interface to permissions service.
 type PermissionsClient interface {
-	// GetUserAccess returns information about user access to namespaces needed for token creation.
-	GetUserAccess(ctx context.Context, user *db.User) (*authProto.ResourcesAccess, error)
 	DeleteUserNamespaces(ctx context.Context, user *db.User) error
 }
 
@@ -43,31 +40,12 @@ func NewHTTPPermissionsClient(serverURL string) PermissionsClient {
 	}
 }
 
-func (c *httpPermissionsClient) GetUserAccess(ctx context.Context, user *db.User) (*authProto.ResourcesAccess, error) {
-	c.log.WithField("user_id", user.ID).Info("Getting user access from permissions service")
-	headersMap := utils.RequestHeadersMap(ctx)
-	headersMap[headers.UserIDXHeader] = user.ID
-	headersMap[headers.UserRoleXHeader] = user.Role
-	resp, err := c.rest.R().SetContext(ctx).
-		SetResult(authProto.ResourcesAccess{}).
-		SetHeaders(headersMap). // forward request headers to other our service
-		Get("/accesses")
-	if err != nil {
-		return nil, err
-	}
-	if resp.Error() != nil {
-		return nil, resp.Error().(*cherry.Err)
-	}
-	return resp.Result().(*authProto.ResourcesAccess), nil
-}
-
 func (c *httpPermissionsClient) DeleteUserNamespaces(ctx context.Context, user *db.User) error {
 	c.log.WithField("user_id", user.ID).Info("Deleting user namespaces")
 	headersMap := utils.RequestHeadersMap(ctx)
 	headersMap[headers.UserIDXHeader] = user.ID
 	headersMap[headers.UserRoleXHeader] = user.Role
 	resp, err := c.rest.R().SetContext(ctx).
-		SetResult(authProto.ResourcesAccess{}).
 		SetHeaders(headersMap). // forward request headers to other our service
 		Delete("/namespaces")
 	if err != nil {
