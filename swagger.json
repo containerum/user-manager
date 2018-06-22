@@ -1983,30 +1983,6 @@
     }
   },
   "definitions": {
-    "AccessLevel": {
-      "type": "string",
-      "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
-    },
-    "AccessObject": {
-      "description": "AccessObject represents user access to resource",
-      "type": "object",
-      "properties": {
-        "access": {
-          "type": "string",
-          "x-go-name": "Access"
-        },
-        "id": {
-          "type": "string",
-          "format": "uuid",
-          "x-go-name": "Id"
-        },
-        "label": {
-          "type": "string",
-          "x-go-name": "Label"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
-    },
     "AccessTokenByIDResponse": {
       "type": "object",
       "title": "AccessTokenByIDResponse contains access token get by ID.",
@@ -2894,7 +2870,7 @@
       ],
       "properties": {
         "access": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "created_at": {
           "description": "creation date in RFC3339 format",
@@ -3309,7 +3285,7 @@
       "type": "object",
       "properties": {
         "access": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "username": {
           "type": "string",
@@ -3333,27 +3309,6 @@
         }
       },
       "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
-    },
-    "ResourcesAccess": {
-      "description": "ResourceAccesses contains user accesses to resources",
-      "type": "object",
-      "properties": {
-        "namespace": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/AccessObject"
-          },
-          "x-go-name": "Namespace"
-        },
-        "volume": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/AccessObject"
-          },
-          "x-go-name": "Volume"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
     },
     "Rule": {
       "description": "Rule -- ingress rule",
@@ -3710,7 +3665,9 @@
       "type": "object",
       "properties": {
         "created_at": {
-          "$ref": "#/definitions/Timestamp"
+          "type": "string",
+          "format": "uuid",
+          "x-go-name": "CreatedAt"
         },
         "fingerprint": {
           "type": "string",
@@ -3719,11 +3676,6 @@
         "life_time": {
           "$ref": "#/definitions/Duration"
         },
-        "part_token_id": {
-          "type": "string",
-          "format": "uuid",
-          "x-go-name": "PartTokenId"
-        },
         "platform": {
           "type": "string",
           "x-go-name": "Platform"
@@ -3731,10 +3683,6 @@
         "raw_refresh_token": {
           "type": "string",
           "x-go-name": "RawRefreshToken"
-        },
-        "rw_access": {
-          "type": "boolean",
-          "x-go-name": "RwAccess"
         },
         "token_id": {
           "type": "string",
@@ -3751,21 +3699,14 @@
           "x-go-name": "UserId"
         },
         "user_ip": {
+          "description": "string user_namespace = 7;\nstring user_volume = 8;\nbool rw_access = 9;",
           "type": "string",
           "format": "ip",
           "x-go-name": "UserIp"
         },
-        "user_namespace": {
-          "type": "string",
-          "x-go-name": "UserNamespace"
-        },
         "user_role": {
           "type": "string",
           "x-go-name": "UserRole"
-        },
-        "user_volume": {
-          "type": "string",
-          "x-go-name": "UserVolume"
         }
       },
       "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
@@ -3882,35 +3823,6 @@
         }
       },
       "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/golang/protobuf/ptypes/timestamp"
-    },
-    "UpdateAccessRequest": {
-      "type": "object",
-      "title": "UpdateAccessRequest describes request for updating user resources accesses.",
-      "properties": {
-        "users": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/UpdateAccessRequestElement"
-          },
-          "x-go-name": "Users"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
-    },
-    "UpdateAccessRequestElement": {
-      "type": "object",
-      "title": "UpdateAccessRequestElement describes element for updating user resources accesses.",
-      "properties": {
-        "access": {
-          "$ref": "#/definitions/ResourcesAccess"
-        },
-        "user_id": {
-          "description": "@inject_tag: binding:\"uuid\"",
-          "type": "string",
-          "x-go-name": "UserId"
-        }
-      },
-      "x-go-package": "git.containerum.net/ch/user-manager/vendor/git.containerum.net/ch/auth/proto"
     },
     "UpdateImage": {
       "description": "UpdateImage -- model for update container image request",
@@ -4033,7 +3945,7 @@
       "type": "object",
       "properties": {
         "access_level": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "username": {
           "type": "string",
@@ -4094,7 +4006,8 @@
       "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UserGroupAccess": {
-      "type": "string",
+      "type": "integer",
+      "format": "uint64",
       "x-go-package": "git.containerum.net/ch/user-manager/vendor/github.com/containerum/kube-client/pkg/model"
     },
     "UserGroupMember": {
@@ -4153,7 +4066,7 @@
       ],
       "properties": {
         "access": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "id": {
           "description": "hosting-internal name",
@@ -4294,7 +4207,7 @@
       "type": "object",
       "properties": {
         "access": {
-          "$ref": "#/definitions/AccessLevel"
+          "$ref": "#/definitions/UserGroupAccess"
         },
         "access_mode": {
           "$ref": "#/definitions/PersistentVolumeAccessMode"
