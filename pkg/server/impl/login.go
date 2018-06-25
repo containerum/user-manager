@@ -29,14 +29,14 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request models.LoginRequest
 		return resp, cherry.ErrLoginFailed()
 	}
 
+	if err = u.loginUserChecks(ctx, user); err != nil {
+		return nil, err
+	}
+
 	profile, err := u.svc.DB.GetProfileByUser(ctx, user)
 	if dbErr := u.handleDBError(err); dbErr != nil {
 		u.log.WithError(dbErr)
 		return resp, cherry.ErrLoginFailed()
-	}
-
-	if err = u.loginUserChecks(ctx, user); err != nil {
-		return nil, err
 	}
 
 	if !utils.CheckPassword(request.Login, request.Password, user.Salt, user.PasswordHash) {
