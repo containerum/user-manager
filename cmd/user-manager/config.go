@@ -21,28 +21,32 @@ const (
 )
 
 const (
-	portFlag         = "port"
-	debugFlag        = "debug"
-	textlogFlag      = "textlog"
-	dbFlag           = "db"
-	dbPGLoginFlag    = "db_pg_login"
-	dbPGPasswordFlag = "db_pg_password"
-	dbPGAddrFlag     = "db_pg_addr"
-	dbPGNameFlag     = "db_pg_dbname"
-	dbPGNoSSLFlag    = "db_pg_nossl"
-	dbMigrationsFlag = "db_migrations"
-	mailFlag         = "mail"
-	mailURLFlag      = "mail_url"
-	recaptchaFlag    = "racaptcha"
-	recaptchaKeyFlag = "recaptcha_key"
-	oauthClientsFlag = "oauth_clients"
-	authFlag         = "auth"
-	authHTTPAddrFlag = "auth_http_addr"
-	resourceFlag     = "resource_service"
-	resourceURLFlag  = "resource_service_url"
-	umFlag           = "user_manager"
-	corsFlag         = "cors"
-	adminPwdFlag     = "admin_password"
+	portFlag              = "port"
+	debugFlag             = "debug"
+	textlogFlag           = "textlog"
+	dbFlag                = "db"
+	dbPGLoginFlag         = "db_pg_login"
+	dbPGPasswordFlag      = "db_pg_password"
+	dbPGAddrFlag          = "db_pg_addr"
+	dbPGNameFlag          = "db_pg_dbname"
+	dbPGNoSSLFlag         = "db_pg_nossl"
+	dbMigrationsFlag      = "db_migrations"
+	mailFlag              = "mail"
+	mailURLFlag           = "mail_url"
+	recaptchaFlag         = "racaptcha"
+	recaptchaKeyFlag      = "recaptcha_key"
+	oauthClientsFlag      = "oauth_clients"
+	authFlag              = "auth"
+	authHTTPAddrFlag      = "auth_http_addr"
+	permissionsFlag       = "permissions"
+	permissionsURLFlag    = "permissions_url"
+	telegramFlag          = "telegram"
+	telegramBotIDFlag     = "telegram_bot_id"
+	telegramBotTokenFlag  = "telegram_bot_token"
+	telegramBotChatIDFlag = "telegram_bot_chat_id"
+	umFlag                = "user_manager"
+	corsFlag              = "cors"
+	adminPwdFlag          = "admin_password"
 )
 
 var flags = []cli.Flag{
@@ -141,15 +145,35 @@ var flags = []cli.Flag{
 	},
 	cli.StringFlag{
 		EnvVar: "CH_USER_PERMISSIONS",
-		Name:   resourceFlag,
+		Name:   permissionsFlag,
 		Value:  serviceClientHTTP,
 		Usage:  "Permissions service kind",
 	},
 	cli.StringFlag{
 		EnvVar: "CH_USER_PERMISSIONS_URL",
-		Name:   resourceURLFlag,
+		Name:   permissionsURLFlag,
 		Value:  "http://permissions:4242",
 		Usage:  "Permissions service URL",
+	},
+	cli.BoolFlag{
+		EnvVar: "CH_USER_TELEGRAM",
+		Name:   telegramFlag,
+		Usage:  "Telegram client enabled",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_USER_TELEGRAM_BOT_ID",
+		Name:   telegramBotIDFlag,
+		Usage:  "Telegram bot ID",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_USER_TELEGRAM_BOT_TOKEN",
+		Name:   telegramBotTokenFlag,
+		Usage:  "Telegram bot token",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_USER_TELEGRAM_BOT_CHAT_ID",
+		Name:   telegramBotChatIDFlag,
+		Usage:  "Telegram bot chat ID",
 	},
 	cli.StringFlag{
 		EnvVar: "CH_USER_USER_MANAGER",
@@ -240,12 +264,19 @@ func getAuthClient(c *cli.Context) (clients.AuthClient, error) {
 }
 
 func getPermissionsClient(c *cli.Context) (clients.PermissionsClient, error) {
-	switch c.String(resourceFlag) {
+	switch c.String(permissionsFlag) {
 	case serviceClientHTTP:
-		return clients.NewHTTPPermissionsClient(c.String(resourceURLFlag)), nil
+		return clients.NewHTTPPermissionsClient(c.String(permissionsURLFlag)), nil
 	default:
 		return nil, errors.New("invalid permissions client")
 	}
+}
+
+func getTelegramClient(c *cli.Context) (clients.TelegramClient, error) {
+	if c.Bool(telegramFlag) {
+		return clients.NewTelegramClient(c.String(telegramBotIDFlag), c.String(telegramBotTokenFlag), c.String(telegramBotChatIDFlag))
+	}
+	return nil, nil
 }
 
 func getUserManager(c *cli.Context, services server.Services) (server.UserManager, error) {
