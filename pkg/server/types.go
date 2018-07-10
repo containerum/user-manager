@@ -88,4 +88,5 @@ type Services struct {
 	AuthClient        clients.AuthClient
 	ReCaptchaClient   clients.ReCaptchaClient
 	PermissionsClient clients.PermissionsClient
+	TelegramClient    clients.TelegramClient
 }

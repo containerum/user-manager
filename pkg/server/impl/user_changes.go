@@ -113,6 +113,13 @@ func (u *serverImpl) CreateUser(ctx context.Context, request models.RegisterRequ
 
 	go u.linkSend(ctx, link)
 
+	if u.svc.TelegramClient != nil {
+		err := u.svc.TelegramClient.SendRegistrationMessage(ctx, link.User.Login)
+		if err != nil {
+			u.log.WithError(err).Debug("telegram message send failed")
+		}
+	}
+
 	return &models.UserLogin{
 		ID:    newUser.ID,
 		Login: newUser.Login,
@@ -166,6 +173,13 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request models.Link) (*au
 			u.log.WithError(err).Error("activation email send failed")
 		}
 	}()
+
+	if u.svc.TelegramClient != nil {
+		err := u.svc.TelegramClient.SendActivationMessage(ctx, link.User.Login)
+		if err != nil {
+			u.log.WithError(err).Debug("telegram message send failed")
+		}
+	}
 
 	return tokens, nil
 }
