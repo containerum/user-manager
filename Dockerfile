@@ -37,6 +37,10 @@ ENV GIN_MODE=debug \
     CH_USER_AUTH_HTTP_ADDR="http://ch-auth:1111/" \
     CH_USER_PERMISSIONS="http" \
     CH_USER_PERMISSIONS_URL="http://permissions:4242" \
+    CH_USER_TELEGRAM=false \
+    CH_USER_TELEGRAM_BOT_ID="" \
+    CH_USER_TELEGRAM_BOT_TOKEN="" \
+    CH_USER_TELEGRAM_BOT_CHAT_ID="" \
     CH_USER_LISTEN_ADDR=":8111" \
     CH_USER_USER_MANAGER="impl"
 ENTRYPOINT ["/user-manager"]
