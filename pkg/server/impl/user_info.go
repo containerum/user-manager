@@ -5,6 +5,8 @@ import (
 
 	"time"
 
+	"math"
+
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/server"
@@ -160,9 +162,9 @@ func (u *serverImpl) GetBlacklistedUsers(ctx context.Context, page int, perPage 
 	return &resp, nil
 }
 
-func (u *serverImpl) GetUsers(ctx context.Context, page int, perPage int, filters ...string) (*models.UserList, error) {
+func (u *serverImpl) GetUsers(ctx context.Context, page uint, perPage uint, filters ...string) (*models.UserList, error) {
 	u.log.WithField("per_page", perPage).WithField("page", page).Info("get users")
-	profiles, err := u.svc.DB.GetAllProfiles(ctx, perPage, (page-1)*perPage)
+	profiles, totalUsers, err := u.svc.DB.GetAllProfiles(ctx, perPage, (page-1)*perPage)
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetUsersList()
@@ -170,8 +172,11 @@ func (u *serverImpl) GetUsers(ctx context.Context, page int, perPage int, filter
 
 	satisfiesFilter := server.CreateFilterFunc(filters...)
 
+	pages := float64(totalUsers) / float64(perPage)
+
 	resp := models.UserList{
 		Users: []models.User{},
+		Pages: uint(math.Ceil(pages)),
 	}
 	for _, v := range profiles {
 		if !satisfiesFilter(v) {

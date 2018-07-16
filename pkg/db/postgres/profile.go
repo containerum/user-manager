@@ -129,38 +129,37 @@ func (pgdb *pgDB) UpdateLastLogin(ctx context.Context, profileID, lastlogin stri
 	return err
 }
 
-func (pgdb *pgDB) GetAllProfiles(ctx context.Context, perPage, offset int) ([]db.UserProfileAccounts, error) {
+func (pgdb *pgDB) GetAllProfiles(ctx context.Context, perPage, offset uint) ([]db.UserProfileAccounts, uint, error) {
 	pgdb.log.Infoln("Get all profiles")
 	profiles := make([]db.UserProfileAccounts, 0) // return empty slice instead of nil if no records found
-
-	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT "+profileQueryColumnsWithUserAndAccounts+" FROM users "+
+	var totalUsers uint
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT "+profileQueryColumnsWithUserAndAccounts+" , count(*) OVER() FROM users "+
 		"LEFT JOIN profiles ON users.id = profiles.user_id "+
 		"LEFT JOIN accounts ON users.id = accounts.user_id WHERE users.is_deleted!='true' "+
+		"ORDER BY users.login "+
 		"LIMIT $1 OFFSET $2", perPage, offset)
 	if err != nil {
-		return nil, err
+		return nil, totalUsers, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		profile := db.UserProfileAccounts{User: &db.User{}, Accounts: &db.Accounts{}, Profile: &db.Profile{}}
 		var profileData sql.NullString
-		err := rows.Scan(
+		if err := rows.Scan(
 			&profile.Profile.ID, &profile.Profile.Referral, &profile.Profile.Access, &profile.Profile.CreatedAt, &profile.Profile.BlacklistAt, &profile.Profile.DeletedAt, &profile.Profile.LastLogin,
 			&profile.User.ID, &profile.User.Login, &profile.User.PasswordHash, &profile.User.Salt, &profile.User.Role,
 			&profile.User.IsActive, &profile.User.IsDeleted, &profile.User.IsInBlacklist,
-			&profileData, &profile.Accounts.Github, &profile.Accounts.Google, &profile.Accounts.Facebook,
-		)
-
-		if err != nil {
-			return nil, err
+			&profileData, &profile.Accounts.Github, &profile.Accounts.Google, &profile.Accounts.Facebook, &totalUsers,
+		); err != nil {
+			return nil, totalUsers, err
 		}
 		if profileData.Valid {
 			if err := jsoniter.UnmarshalFromString(profileData.String, &profile.Profile.Data); err != nil {
-				return nil, err
+				return nil, totalUsers, err
 			}
 		}
 		profiles = append(profiles, profile)
 	}
 
-	return profiles, rows.Err()
+	return profiles, totalUsers, rows.Err()
 }
