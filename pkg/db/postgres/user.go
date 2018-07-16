@@ -137,7 +137,7 @@ func (pgdb *pgDB) UpdateUserWOContext(user *db.User) error {
 func (pgdb *pgDB) GetBlacklistedUsers(ctx context.Context, limit, offset int) ([]db.User, error) {
 	pgdb.log.Infoln("Get blacklisted users")
 	resp := make([]db.User, 0)
-	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE is_in_blacklist LIMIT $1 OFFSET $2",
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE is_in_blacklist ORDER BY users.login LIMIT $1 OFFSET $2",
 		limit, offset)
 	if err != nil {
 		return nil, err

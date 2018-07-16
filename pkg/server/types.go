@@ -51,7 +51,7 @@ type UserManager interface {
 	GetUserInfoByLogin(ctx context.Context, login string) (*models.User, error)
 	GetUsersLoginID(ctx context.Context, ids []string) (*models.LoginID, error)
 	GetBlacklistedUsers(ctx context.Context, page int, perPage int) (*models.UserList, error)
-	GetUsers(ctx context.Context, page int, perPage int, filters ...string) (*models.UserList, error)
+	GetUsers(ctx context.Context, page uint, perPage uint, filters ...string) (*models.UserList, error)
 	GetBoundAccounts(ctx context.Context) (models.BoundAccounts, error)
 
 	LinkResend(ctx context.Context, request models.UserLogin) error
