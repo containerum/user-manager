@@ -136,7 +136,7 @@ func (pgdb *pgDB) GetAllProfiles(ctx context.Context, perPage, offset uint) ([]d
 	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT "+profileQueryColumnsWithUserAndAccounts+" , count(*) OVER() FROM users "+
 		"LEFT JOIN profiles ON users.id = profiles.user_id "+
 		"LEFT JOIN accounts ON users.id = accounts.user_id WHERE users.is_deleted!='true' "+
-		"ORDER BY users.login "+
+		"ORDER BY users.role, users.login "+
 		"LIMIT $1 OFFSET $2", perPage, offset)
 	if err != nil {
 		return nil, totalUsers, err
