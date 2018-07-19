@@ -61,9 +61,9 @@ func (u *serverImpl) checkLinkResendTime(ctx context.Context, link *db.Link) err
 	return nil
 }
 
-func (u *serverImpl) linkSend(ctx context.Context, link *db.Link) {
+func (u *serverImpl) linkSend(ctx context.Context, link *db.Link) error {
 	if link == nil {
-		return
+		return errors.New("invalid link")
 	}
 	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		err := u.svc.MailClient.SendConfirmationMail(ctx, &mttypes.Recipient{
@@ -86,6 +86,7 @@ func (u *serverImpl) linkSend(ctx context.Context, link *db.Link) {
 			"login": link.User.Login,
 		}).Error("link send failed")
 	}
+	return err
 }
 
 func (u *serverImpl) createTokens(ctx context.Context, user *db.User) (resp *authProto.CreateTokenResponse, err error) {
