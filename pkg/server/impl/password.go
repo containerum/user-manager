@@ -55,10 +55,9 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request models.Password
 	}
 	go func() {
 		mailErr := u.svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
-			ID:        user.ID,
-			Name:      user.Login,
-			Email:     user.Login,
-			Variables: map[string]interface{}{},
+			ID:    user.ID,
+			Name:  user.Login,
+			Email: user.Login,
 		})
 		if mailErr != nil {
 			u.log.WithError(mailErr).Error("password change email send failed")

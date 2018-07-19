@@ -153,6 +153,10 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request models.OAuthLoginRe
 		return nil, cherry.ErrLoginFailed()
 	}
 
+	if err := u.loginUserChecks(ctx, user); err != nil {
+		return nil, err
+	}
+
 	profile, err := u.svc.DB.GetProfileByUser(ctx, user)
 	if dbErr := u.handleDBError(err); dbErr != nil {
 		u.log.WithError(dbErr)

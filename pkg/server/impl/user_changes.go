@@ -164,10 +164,9 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request models.Link) (*au
 
 	go func() {
 		err := u.svc.MailClient.SendActivationMail(ctx, &mttypes.Recipient{
-			ID:        link.User.ID,
-			Name:      link.User.Login,
-			Email:     link.User.Login,
-			Variables: map[string]interface{}{},
+			ID:    link.User.ID,
+			Name:  link.User.Login,
+			Email: link.User.Login,
 		})
 		if err != nil {
 			u.log.WithError(err).Error("activation email send failed")
@@ -367,10 +366,9 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 
 	go func() {
 		err := u.svc.MailClient.SendAccDeletedMail(ctx, &mttypes.Recipient{
-			ID:        user.ID,
-			Name:      user.Login,
-			Email:     user.Login,
-			Variables: map[string]interface{}{},
+			ID:    user.ID,
+			Name:  user.Login,
+			Email: user.Login,
 		})
 		if err != nil {
 			u.log.WithError(err).Error("delete account email send failed")

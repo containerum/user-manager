@@ -56,10 +56,6 @@ func (u *serverImpl) GetUserInfo(ctx context.Context) (*models.User, error) {
 	if err := u.handleDBError(err); err != nil {
 		return nil, cherry.ErrUnableGetUserInfo()
 	}
-	if user == nil {
-		u.log.WithError(cherry.ErrUserNotExist())
-		return nil, cherry.ErrUserNotExist()
-	}
 	if err := u.loginUserChecks(ctx, user); err != nil {
 		return nil, cherry.ErrUnableGetUserInfo()
 	}
