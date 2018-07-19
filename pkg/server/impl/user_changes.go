@@ -356,9 +356,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 	}
 
 	if err := u.svc.PermissionsClient.DeleteUserNamespaces(ctx, user); err != nil {
-		u.log.WithError(err).Errorln("PERMISSIONS ERRROR!!!")
-	} else {
-		u.log.Warningln("NO PERMISSIONS ERRROR!!!")
+		u.log.WithError(err)
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
