@@ -33,7 +33,7 @@ func NewHTTPPermissionsClient(serverURL string) PermissionsClient {
 		SetHostURL(serverURL).
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
 		SetDebug(true).
-		SetTimeout(3 * time.Second).
+		SetTimeout(30 * time.Second).
 		SetError(cherry.Err{})
 	client.JSONMarshal = jsoniter.Marshal
 	client.JSONUnmarshal = jsoniter.Unmarshal
