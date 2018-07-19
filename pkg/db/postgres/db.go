@@ -87,7 +87,6 @@ func (pgdb *pgDB) migrateUp(path string) (*migrate.Migrate, error) {
 			return nil, err
 		}
 	}
-	return m, nil
 }
 
 func (pgdb *pgDB) Transactional(ctx context.Context, f func(ctx context.Context, tx db.DB) error) (err error) {
@@ -131,7 +130,7 @@ func (pgdb *pgDB) Transactional(ctx context.Context, f func(ctx context.Context,
 		}
 	}(f(ctx, arg))
 
-	return
+	return nil
 }
 
 func (pgdb *pgDB) Close() error {

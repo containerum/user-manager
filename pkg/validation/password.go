@@ -7,7 +7,7 @@ import (
 )
 
 func ValidatePasswordChangeRequest(link models.PasswordChangeRequest) []error {
-	errs := []error{}
+	var errs []error
 	if link.CurrentPassword == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Current password"))
 	}
@@ -21,7 +21,7 @@ func ValidatePasswordChangeRequest(link models.PasswordChangeRequest) []error {
 }
 
 func ValidatePasswordRestoreRequest(link models.PasswordRestoreRequest) []error {
-	errs := []error{}
+	var errs []error
 	if link.Link == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Link"))
 	}

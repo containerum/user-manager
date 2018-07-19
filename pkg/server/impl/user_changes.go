@@ -196,7 +196,7 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request models.UserLogin
 		u.log.WithError(err)
 		return cherry.ErrUnableBlacklistUser()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		u.log.WithError(err)
 		return err
 	}
@@ -254,7 +254,7 @@ func (u *serverImpl) UnBlacklistUser(ctx context.Context, request models.UserLog
 		u.log.WithError(cherry.ErrUserNotExist())
 		return cherry.ErrUserNotExist()
 	}
-	if user.IsInBlacklist != true {
+	if !user.IsInBlacklist {
 		u.log.WithError(cherry.ErrUserNotBlacklisted())
 		return cherry.ErrUserNotBlacklisted()
 	}
@@ -288,7 +288,7 @@ func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interfac
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableUpdateUserInfo()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		u.log.WithError(err)
 		return nil, err
 	}

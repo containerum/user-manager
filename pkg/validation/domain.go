@@ -8,7 +8,7 @@ import (
 
 //ValidateUserCreateRequest validates simple send mail request
 func ValidateDomain(login models.Domain) []error {
-	errs := []error{}
+	var errs []error
 	if login.Domain == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Domain"))
 	}

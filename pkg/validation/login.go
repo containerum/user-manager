@@ -7,7 +7,7 @@ import (
 )
 
 func ValidateLoginRequest(login models.LoginRequest) []error {
-	errs := []error{}
+	var errs []error
 	if login.Login == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Login"))
 	}
@@ -21,7 +21,7 @@ func ValidateLoginRequest(login models.LoginRequest) []error {
 }
 
 func ValidateOAuthLoginRequest(login models.OAuthLoginRequest) []error {
-	errs := []error{}
+	var errs []error
 	if login.Resource == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Resource"))
 	}
@@ -36,9 +36,12 @@ func ValidateOAuthLoginRequest(login models.OAuthLoginRequest) []error {
 
 //ValidateLink validates simple send mail request
 func ValidateLink(link models.Link) []error {
-	errs := []error{}
+	var errs []error
 	if link.Link == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Link"))
+	}
+	if len(errs) > 0 {
+		return errs
 	}
 	return nil
 }

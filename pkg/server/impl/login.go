@@ -29,7 +29,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request models.LoginRequest
 		return resp, cherry.ErrLoginFailed()
 	}
 
-	if err = u.loginUserChecks(ctx, user); err != nil {
+	if err = u.loginUserChecks(user); err != nil {
 		return nil, err
 	}
 
@@ -64,7 +64,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request models.LoginRequest
 				return nil, cherry.ErrInvalidLogin()
 			}
 		}
-		if err := u.checkLinkResendTime(ctx, link); err != nil {
+		if err := u.checkLinkResendTime(link); err != nil {
 			u.log.WithError(err)
 			return nil, err
 		}
@@ -78,8 +78,7 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request models.LoginRequest
 	if loginerr := u.handleDBError(loginerr); loginerr != nil {
 		u.log.WithError(loginerr)
 	}
-	resp, err = u.createTokens(ctx, user)
-	return
+	return u.createTokens(ctx, user)
 }
 
 func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request models.OneTimeTokenLoginRequest) (*authProto.CreateTokenResponse, error) {
@@ -91,7 +90,7 @@ func (u *serverImpl) OneTimeTokenLogin(ctx context.Context, request models.OneTi
 		return nil, cherry.ErrLoginFailed()
 	}
 	if token != nil {
-		if err := u.loginUserChecks(ctx, token.User); err != nil {
+		if err := u.loginUserChecks(token.User); err != nil {
 			return nil, err
 		}
 
@@ -153,7 +152,7 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request models.OAuthLoginRe
 		return nil, cherry.ErrLoginFailed()
 	}
 
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return nil, err
 	}
 
@@ -162,7 +161,7 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request models.OAuthLoginRe
 		u.log.WithError(dbErr)
 		return nil, cherry.ErrLoginFailed()
 	}
-	if err = u.loginUserChecks(ctx, user); err != nil {
+	if err = u.loginUserChecks(user); err != nil {
 		u.log.Info("User is not found by email. Checking bound accounts")
 		if info.UserID != "" {
 			user, err = u.svc.DB.GetUserByBoundAccount(ctx, request.Resource, info.UserID)
@@ -170,7 +169,7 @@ func (u *serverImpl) OAuthLogin(ctx context.Context, request models.OAuthLoginRe
 				u.log.WithError(err)
 				return nil, cherry.ErrLoginFailed()
 			}
-			if err := u.loginUserChecks(ctx, user); err != nil {
+			if err := u.loginUserChecks(user); err != nil {
 				return nil, err
 			}
 			return u.createTokens(ctx, user)

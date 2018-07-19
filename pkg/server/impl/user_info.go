@@ -56,7 +56,7 @@ func (u *serverImpl) GetUserInfo(ctx context.Context) (*models.User, error) {
 	if err := u.handleDBError(err); err != nil {
 		return nil, cherry.ErrUnableGetUserInfo()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return nil, cherry.ErrUnableGetUserInfo()
 	}
 
@@ -242,7 +242,7 @@ func (u *serverImpl) GetUsersLoginID(ctx context.Context, ids []string) (*models
 		return nil, cherry.ErrUnableGetUsersList()
 	}
 
-	resp := make(models.LoginID, 0)
+	resp := make(models.LoginID)
 
 	for _, v := range users {
 		resp[v.ID] = v.Login
@@ -258,7 +258,7 @@ func (u *serverImpl) LinkResend(ctx context.Context, request models.UserLogin) e
 		u.log.WithError(err)
 		return cherry.ErrUnableResendLink()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		u.log.WithError(err)
 		return err
 	}
@@ -282,7 +282,7 @@ func (u *serverImpl) LinkResend(ctx context.Context, request models.UserLogin) e
 			return cherry.ErrUnableResendLink()
 		}
 	}
-	if err := u.checkLinkResendTime(ctx, link); err != nil {
+	if err := u.checkLinkResendTime(link); err != nil {
 		u.log.WithError(err)
 		return cherry.ErrUnableResendLink()
 	}

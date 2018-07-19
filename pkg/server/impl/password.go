@@ -25,7 +25,7 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request models.Password
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableChangePassword()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return nil, err
 	}
 
@@ -75,7 +75,7 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request models.UserLogin
 		u.log.WithError(err)
 		return cherry.ErrUnableResetPassword()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return err
 	}
 
