@@ -291,7 +291,8 @@ func (u *serverImpl) LinkResend(ctx context.Context, request models.UserLogin) e
 		return cherry.ErrUnableResendLink()
 	}
 
-	go u.linkSend(ctx, link)
-
+	if err := u.linkSend(ctx, link); err != nil {
+		return err
+	}
 	return nil
 }
