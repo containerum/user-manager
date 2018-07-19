@@ -29,7 +29,10 @@
             "description": "accesses updated"
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "private"
@@ -41,7 +44,14 @@
         "operationId": "GetAccessTokenByID",
         "parameters": [
           {
-            "$ref": "#/parameters/UserRoleHeader"
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
           },
           {
             "type": "string",
@@ -59,7 +69,10 @@
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         }
       }
@@ -70,7 +83,11 @@
         "operationId": "GetUserTokens",
         "parameters": [
           {
-            "$ref": "#/parameters/UserIDHeader"
+            "type": "string",
+            "format": "uuid",
+            "name": "X-User-ID",
+            "in": "header",
+            "required": true
           }
         ],
         "responses": {
@@ -81,7 +98,10 @@
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-authorization-required": true,
@@ -92,31 +112,47 @@
         "operationId": "CreateToken",
         "parameters": [
           {
-            "$ref": "#/parameters/UserAgentHeader"
+            "type": "string",
+            "name": "X-User-Agent",
+            "in": "header",
+            "required": true
           },
           {
-            "$ref": "#/parameters/FingerprintHeader"
+            "type": "string",
+            "name": "X-User-Client",
+            "in": "header",
+            "required": true
           },
           {
-            "$ref": "#/parameters/UserIDHeader"
+            "type": "string",
+            "format": "uuid",
+            "name": "X-User-ID",
+            "in": "header",
+            "required": true
           },
           {
-            "$ref": "#/parameters/UserRoleHeader"
+            "enum": [
+              "user",
+              "admin"
+            ],
+            "type": "string",
+            "name": "X-User-Role",
+            "in": "header",
+            "required": true
           },
           {
-            "$ref": "#/parameters/ClientIPHeader"
+            "type": "string",
+            "format": "ip",
+            "name": "X-Client-IP",
+            "in": "header",
+            "required": true
           },
           {
             "name": "resources_accesses",
             "in": "body",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "access": {
-                  "$ref": "#/definitions/ResourcesAccess"
-                }
-              }
+              "$ref": "#/definitions/createTokenParamsBody"
             }
           }
         ],
@@ -128,7 +164,10 @@
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "private"
@@ -140,13 +179,23 @@
         "operationId": "CheckToken",
         "parameters": [
           {
-            "$ref": "#/parameters/UserAgentHeader"
+            "type": "string",
+            "name": "X-User-Agent",
+            "in": "header",
+            "required": true
           },
           {
-            "$ref": "#/parameters/FingerprintHeader"
+            "type": "string",
+            "name": "X-User-Client",
+            "in": "header",
+            "required": true
           },
           {
-            "$ref": "#/parameters/ClientIPHeader"
+            "type": "string",
+            "format": "ip",
+            "name": "X-Client-IP",
+            "in": "header",
+            "required": true
           },
           {
             "type": "string",
@@ -159,16 +208,14 @@
           "200": {
             "description": "token valid",
             "schema": {
-              "type": "object",
-              "properties": {
-                "access": {
-                  "$ref": "#/definitions/ResourcesAccess"
-                }
-              }
+              "$ref": "#/definitions/checkTokenOKBody"
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "private"
@@ -180,7 +227,10 @@
         "operationId": "ExtendToken",
         "parameters": [
           {
-            "$ref": "#/parameters/FingerprintHeader"
+            "type": "string",
+            "name": "X-User-Client",
+            "in": "header",
+            "required": true
           },
           {
             "type": "string",
@@ -198,7 +248,10 @@
             }
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-authorization-required": false,
@@ -211,7 +264,11 @@
         "operationId": "DeleteTokenByID",
         "parameters": [
           {
-            "$ref": "#/parameters/UserIDHeader"
+            "type": "string",
+            "format": "uuid",
+            "name": "X-User-ID",
+            "in": "header",
+            "required": true
           },
           {
             "type": "string",
@@ -226,7 +283,10 @@
             "description": "token deleted"
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-authorization-required": true,
@@ -251,7 +311,10 @@
             "description": "tokens deleted"
           },
           "default": {
-            "$ref": "#/responses/error"
+            "description": "cherry error",
+            "schema": {
+              "$ref": "#/definitions/errOAIGen"
+            }
           }
         },
         "x-method-visibility": "private"
@@ -588,30 +651,122 @@
     "authClient": {
       "type": "object",
       "x-go-package": "git.containerum.net/ch/auth/proto"
+    },
+    "checkTokenOKBody": {
+      "type": "object",
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/ResourcesAccess"
+        }
+      },
+      "x-go-gen-location": "operations"
+    },
+    "createTokenParamsBody": {
+      "type": "object",
+      "properties": {
+        "access": {
+          "$ref": "#/definitions/ResourcesAccess"
+        }
+      },
+      "x-go-gen-location": "operations"
+    },
+    "errOAIGen": {
+      "description": "Err -- standard serializable API error\nMessage -- constant error message:\n+ \"invalid username\"\n+ \"quota exceeded\"\n+ \"validation error\"\n...etc...\nID -- unique error identification code\nDetails -- optional context error messages kinda\n+ \"field 'Replicas' must be non-zero value\"\n+ \"not enough tights to feed gopher\"\n+ \"resource 'God' does't exist\"\nFields -- optional set of key-value pairs",
+      "type": "object",
+      "properties": {
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "x-go-name": "Details"
+        },
+        "fields": {
+          "description": "Fields -- represents additional key-value fields of error",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-go-package": "github.com/containerum/cherry"
+        },
+        "id": {
+          "$ref": "#/definitions/errOaiGenId"
+        },
+        "message": {
+          "type": "string",
+          "x-go-name": "Message"
+        },
+        "status_http": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "StatusHTTP"
+        }
+      },
+      "x-go-package": "github.com/containerum/cherry"
+    },
+    "errOaiGenId": {
+      "description": "ErrID -- represents unique error ID",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "description": "ErrKind -- represents kind of error",
+          "type": "integer",
+          "format": "uint64",
+          "x-go-package": "github.com/containerum/cherry"
+        },
+        "sid": {
+          "description": "ErrSID -- represents service ID of error",
+          "type": "string",
+          "x-go-package": "github.com/containerum/cherry"
+        }
+      },
+      "x-go-gen-location": "models",
+      "x-go-package": "github.com/containerum/cherry"
     }
   },
   "parameters": {
     "ClientIPHeader": {
-      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/ClientIPHeader"
+      "type": "string",
+      "format": "ip",
+      "name": "X-Client-IP",
+      "in": "header",
+      "required": true
     },
     "FingerprintHeader": {
-      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserClientHeader"
+      "type": "string",
+      "name": "X-User-Client",
+      "in": "header",
+      "required": true
     },
     "UserAgentHeader": {
-      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserAgentHeader"
+      "type": "string",
+      "name": "X-User-Agent",
+      "in": "header",
+      "required": true
     },
     "UserIDHeader": {
-      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserIDHeader"
+      "type": "string",
+      "format": "uuid",
+      "name": "X-User-ID",
+      "in": "header",
+      "required": true
     },
     "UserRoleHeader": {
-      "$ref": "vendor/github.com/containerum/utils/httputil/swagger.json#/parameters/UserRoleHeader"
+      "enum": [
+        "user",
+        "admin"
+      ],
+      "type": "string",
+      "name": "X-User-Role",
+      "in": "header",
+      "required": true
     }
   },
   "responses": {
     "error": {
       "description": "cherry error",
       "schema": {
-        "$ref": "vendor/github.com/containerum/cherry/swagger.json#/definitions/Err"
+        "$ref": "#/definitions/errOAIGen"
       }
     }
   }

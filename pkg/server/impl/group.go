@@ -129,7 +129,7 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 		ret.Members = append(ret.Members, kube_types.UserGroupMember{
 			Username: member.Login,
 			ID:       member.UserID,
-			Access:   kube_types.UserGroupAccess(member.Access),
+			Access:   kube_types.AccessLevel(member.Access),
 		})
 	}
 	return &ret, nil
@@ -157,7 +157,7 @@ func (u *serverImpl) GetGroupsList(ctx context.Context, userID string) (*kube_ty
 			return nil, cherry.ErrUnableGetGroup()
 		}
 		userGroup := kube_types.UserGroup{
-			UserAccess:   kube_types.UserGroupAccess(perm),
+			UserAccess:   kube_types.AccessLevel(perm),
 			ID:           group.ID,
 			Label:        group.Label,
 			OwnerID:      group.OwnerID,
@@ -291,7 +291,7 @@ func (u *serverImpl) GetGroupListByIDs(ctx context.Context, ids []string) (*kube
 			group.Members = append(group.Members, kube_types.UserGroupMember{
 				Username: member.Login,
 				ID:       member.UserID,
-				Access:   kube_types.UserGroupAccess(member.Access),
+				Access:   kube_types.AccessLevel(member.Access),
 			})
 		}
 
