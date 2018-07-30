@@ -313,5 +313,11 @@ SID = "UserManager"
 [[error]]
     Name = "ErrChangeOwnPermissions"
     StatusHTTP = 403
-    Message = "Unableo tpchange own permissions"
+    Message = "Unable to change own permissions"
     Kind = 50
+
+[[error]]
+    Name = "ErrDeactivateSelf"
+    StatusHTTP = 403
+    Message = "Unableo to deactivate self"
+    Kind = 51

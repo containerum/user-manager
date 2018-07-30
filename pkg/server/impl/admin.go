@@ -115,7 +115,7 @@ func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request models.Use
 	}
 
 	if user.ID == httputil.MustGetUserID(ctx) {
-		return cherry.ErrUnableDeleteUser()
+		return cherry.ErrChangeOwnPermissions()
 	}
 
 	user.IsDeleted = true

@@ -616,7 +616,19 @@ func ErrUnableChangeOwnerPermissions(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrChangeOwnPermissions(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unableo tpchange own permissions", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x32}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to change own permissions", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x32}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	for _, param := range params {
+		param(err)
+	}
+	for i, detail := range err.Details {
+		det := renderTemplate(detail)
+		err.Details[i] = det
+	}
+	return err
+}
+
+func ErrDeactivateSelf(params ...func(*cherry.Err)) *cherry.Err {
+	err := &cherry.Err{Message: "Unableo to deactivate self", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x33}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
