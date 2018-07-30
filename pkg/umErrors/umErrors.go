@@ -484,7 +484,7 @@ func ErrGroupNotExist(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableGetGroup(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable get group", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x27}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to get group", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x27}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -496,7 +496,7 @@ func ErrUnableGetGroup(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableCreateGroup(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable create group", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x28}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to create group", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x28}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -508,7 +508,7 @@ func ErrUnableCreateGroup(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableAddGroupMember(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable add group member", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x29}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to add group member", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x29}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -556,7 +556,7 @@ func ErrNotGroupOwner(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableDeleteGroupMember(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable delete group member", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x2d}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to delete group member", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x2d}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -580,7 +580,7 @@ func ErrNotInGroup(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableDeleteGroup(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable delete group", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x2f}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to delete group", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x2f}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -592,7 +592,7 @@ func ErrUnableDeleteGroup(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableRemoveOwner(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable remove owner from group", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x30}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to remove owner from group", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x30}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -604,7 +604,19 @@ func ErrUnableRemoveOwner(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrUnableChangeOwnerPermissions(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable change owners permissions", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x31}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to change owners permissions", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x31}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	for _, param := range params {
+		param(err)
+	}
+	for i, detail := range err.Details {
+		det := renderTemplate(detail)
+		err.Details[i] = det
+	}
+	return err
+}
+
+func ErrChangeOwnPermissions(params ...func(*cherry.Err)) *cherry.Err {
+	err := &cherry.Err{Message: "Unableo tpchange own permissions", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x32}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}

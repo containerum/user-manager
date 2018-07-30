@@ -247,19 +247,19 @@ SID = "UserManager"
 [[error]]
     Name = "ErrUnableGetGroup"
     StatusHTTP = 500
-    Message = "Unable get group"
+    Message = "Unable to get group"
     Kind = 39
 
 [[error]]
     Name = "ErrUnableCreateGroup"
     StatusHTTP = 500
-    Message = "Unable create group"
+    Message = "Unable to create group"
     Kind = 40
 
 [[error]]
     Name = "ErrUnableAddGroupMember"
     StatusHTTP = 500
-    Message = "Unable add group member"
+    Message = "Unable to add group member"
     Kind = 41
 
 [[error]]
@@ -283,7 +283,7 @@ SID = "UserManager"
 [[error]]
     Name = "ErrUnableDeleteGroupMember"
     StatusHTTP = 500
-    Message = "Unable delete group member"
+    Message = "Unable to delete group member"
     Kind = 45
 
 [[error]]
@@ -295,17 +295,23 @@ SID = "UserManager"
 [[error]]
     Name = "ErrUnableDeleteGroup"
     StatusHTTP = 500
-    Message = "Unable delete group"
+    Message = "Unable to delete group"
     Kind = 47
 
 [[error]]
     Name = "ErrUnableRemoveOwner"
     StatusHTTP = 403
-    Message = "Unable remove owner from group"
+    Message = "Unable to remove owner from group"
     Kind = 48
 
 [[error]]
     Name = "ErrUnableChangeOwnerPermissions"
     StatusHTTP = 403
-    Message = "Unable change owners permissions"
+    Message = "Unable to change owners permissions"
     Kind = 49
+
+[[error]]
+    Name = "ErrChangeOwnPermissions"
+    StatusHTTP = 403
+    Message = "Unableo tpchange own permissions"
+    Kind = 50

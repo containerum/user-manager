@@ -213,6 +213,9 @@ func (u *serverImpl) AdminUnsetAdmin(ctx context.Context, request models.UserLog
 	if err := u.loginUserChecks(user); err != nil {
 		return err
 	}
+	if user.ID == httputil.MustGetUserID(ctx) {
+		return cherry.ErrChangeOwnPermissions()
+	}
 
 	user.Role = "user"
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
