@@ -54,7 +54,7 @@ func (u *serverImpl) Close() error {
 	return errors.New(strerr)
 }
 
-func (u *serverImpl) checkLinkResendTime(ctx context.Context, link *db.Link) error {
+func (u *serverImpl) checkLinkResendTime(link *db.Link) error {
 	if tdiff := time.Now().UTC().Sub(link.SentAt.Time); link.SentAt.Valid && tdiff < 5*time.Minute {
 		return fmt.Errorf(waitForResend, int(tdiff.Seconds()))
 	}
@@ -108,7 +108,7 @@ func (u *serverImpl) createTokens(ctx context.Context, user *db.User) (resp *aut
 	return
 }
 
-func (u *serverImpl) loginUserChecks(ctx context.Context, user *db.User) error {
+func (u *serverImpl) loginUserChecks(user *db.User) error {
 	if user == nil {
 		u.log.Error(cherry.ErrUserNotExist())
 		return cherry.ErrUserNotExist()

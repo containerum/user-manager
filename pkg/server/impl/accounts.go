@@ -26,7 +26,7 @@ func (u *serverImpl) AddBoundAccount(ctx context.Context, request models.OAuthLo
 		u.log.WithError(err)
 		return cherry.ErrUnableBindAccount()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return err
 	}
 
@@ -42,7 +42,7 @@ func (u *serverImpl) AddBoundAccount(ctx context.Context, request models.OAuthLo
 	}
 
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		return tx.BindAccount(ctx, user, models.OAuthResource(request.Resource), info.UserID)
+		return tx.BindAccount(ctx, user, request.Resource, info.UserID)
 	})
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
@@ -61,7 +61,7 @@ func (u *serverImpl) GetBoundAccounts(ctx context.Context) (models.BoundAccounts
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetUserInfo()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		u.log.WithError(err)
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (u *serverImpl) DeleteBoundAccount(ctx context.Context, request models.Boun
 		u.log.WithError(err)
 		return err
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		u.log.WithError(err)
 		return err
 	}

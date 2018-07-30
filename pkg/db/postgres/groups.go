@@ -75,7 +75,7 @@ func (pgdb *pgDB) GetGroupMembers(ctx context.Context, groupID string) ([]db.Use
 
 func (pgdb *pgDB) GetUserGroupsIDsAccesses(ctx context.Context, userID string) (map[string]string, error) {
 	pgdb.log.Infoln("Get users groups", userID)
-	resp := make(map[string]string, 0)
+	resp := make(map[string]string)
 
 	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT group_id, default_access FROM groups_members WHERE user_id = $1", userID)
 	if err != nil {
@@ -83,13 +83,13 @@ func (pgdb *pgDB) GetUserGroupsIDsAccesses(ctx context.Context, userID string) (
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var groupId string
+		var groupID string
 		var access string
-		err := rows.Scan(&groupId, &access)
+		err := rows.Scan(&groupID, &access)
 		if err != nil {
 			return nil, err
 		}
-		resp[groupId] = access
+		resp[groupID] = access
 	}
 
 	return resp, err

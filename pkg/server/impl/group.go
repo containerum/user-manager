@@ -252,7 +252,7 @@ func (u *serverImpl) GetGroupListLabelID(ctx context.Context, ids []string) (*mo
 		return nil, cherry.ErrUnableGetUsersList()
 	}
 
-	resp := make(models.LoginID, 0)
+	resp := make(models.LoginID)
 
 	for _, v := range groups {
 		resp[v.ID] = v.Label

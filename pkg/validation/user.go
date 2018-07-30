@@ -9,7 +9,7 @@ import (
 
 //ValidateUserCreateRequest validates simple send mail request
 func ValidateUserCreateRequest(user models.RegisterRequest) []error {
-	errs := []error{}
+	var errs []error
 	if user.Login == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Login"))
 	} else {
@@ -31,7 +31,7 @@ func ValidateUserCreateRequest(user models.RegisterRequest) []error {
 }
 
 func ValidateUserID(user models.UserLogin) []error {
-	errs := []error{}
+	var errs []error
 	if user.ID == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "ID"))
 	} else {
@@ -46,7 +46,7 @@ func ValidateUserID(user models.UserLogin) []error {
 }
 
 func ValidateUserLogin(user models.UserLogin) []error {
-	errs := []error{}
+	var errs []error
 	if user.Login == "" {
 		errs = append(errs, fmt.Errorf(isRequired, "Login"))
 	}

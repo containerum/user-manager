@@ -11,7 +11,6 @@ import (
 
 const tokenQueryColumnsWithUser = "tokens.token, tokens.created_at, tokens.is_active, tokens.session_id, " +
 	"users.id, users.login, users.password_hash, users.salt, users.role, users.is_active, users.is_deleted, users.is_in_blacklist"
-const tokenQueryColumns = "token, created_at, is_active, session_id"
 
 func (pgdb *pgDB) GetTokenObject(ctx context.Context, token string) (*db.Token, error) {
 	pgdb.log.Infoln("Get token object", token)
