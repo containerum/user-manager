@@ -115,7 +115,7 @@ func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request models.Use
 	}
 
 	if user.ID == httputil.MustGetUserID(ctx) {
-		return cherry.ErrUnableDeleteUser()
+		return cherry.ErrChangeOwnPermissions()
 	}
 
 	user.IsDeleted = true
@@ -212,6 +212,9 @@ func (u *serverImpl) AdminUnsetAdmin(ctx context.Context, request models.UserLog
 	}
 	if err := u.loginUserChecks(user); err != nil {
 		return err
+	}
+	if user.ID == httputil.MustGetUserID(ctx) {
+		return cherry.ErrChangeOwnPermissions()
 	}
 
 	user.Role = "user"
