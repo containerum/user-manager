@@ -111,13 +111,15 @@ func (u *serverImpl) CreateUser(ctx context.Context, request models.RegisterRequ
 		return nil, cherry.ErrUnableCreateUser()
 	}
 
-	go u.linkSend(ctx, link)
-
 	if u.svc.TelegramClient != nil {
 		err := u.svc.TelegramClient.SendRegistrationMessage(ctx, link.User.Login)
 		if err != nil {
 			u.log.WithError(err).Debug("telegram message send failed")
 		}
+	}
+
+	if err := u.linkSend(ctx, link); err != nil {
+		return nil, err
 	}
 
 	return &models.UserLogin{

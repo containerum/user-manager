@@ -68,7 +68,9 @@ func (u *serverImpl) BasicLogin(ctx context.Context, request models.LoginRequest
 			u.log.WithError(err)
 			return nil, err
 		}
-		go u.linkSend(ctx, link)
+		if err := u.linkSend(ctx, link); err != nil {
+			return nil, err
+		}
 		return nil, cherry.ErrNotActivated()
 	}
 

@@ -134,6 +134,7 @@ func (u *serverImpl) GetUserInfoByLogin(ctx context.Context, login string) (*mod
 			ID: user.ID,
 		},
 		Role: user.Role,
+		IsActive: user.IsActive,
 		Profile: &models.Profile{
 			Data: profile.Data,
 		},
@@ -287,7 +288,8 @@ func (u *serverImpl) LinkResend(ctx context.Context, request models.UserLogin) e
 		return cherry.ErrUnableResendLink()
 	}
 
-	go u.linkSend(ctx, link)
-
+	if err := u.linkSend(ctx, link); err != nil {
+		return err
+	}
 	return nil
 }
