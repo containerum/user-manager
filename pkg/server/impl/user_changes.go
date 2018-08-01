@@ -338,6 +338,15 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		return cherry.ErrUserNotExist()
 	}
 
+	if user.Role == "admin" {
+		adminsCount, err := u.svc.DB.CountAdmins(ctx)
+		if err != nil {
+			return cherry.ErrUserNotExist()
+		} else if *adminsCount < 2 {
+			return cherry.ErrDeleteLastAdmin()
+		}
+	}
+
 	user.IsDeleted = true
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.UpdateUser(ctx, user)
@@ -395,7 +404,6 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 		u.log.WithError(cherry.ErrUnableDeleteUser())
 		return cherry.ErrUnableDeleteUser()
 	}
-
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.DeleteGroupMemberFromAllGroups(ctx, user.ID)
 	})

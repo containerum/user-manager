@@ -319,5 +319,11 @@ SID = "UserManager"
 [[error]]
     Name = "ErrDeactivateSelf"
     StatusHTTP = 403
-    Message = "Unableo to deactivate self"
+    Message = "Unable to delete or deactivate self"
     Kind = 51
+
+[[error]]
+    Name = "ErrDeleteLastAdmin"
+    StatusHTTP = 403
+    Message = "Unable to delete or deactivate last admin"
+    Kind = 52

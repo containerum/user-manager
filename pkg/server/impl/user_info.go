@@ -133,7 +133,7 @@ func (u *serverImpl) GetUserInfoByLogin(ctx context.Context, login string) (*mod
 		UserLogin: &models.UserLogin{
 			ID: user.ID,
 		},
-		Role: user.Role,
+		Role:     user.Role,
 		IsActive: user.IsActive,
 		Profile: &models.Profile{
 			Data: profile.Data,
