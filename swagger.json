@@ -4055,7 +4055,7 @@
       "type": "object",
       "properties": {
         "access": {
-          "$ref": "#/definitions/UserGroupAccess"
+          "$ref": "#/definitions/AccessLevel"
         },
         "created_at": {
           "description": "creation date in RFC3339 format",
@@ -4102,7 +4102,7 @@
       "type": "object",
       "properties": {
         "access": {
-          "$ref": "#/definitions/UserGroupAccess"
+          "$ref": "#/definitions/AccessLevel"
         },
         "id": {
           "type": "string",
@@ -4172,6 +4172,11 @@
       "description": "UserList -- users list",
       "type": "object",
       "properties": {
+        "pages": {
+          "type": "integer",
+          "format": "uint64",
+          "x-go-name": "Pages"
+        },
         "users": {
           "type": "array",
           "items": {

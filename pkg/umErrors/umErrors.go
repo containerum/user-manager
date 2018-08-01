@@ -628,7 +628,7 @@ func ErrChangeOwnPermissions(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrDeactivateSelf(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to deactivate self", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x33}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to delete or deactivate self", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x33}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -640,7 +640,7 @@ func ErrDeactivateSelf(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrDeleteLastAdmin(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Unable to blacklist/delete/deactivate last admin", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x34}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Unable to delete or deactivate last admin", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x34}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
