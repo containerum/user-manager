@@ -173,6 +173,8 @@ type DB interface {
 
 	UpdateLastLogin(ctx context.Context, profileID, lastlogin string) error
 
+	CountAdmins(ctx context.Context) (*int, error)
+
 	GetAnyUserByLoginWOContext(login string) (*User, error)
 	CreateUserWOContext(user *User) error
 	CreateProfileWOContext(profile *Profile) error
