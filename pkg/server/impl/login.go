@@ -228,7 +228,7 @@ func (u *serverImpl) Logout(ctx context.Context) error {
 			return cherry.ErrInvalidLink()
 		}
 		err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-			return u.svc.DB.DeleteToken(ctx, oneTimeToken.Token)
+			return tx.DeleteToken(ctx, oneTimeToken.Token)
 		})
 		if err = u.handleDBError(err); err != nil {
 			u.log.WithError(err)
