@@ -25,7 +25,7 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request models.Password
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableChangePassword()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return nil, err
 	}
 
@@ -55,10 +55,9 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request models.Password
 	}
 	go func() {
 		mailErr := u.svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
-			ID:        user.ID,
-			Name:      user.Login,
-			Email:     user.Login,
-			Variables: map[string]interface{}{},
+			ID:    user.ID,
+			Name:  user.Login,
+			Email: user.Login,
 		})
 		if mailErr != nil {
 			u.log.WithError(mailErr).Error("password change email send failed")
@@ -76,7 +75,7 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request models.UserLogin
 		u.log.WithError(err)
 		return cherry.ErrUnableResetPassword()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return err
 	}
 
@@ -91,17 +90,15 @@ func (u *serverImpl) ResetPassword(ctx context.Context, request models.UserLogin
 		return cherry.ErrUnableResetPassword()
 	}
 
-	go func() {
-		err := u.svc.MailClient.SendPasswordResetMail(ctx, &mttypes.Recipient{
-			ID:        user.ID,
-			Name:      user.Login,
-			Email:     user.Login,
-			Variables: map[string]interface{}{"TOKEN": link.Link},
-		})
-		if err != nil {
-			u.log.WithError(err).Error("password reset email send failed")
-		}
-	}()
+	if err := u.svc.MailClient.SendPasswordResetMail(ctx, &mttypes.Recipient{
+		ID:        user.ID,
+		Name:      user.Login,
+		Email:     user.Login,
+		Variables: map[string]interface{}{"TOKEN": link.Link},
+	}); err != nil {
+		u.log.WithError(err).Error("password reset email send failed")
+		return err
+	}
 
 	return nil
 }

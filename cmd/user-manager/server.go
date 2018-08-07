@@ -32,12 +32,16 @@ func initServer(c *cli.Context) error {
 	err := oauthClientsSetup(c)
 	exitOnErr(err)
 
+	tgClient, err := getTelegramClient(c)
+	exitOnErr(err)
+
 	userManager, err := getUserManager(c, server.Services{
 		MailClient:        getService(getMailClient(c)).(clients.MailClient),
 		DB:                getService(getDB(c)).(db.DB),
 		AuthClient:        getService(getAuthClient(c)).(clients.AuthClient),
 		ReCaptchaClient:   getService(getReCaptchaClient(c)).(clients.ReCaptchaClient),
 		PermissionsClient: getService(getPermissionsClient(c)).(clients.PermissionsClient),
+		TelegramClient:    tgClient,
 	})
 	exitOnErr(err)
 	defer userManager.Close()
@@ -57,7 +61,7 @@ func initServer(c *cli.Context) error {
 
 	go exitOnErr(srv.ListenAndServe())
 
-	quit := make(chan os.Signal)
+	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt)
 	<-quit
 	logrus.Infoln("shutting down server...")

@@ -210,7 +210,7 @@ func UserListGetHandler(ctx *gin.Context) {
 	}
 
 	filters := strings.Split(ctx.Query("filters"), ",")
-	resp, err := um.GetUsers(ctx.Request.Context(), int(page), int(perPage), filters...)
+	resp, err := um.GetUsers(ctx.Request.Context(), uint(page), uint(perPage), filters...)
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)

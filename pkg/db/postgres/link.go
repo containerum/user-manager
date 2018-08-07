@@ -38,10 +38,10 @@ func (pgdb *pgDB) CreateLink(ctx context.Context, linkType models.LinkType, life
 	}
 	rows, err := pgdb.qLog.QueryxContext(ctx, "INSERT INTO links (link, type, created_at, expired_at, is_active, user_id) VALUES "+
 		"($1, $2, $3, $4, $5, $6) ON CONFLICT (type, user_id) DO UPDATE SET link = $1, is_active = true, created_at = $3, expired_at = $4 RETURNING "+linkQueryColumns, ret.Link, ret.Type, ret.CreatedAt, ret.ExpiredAt, ret.IsActive, ret.User.ID)
-	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	if !rows.Next() {
 		return nil, rows.Err()

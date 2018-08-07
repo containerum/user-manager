@@ -15,7 +15,7 @@ func (u *serverImpl) CheckUserExist(ctx context.Context) error {
 		u.log.WithError(err)
 		return cherry.ErrPermissionsError()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return err
 	}
 
@@ -30,7 +30,7 @@ func (u *serverImpl) CheckAdmin(ctx context.Context) error {
 		u.log.WithError(err)
 		return cherry.ErrPermissionsError()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return err
 	}
 

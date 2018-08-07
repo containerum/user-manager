@@ -137,7 +137,7 @@ func (pgdb *pgDB) UpdateUserWOContext(user *db.User) error {
 func (pgdb *pgDB) GetBlacklistedUsers(ctx context.Context, limit, offset int) ([]db.User, error) {
 	pgdb.log.Infoln("Get blacklisted users")
 	resp := make([]db.User, 0)
-	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE is_in_blacklist LIMIT $1 OFFSET $2",
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT "+userQueryColumns+" FROM users WHERE is_in_blacklist ORDER BY users.login LIMIT $1 OFFSET $2",
 		limit, offset)
 	if err != nil {
 		return nil, err
@@ -207,4 +207,19 @@ func (pgdb *pgDB) GetUsersLoginID(ctx context.Context, ids []string) ([]db.User,
 	}
 
 	return users, rows.Err()
+}
+
+func (pgdb *pgDB) CountAdmins(ctx context.Context) (*int, error) {
+	pgdb.log.Infoln("Counting admins")
+	var count int
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT count(id) FROM users WHERE role='admin' AND is_active AND NOT is_deleted")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, rows.Err()
+	}
+	err = rows.Scan(&count)
+	return &count, err
 }

@@ -132,7 +132,7 @@ type DB interface {
 	GetProfileByID(ctx context.Context, id string) (*Profile, error)
 	GetProfileByUser(ctx context.Context, user *User) (*Profile, error)
 	UpdateProfile(ctx context.Context, profile *Profile) error
-	GetAllProfiles(ctx context.Context, perPage, offset int) ([]UserProfileAccounts, error)
+	GetAllProfiles(ctx context.Context, perPage, offset uint) ([]UserProfileAccounts, uint, error)
 
 	GetUserByBoundAccount(ctx context.Context, service models.OAuthResource, accountID string) (*User, error)
 	GetUserBoundAccounts(ctx context.Context, user *User) (*Accounts, error)
@@ -172,6 +172,8 @@ type DB interface {
 	CountGroupMembers(ctx context.Context, groupID string) (*uint, error)
 
 	UpdateLastLogin(ctx context.Context, profileID, lastlogin string) error
+
+	CountAdmins(ctx context.Context) (*int, error)
 
 	GetAnyUserByLoginWOContext(login string) (*User, error)
 	CreateUserWOContext(user *User) error

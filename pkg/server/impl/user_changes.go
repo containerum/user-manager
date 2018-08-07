@@ -111,7 +111,16 @@ func (u *serverImpl) CreateUser(ctx context.Context, request models.RegisterRequ
 		return nil, cherry.ErrUnableCreateUser()
 	}
 
-	go u.linkSend(ctx, link)
+	if u.svc.TelegramClient != nil {
+		err := u.svc.TelegramClient.SendRegistrationMessage(ctx, link.User.Login)
+		if err != nil {
+			u.log.WithError(err).Debug("telegram message send failed")
+		}
+	}
+
+	if err := u.linkSend(ctx, link); err != nil {
+		return nil, err
+	}
 
 	return &models.UserLogin{
 		ID:    newUser.ID,
@@ -157,15 +166,21 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request models.Link) (*au
 
 	go func() {
 		err := u.svc.MailClient.SendActivationMail(ctx, &mttypes.Recipient{
-			ID:        link.User.ID,
-			Name:      link.User.Login,
-			Email:     link.User.Login,
-			Variables: map[string]interface{}{},
+			ID:    link.User.ID,
+			Name:  link.User.Login,
+			Email: link.User.Login,
 		})
 		if err != nil {
 			u.log.WithError(err).Error("activation email send failed")
 		}
 	}()
+
+	if u.svc.TelegramClient != nil {
+		err := u.svc.TelegramClient.SendActivationMessage(ctx, link.User.Login)
+		if err != nil {
+			u.log.WithError(err).Debug("telegram message send failed")
+		}
+	}
 
 	return tokens, nil
 }
@@ -183,7 +198,7 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request models.UserLogin
 		u.log.WithError(err)
 		return cherry.ErrUnableBlacklistUser()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		u.log.WithError(err)
 		return err
 	}
@@ -241,7 +256,7 @@ func (u *serverImpl) UnBlacklistUser(ctx context.Context, request models.UserLog
 		u.log.WithError(cherry.ErrUserNotExist())
 		return cherry.ErrUserNotExist()
 	}
-	if user.IsInBlacklist != true {
+	if !user.IsInBlacklist {
 		u.log.WithError(cherry.ErrUserNotBlacklisted())
 		return cherry.ErrUserNotBlacklisted()
 	}
@@ -275,7 +290,7 @@ func (u *serverImpl) UpdateUser(ctx context.Context, newData map[string]interfac
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableUpdateUserInfo()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		u.log.WithError(err)
 		return nil, err
 	}
@@ -323,6 +338,15 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		return cherry.ErrUserNotExist()
 	}
 
+	if user.Role == "admin" {
+		adminsCount, err := u.svc.DB.CountAdmins(ctx)
+		if err != nil {
+			return cherry.ErrUserNotExist()
+		} else if *adminsCount < 2 {
+			return cherry.ErrDeleteLastAdmin()
+		}
+	}
+
 	user.IsDeleted = true
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.UpdateUser(ctx, user)
@@ -353,10 +377,9 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 
 	go func() {
 		err := u.svc.MailClient.SendAccDeletedMail(ctx, &mttypes.Recipient{
-			ID:        user.ID,
-			Name:      user.Login,
-			Email:     user.Login,
-			Variables: map[string]interface{}{},
+			ID:    user.ID,
+			Name:  user.Login,
+			Email: user.Login,
 		})
 		if err != nil {
 			u.log.WithError(err).Error("delete account email send failed")
@@ -381,7 +404,6 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 		u.log.WithError(cherry.ErrUnableDeleteUser())
 		return cherry.ErrUnableDeleteUser()
 	}
-
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.DeleteGroupMemberFromAllGroups(ctx, user.ID)
 	})

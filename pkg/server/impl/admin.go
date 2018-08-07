@@ -110,12 +110,12 @@ func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request models.Use
 		u.log.WithError(err)
 		return cherry.ErrUnableDeleteUser()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return err
 	}
 
 	if user.ID == httputil.MustGetUserID(ctx) {
-		return cherry.ErrUnableDeleteUser()
+		return cherry.ErrChangeOwnPermissions()
 	}
 
 	user.IsDeleted = true
@@ -127,10 +127,11 @@ func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request models.Use
 		u.log.WithError(err)
 		return cherry.ErrUnableDeleteUser()
 	}
-	_, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
+	if _, authErr := u.svc.AuthClient.DeleteUserTokens(ctx, &authProto.DeleteUserTokensRequest{
 		UserId: user.ID,
-	})
-	return authErr
+	}); authErr != nil {
+		return authErr
+	}
 
 	if err := u.svc.PermissionsClient.DeleteUserNamespaces(ctx, user); err != nil {
 		u.log.WithError(err)
@@ -146,7 +147,7 @@ func (u *serverImpl) AdminResetPassword(ctx context.Context, request models.User
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableChangePassword()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return nil, err
 	}
 
@@ -185,7 +186,7 @@ func (u *serverImpl) AdminSetAdmin(ctx context.Context, request models.UserLogin
 		u.log.WithError(err)
 		return cherry.ErrUnableUpdateUserInfo()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return err
 	}
 
@@ -209,8 +210,11 @@ func (u *serverImpl) AdminUnsetAdmin(ctx context.Context, request models.UserLog
 		u.log.WithError(err)
 		return cherry.ErrUnableUpdateUserInfo()
 	}
-	if err := u.loginUserChecks(ctx, user); err != nil {
+	if err := u.loginUserChecks(user); err != nil {
 		return err
+	}
+	if user.ID == httputil.MustGetUserID(ctx) {
+		return cherry.ErrChangeOwnPermissions()
 	}
 
 	user.Role = "user"

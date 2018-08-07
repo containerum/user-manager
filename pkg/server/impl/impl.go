@@ -54,16 +54,16 @@ func (u *serverImpl) Close() error {
 	return errors.New(strerr)
 }
 
-func (u *serverImpl) checkLinkResendTime(ctx context.Context, link *db.Link) error {
+func (u *serverImpl) checkLinkResendTime(link *db.Link) error {
 	if tdiff := time.Now().UTC().Sub(link.SentAt.Time); link.SentAt.Valid && tdiff < 5*time.Minute {
 		return fmt.Errorf(waitForResend, int(tdiff.Seconds()))
 	}
 	return nil
 }
 
-func (u *serverImpl) linkSend(ctx context.Context, link *db.Link) {
+func (u *serverImpl) linkSend(ctx context.Context, link *db.Link) error {
 	if link == nil {
-		return
+		return errors.New("invalid link")
 	}
 	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		err := u.svc.MailClient.SendConfirmationMail(ctx, &mttypes.Recipient{
@@ -86,6 +86,7 @@ func (u *serverImpl) linkSend(ctx context.Context, link *db.Link) {
 			"login": link.User.Login,
 		}).Error("link send failed")
 	}
+	return err
 }
 
 func (u *serverImpl) createTokens(ctx context.Context, user *db.User) (resp *authProto.CreateTokenResponse, err error) {
@@ -107,7 +108,7 @@ func (u *serverImpl) createTokens(ctx context.Context, user *db.User) (resp *aut
 	return
 }
 
-func (u *serverImpl) loginUserChecks(ctx context.Context, user *db.User) error {
+func (u *serverImpl) loginUserChecks(user *db.User) error {
 	if user == nil {
 		u.log.Error(cherry.ErrUserNotExist())
 		return cherry.ErrUserNotExist()
