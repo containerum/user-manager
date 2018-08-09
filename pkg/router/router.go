@@ -42,7 +42,7 @@ func initMiddlewares(e *gin.Engine, um *server.UserManager, enableCORS bool) {
 		StaticFS("/", static.HTTP)
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
-	e.Use(gonic.Recovery(umErrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
+	e.Use(gonic.Recovery(umerrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
 	/* Custom */
 	e.Use(m.RegisterServices(um))
 	e.Use(utils.PrepareContext)
@@ -51,10 +51,10 @@ func initMiddlewares(e *gin.Engine, um *server.UserManager, enableCORS bool) {
 
 // SetupRoutes sets up http router needed to handle requests from clients.
 func initRoutes(app *gin.Engine) {
-	requireIdentityHeaders := utils.RequireHeaders(umErrors.ErrRequiredHeadersNotProvided, headers.UserIDXHeader, headers.UserRoleXHeader)
-	requireLoginHeaders := utils.RequireHeaders(umErrors.ErrRequiredHeadersNotProvided, headers.UserAgentXHeader, headers.UserClientXHeader, headers.UserIPXHeader)
+	requireIdentityHeaders := utils.RequireHeaders(umerrors.ErrRequiredHeadersNotProvided, headers.UserIDXHeader, headers.UserRoleXHeader)
+	requireLoginHeaders := utils.RequireHeaders(umerrors.ErrRequiredHeadersNotProvided, headers.UserAgentXHeader, headers.UserClientXHeader, headers.UserIPXHeader)
 	//TODO
-	requireLogoutHeaders := utils.RequireHeaders(umErrors.ErrRequiredHeadersNotProvided, headers.TokenIDXHeader, "X-Session-ID")
+	requireLogoutHeaders := utils.RequireHeaders(umerrors.ErrRequiredHeadersNotProvided, headers.TokenIDXHeader, "X-Session-ID")
 
 	root := app.Group("")
 	{

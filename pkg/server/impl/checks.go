@@ -3,6 +3,8 @@ package impl
 import (
 	"context"
 
+	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
+
 	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
 	"github.com/containerum/utils/httputil"
 )
@@ -34,7 +36,7 @@ func (u *serverImpl) CheckAdmin(ctx context.Context) error {
 		return err
 	}
 
-	if user.Role != "admin" {
+	if user.Role != m.RoleAdmin {
 		u.log.WithError(cherry.ErrAdminRequired())
 		return cherry.ErrAdminRequired()
 	}

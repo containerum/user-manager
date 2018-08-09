@@ -38,7 +38,7 @@ func GetBoundAccountsHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetUserInfo(), ctx)
 		}
 		return
 	}
@@ -68,12 +68,12 @@ func AddBoundAccountHandler(ctx *gin.Context) {
 
 	var request models.OAuthLoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	if errs := validation.ValidateOAuthLoginRequest(request); errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -83,7 +83,7 @@ func AddBoundAccountHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableBindAccount(), ctx)
+			gonic.Gonic(umerrors.ErrUnableBindAccount(), ctx)
 		}
 		return
 	}
@@ -114,12 +114,12 @@ func DeleteBoundAccountHandler(ctx *gin.Context) {
 
 	var request models.BoundAccountDeleteRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	if errs := validation.ValidateResource(request); errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -129,7 +129,7 @@ func DeleteBoundAccountHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableUnbindAccount(), ctx)
+			gonic.Gonic(umerrors.ErrUnableUnbindAccount(), ctx)
 		}
 		return
 	}

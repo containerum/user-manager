@@ -39,12 +39,12 @@ func BasicLoginHandler(ctx *gin.Context) {
 
 	var request models.LoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	if errs := validation.ValidateLoginRequest(request); errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -54,7 +54,7 @@ func BasicLoginHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrLoginFailed(), ctx)
+			gonic.Gonic(umerrors.ErrLoginFailed(), ctx)
 		}
 		return
 	}
@@ -87,7 +87,7 @@ func OneTimeTokenLoginHandler(ctx *gin.Context) {
 
 	var request models.OneTimeTokenLoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
@@ -97,7 +97,7 @@ func OneTimeTokenLoginHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrLoginFailed(), ctx)
+			gonic.Gonic(umerrors.ErrLoginFailed(), ctx)
 		}
 		return
 	}
@@ -130,12 +130,12 @@ func OAuthLoginHandler(ctx *gin.Context) {
 
 	var request models.OAuthLoginRequest
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	if errs := validation.ValidateOAuthLoginRequest(request); errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -145,7 +145,7 @@ func OAuthLoginHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrLoginFailed(), ctx)
+			gonic.Gonic(umerrors.ErrLoginFailed(), ctx)
 		}
 		return
 	}
@@ -175,7 +175,7 @@ func LogoutHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrLogoutFailed(), ctx)
+			gonic.Gonic(umerrors.ErrLogoutFailed(), ctx)
 		}
 		return
 	}

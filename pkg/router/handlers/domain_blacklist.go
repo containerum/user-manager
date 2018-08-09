@@ -38,7 +38,7 @@ func BlacklistDomainsListGetHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetDomainBlacklist(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetDomainBlacklist(), ctx)
 		}
 		return
 	}
@@ -74,7 +74,7 @@ func BlacklistDomainGetHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetDomainBlacklist(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetDomainBlacklist(), ctx)
 		}
 		return
 	}
@@ -104,13 +104,13 @@ func BlacklistDomainAddHandler(ctx *gin.Context) {
 
 	var request models.Domain
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateDomain(request)
 	if errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -120,7 +120,7 @@ func BlacklistDomainAddHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableBlacklistDomain(), ctx)
+			gonic.Gonic(umerrors.ErrUnableBlacklistDomain(), ctx)
 		}
 		return
 	}
@@ -154,7 +154,7 @@ func BlacklistDomainDeleteHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableUnblacklistDomain(), ctx)
+			gonic.Gonic(umerrors.ErrUnableUnblacklistDomain(), ctx)
 		}
 		return
 	}

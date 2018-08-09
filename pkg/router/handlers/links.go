@@ -35,13 +35,13 @@ func LinkResendHandler(ctx *gin.Context) {
 
 	var request models.UserLogin
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateUserLogin(request)
 	if errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -51,7 +51,7 @@ func LinkResendHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableResendLink(), ctx)
+			gonic.Gonic(umerrors.ErrUnableResendLink(), ctx)
 		}
 		return
 	}
@@ -87,7 +87,7 @@ func LinksGetHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetUserInfo(), ctx)
 		}
 		return
 	}

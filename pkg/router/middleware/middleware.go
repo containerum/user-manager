@@ -10,17 +10,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	RoleUser  = "user"
+	RoleAdmin = "admin"
+)
+
 // RequireAdminRole
 func RequireAdminRole(ctx *gin.Context) {
-	if ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(headers.UserRoleXHeader)) != "admin" {
-		gonic.Gonic(umErrors.ErrAdminRequired(), ctx)
+	if ctx.GetHeader(textproto.CanonicalMIMEHeaderKey(headers.UserRoleXHeader)) != RoleAdmin {
+		gonic.Gonic(umerrors.ErrAdminRequired(), ctx)
 		return
 	}
 
 	um := ctx.MustGet(UMServices).(server.UserManager)
 	err := um.CheckAdmin(ctx.Request.Context())
 	if err != nil {
-		gonic.Gonic(umErrors.ErrAdminRequired(), ctx)
+		gonic.Gonic(umerrors.ErrAdminRequired(), ctx)
 	}
 }
 
@@ -28,6 +33,6 @@ func RequireUserExist(ctx *gin.Context) {
 	um := ctx.MustGet(UMServices).(server.UserManager)
 	err := um.CheckUserExist(ctx.Request.Context())
 	if err != nil {
-		gonic.Gonic(umErrors.ErrUserNotExist(), ctx)
+		gonic.Gonic(umerrors.ErrUserNotExist(), ctx)
 	}
 }

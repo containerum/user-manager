@@ -40,7 +40,7 @@ func UserInfoGetHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetUserInfo(), ctx)
 		}
 		return
 	}
@@ -71,13 +71,13 @@ func UserInfoUpdateHandler(ctx *gin.Context) {
 
 	var newData models.UserData
 	if err := ctx.ShouldBindWith(&newData, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateUserData(newData)
 	if errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -87,7 +87,7 @@ func UserInfoUpdateHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableUpdateUserInfo(), ctx)
+			gonic.Gonic(umerrors.ErrUnableUpdateUserInfo(), ctx)
 		}
 		return
 	}
@@ -121,7 +121,7 @@ func UserGetByIDHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetUserInfo(), ctx)
 		}
 		return
 	}
@@ -155,7 +155,7 @@ func UserGetByLoginHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUserInfo(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetUserInfo(), ctx)
 		}
 		return
 	}
@@ -216,7 +216,7 @@ func UserListGetHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUsersList(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetUsersList(), ctx)
 		}
 		return
 	}
@@ -246,12 +246,12 @@ func UserListLoginID(ctx *gin.Context) {
 
 	var ids models.IDList
 	if err := ctx.ShouldBindWith(&ids, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	if len(ids) < 1 {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetails("no users ids in request"), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetails("no users ids in request"), ctx)
 		return
 	}
 
@@ -261,7 +261,7 @@ func UserListLoginID(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUsersList(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetUsersList(), ctx)
 		}
 		return
 	}
