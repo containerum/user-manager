@@ -412,11 +412,8 @@ func (u *serverImpl) CompletelyDeleteUser(ctx context.Context, userID string) er
 		return cherry.ErrUnableDeleteUser()
 	}
 
-	add, rngErr := utils.SecureRandomString(6)
-	if rngErr != nil {
-		return rngErr
-	}
-	user.Login = user.Login + "-" + add
+	randStr, _ := utils.SecureRandomString(6)
+	user.Login = user.Login + "-" + randStr
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.UpdateUser(ctx, user)
 	})
