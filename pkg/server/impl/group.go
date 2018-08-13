@@ -7,7 +7,7 @@ import (
 
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
-	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
+	cherry "git.containerum.net/ch/user-manager/pkg/umerrors"
 	kube_types "github.com/containerum/kube-client/pkg/model"
 	"github.com/containerum/utils/httputil"
 )
@@ -74,6 +74,10 @@ func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, reques
 			continue
 		}
 
+		if usr.Role == "admin" {
+			continue
+		}
+
 		newGroupMember := &db.UserGroupMember{
 			UserID:  usr.ID,
 			GroupID: groupID,
@@ -136,9 +140,10 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 }
 
 func (u *serverImpl) GetGroupsList(ctx context.Context, userID string) (*kube_types.UserGroups, error) {
+	role := httputil.MustGetUserRole(ctx)
 	u.log.WithField("userID", userID).Info("getting groups list")
 
-	groupsIDs, err := u.svc.DB.GetUserGroupsIDsAccesses(ctx, userID)
+	groupsIDs, err := u.svc.DB.GetUserGroupsIDsAccesses(ctx, userID, role == "admin")
 	if err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetGroup()

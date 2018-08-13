@@ -11,7 +11,7 @@ import (
 	mttypes "git.containerum.net/ch/mail-templater/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
-	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
+	cherry "git.containerum.net/ch/user-manager/pkg/umerrors"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 	"github.com/containerum/utils/httputil"
 )

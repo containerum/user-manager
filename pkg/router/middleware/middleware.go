@@ -4,7 +4,7 @@ import (
 	"net/textproto"
 
 	"git.containerum.net/ch/user-manager/pkg/server"
-	"git.containerum.net/ch/user-manager/pkg/umErrors"
+	"git.containerum.net/ch/user-manager/pkg/umerrors"
 	"github.com/containerum/cherry/adaptors/gonic"
 	headers "github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/gin"

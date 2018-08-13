@@ -18,7 +18,7 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/utils"
 	"github.com/containerum/utils/httputil"
 
-	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
+	cherry "git.containerum.net/ch/user-manager/pkg/umerrors"
 	"github.com/lib/pq"
 )
 

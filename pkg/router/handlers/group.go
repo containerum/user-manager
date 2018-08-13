@@ -8,7 +8,7 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/models"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
-	"git.containerum.net/ch/user-manager/pkg/umErrors"
+	"git.containerum.net/ch/user-manager/pkg/umerrors"
 	"git.containerum.net/ch/user-manager/pkg/validation"
 	"github.com/containerum/cherry"
 	"github.com/containerum/cherry/adaptors/gonic"
@@ -193,13 +193,29 @@ func UpdateGroupMemberHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umerrors.ErrUnableGetGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUpdateGroup(), ctx)
 		}
 		return
 	}
 
-	if group.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) {
+	if group.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) && httputil.MustGetUserRole(ctx.Request.Context()) != "admin" {
 		gonic.Gonic(umerrors.ErrNotGroupOwner(), ctx)
+		return
+	}
+
+	user, err := um.GetUserInfoByLogin(ctx.Request.Context(), ctx.Param("login"))
+	if err != nil {
+		if cherr, ok := err.(*cherry.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(umerrors.ErrUpdateGroup(), ctx)
+		}
+		return
+	}
+
+	if user.Role=="admin" {
+		gonic.Gonic(umerrors.ErrAddAdminGroup(), ctx)
 		return
 	}
 
@@ -208,7 +224,7 @@ func UpdateGroupMemberHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umerrors.ErrUnableGetGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUpdateGroup(), ctx)
 		}
 		return
 	}

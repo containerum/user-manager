@@ -10,7 +10,7 @@ import (
 	"github.com/containerum/cherry/adaptors/gonic"
 	"github.com/gin-gonic/gin"
 
-	"git.containerum.net/ch/user-manager/pkg/umErrors"
+	"git.containerum.net/ch/user-manager/pkg/umerrors"
 	"git.containerum.net/ch/user-manager/pkg/validation"
 	"github.com/gin-gonic/gin/binding"
 )

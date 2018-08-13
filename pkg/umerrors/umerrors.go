@@ -3,9 +3,8 @@ package umerrors
 
 import (
 	bytes "bytes"
-	template "text/template"
-
 	cherry "github.com/containerum/cherry"
+	template "text/template"
 )
 
 const ()
@@ -642,6 +641,30 @@ func ErrDeactivateSelf(params ...func(*cherry.Err)) *cherry.Err {
 
 func ErrDeleteLastAdmin(params ...func(*cherry.Err)) *cherry.Err {
 	err := &cherry.Err{Message: "Unable to delete or deactivate last admin", StatusHTTP: 403, ID: cherry.ErrID{SID: "UserManager", Kind: 0x34}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	for _, param := range params {
+		param(err)
+	}
+	for i, detail := range err.Details {
+		det := renderTemplate(detail)
+		err.Details[i] = det
+	}
+	return err
+}
+
+func ErrAddAdminGroup(params ...func(*cherry.Err)) *cherry.Err {
+	err := &cherry.Err{Message: "Unable to add admin to group", StatusHTTP: 400, ID: cherry.ErrID{SID: "UserManager", Kind: 0x35}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	for _, param := range params {
+		param(err)
+	}
+	for i, detail := range err.Details {
+		det := renderTemplate(detail)
+		err.Details[i] = det
+	}
+	return err
+}
+
+func ErrUpdateGroup(params ...func(*cherry.Err)) *cherry.Err {
+	err := &cherry.Err{Message: "Unable to update group", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x36}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}

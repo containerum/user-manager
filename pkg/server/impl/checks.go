@@ -5,7 +5,7 @@ import (
 
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 
-	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
+	cherry "git.containerum.net/ch/user-manager/pkg/umerrors"
 	"github.com/containerum/utils/httputil"
 )
 
