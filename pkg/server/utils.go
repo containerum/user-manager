@@ -2,7 +2,6 @@ package server
 
 import (
 	"git.containerum.net/ch/user-manager/pkg/db"
-	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 )
 
 // CreateFilterFunc is a helper function which creates a function needed to check if profile satisfies given filters
@@ -28,11 +27,11 @@ func CreateFilterFunc(filters ...string) func(p db.UserProfileAccounts) bool {
 			})
 		case "user":
 			filterFuncs = append(filterFuncs, func(p db.UserProfileAccounts) bool {
-				return p.User.Role == m.RoleUser
+				return p.User.Role == "user"
 			})
 		case "admin":
 			filterFuncs = append(filterFuncs, func(p db.UserProfileAccounts) bool {
-				return p.User.Role == m.RoleAdmin
+				return p.User.Role == "admin"
 			})
 		}
 

@@ -214,7 +214,7 @@ func UpdateGroupMemberHandler(ctx *gin.Context) {
 		return
 	}
 
-	if user.Role=="admin" {
+	if user.Role == "admin" {
 		gonic.Gonic(umerrors.ErrAddAdminGroup(), ctx)
 		return
 	}
