@@ -5,7 +5,7 @@ import (
 
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
-	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
+	cherry "git.containerum.net/ch/user-manager/pkg/umerrors"
 	"github.com/containerum/utils/httputil"
 	"github.com/pkg/errors"
 )

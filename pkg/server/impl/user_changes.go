@@ -14,10 +14,11 @@ import (
 	mttypes "git.containerum.net/ch/mail-templater/pkg/models"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
+	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 	"github.com/containerum/utils/httputil"
 
-	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
+	cherry "git.containerum.net/ch/user-manager/pkg/umerrors"
 	"github.com/lib/pq"
 )
 
@@ -70,7 +71,7 @@ func (u *serverImpl) CreateUser(ctx context.Context, request models.RegisterRequ
 			Login:        request.Login,
 			PasswordHash: passwordHash,
 			Salt:         salt,
-			Role:         "user",
+			Role:         m.RoleUser,
 			IsActive:     false,
 			IsDeleted:    false,
 		}
@@ -202,7 +203,7 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request models.UserLogin
 		u.log.WithError(err)
 		return err
 	}
-	if user.Role == "admin" {
+	if user.Role == m.RoleAdmin {
 		return cherry.ErrRequestValidationFailed().AddDetails(blacklistAdmin)
 	}
 
@@ -338,7 +339,7 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		return cherry.ErrUserNotExist()
 	}
 
-	if user.Role == "admin" {
+	if user.Role == m.RoleAdmin {
 		adminsCount, err := u.svc.DB.CountAdmins(ctx)
 		if err != nil {
 			return cherry.ErrUserNotExist()

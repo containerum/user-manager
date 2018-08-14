@@ -8,7 +8,8 @@ import (
 	"git.containerum.net/ch/auth/proto"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/models"
-	cherry "git.containerum.net/ch/user-manager/pkg/umErrors"
+	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
+	cherry "git.containerum.net/ch/user-manager/pkg/umerrors"
 	"git.containerum.net/ch/user-manager/pkg/utils"
 	"git.containerum.net/ch/user-manager/pkg/validation"
 	"github.com/containerum/utils/httputil"
@@ -45,7 +46,7 @@ func (u *serverImpl) AdminCreateUser(ctx context.Context, request models.UserLog
 		Login:        request.Login,
 		PasswordHash: passwordHash,
 		Salt:         salt,
-		Role:         "user",
+		Role:         m.RoleUser,
 		IsActive:     true,
 		IsDeleted:    false,
 	}
@@ -190,7 +191,7 @@ func (u *serverImpl) AdminSetAdmin(ctx context.Context, request models.UserLogin
 		return err
 	}
 
-	user.Role = "admin"
+	user.Role = m.RoleAdmin
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.UpdateUser(ctx, user)
 	})
@@ -217,7 +218,7 @@ func (u *serverImpl) AdminUnsetAdmin(ctx context.Context, request models.UserLog
 		return cherry.ErrChangeOwnPermissions()
 	}
 
-	user.Role = "user"
+	user.Role = m.RoleUser
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.UpdateUser(ctx, user)
 	})
@@ -255,7 +256,7 @@ func (u *serverImpl) CreateFirstAdmin(password string) error {
 		Login:        "admin@local.containerum.io",
 		PasswordHash: passwordHash,
 		Salt:         salt,
-		Role:         "admin",
+		Role:         m.RoleAdmin,
 		IsActive:     true,
 		IsDeleted:    false,
 	}

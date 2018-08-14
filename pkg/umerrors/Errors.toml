@@ -1,6 +1,6 @@
 # File for noice errors generation
 
-Name = "umErrors"
+Name = "umerrors"
 SID = "UserManager"
 
 # errors
@@ -327,3 +327,15 @@ SID = "UserManager"
     StatusHTTP = 403
     Message = "Unable to delete or deactivate last admin"
     Kind = 52
+
+[[error]]
+    Name = "ErrAddAdminGroup"
+    StatusHTTP = 400
+    Message = "Unable to add admin to group"
+    Kind = 53
+
+[[error]]
+    Name = "ErrUpdateGroup"
+    StatusHTTP = 500
+    Message = "Unable to update group"
+    Kind = 54

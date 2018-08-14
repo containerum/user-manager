@@ -1,6 +1,8 @@
 package server
 
-import "git.containerum.net/ch/user-manager/pkg/db"
+import (
+	"git.containerum.net/ch/user-manager/pkg/db"
+)
 
 // CreateFilterFunc is a helper function which creates a function needed to check if profile satisfies given filters
 func CreateFilterFunc(filters ...string) func(p db.UserProfileAccounts) bool {
