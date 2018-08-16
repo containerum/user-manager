@@ -64,7 +64,7 @@ func (c *httpPermissionsClient) GetUserAccess(ctx context.Context, user *db.User
 func (c *httpPermissionsClient) DeleteUserNamespaces(ctx context.Context, user *db.User) error {
 	c.log.WithField("user_id", user.ID).Info("Deleting user namespaces")
 	headersMap := utils.RequestHeadersMap(ctx)
-	headersMap[headers.UserIDXHeader] = user.ID
+	headersMap["X-User-Id"] = user.ID
 	headersMap[headers.UserRoleXHeader] = user.Role
 	resp, err := c.rest.R().SetContext(ctx).
 		SetResult(authProto.ResourcesAccess{}).
