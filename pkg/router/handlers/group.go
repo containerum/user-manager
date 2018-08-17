@@ -381,7 +381,7 @@ func DeleteGroupHandler(ctx *gin.Context) {
 		return
 	}
 
-	if group.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) {
+	if group.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) && httputil.MustGetUserRole(ctx.Request.Context()) != m.RoleAdmin {
 		gonic.Gonic(umerrors.ErrNotGroupOwner(), ctx)
 		return
 	}
