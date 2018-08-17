@@ -241,7 +241,7 @@ SID = "UserManager"
 [[error]]
     Name = "ErrGroupNotExist"
     StatusHTTP = 404
-    Message = "Group with such id doesn't exist"
+    Message = "Group with such label doesn't exist"
     Kind = 38
 
 [[error]]
@@ -339,3 +339,9 @@ SID = "UserManager"
     StatusHTTP = 500
     Message = "Unable to update group"
     Kind = 54
+
+[[error]]
+    Name = "ErrGroupAlreadyExist"
+    StatusHTTP = 409
+    Message = "Group with such label already exist"
+    Kind = 55
