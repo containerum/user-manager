@@ -8,7 +8,7 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/models"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
-	"git.containerum.net/ch/user-manager/pkg/umErrors"
+	"git.containerum.net/ch/user-manager/pkg/umerrors"
 	"git.containerum.net/ch/user-manager/pkg/validation"
 	"github.com/containerum/cherry"
 	"github.com/containerum/cherry/adaptors/gonic"
@@ -41,7 +41,7 @@ func GetGroupsListHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetGroup(), ctx)
 		}
 		return
 	}
@@ -77,7 +77,7 @@ func GetGroupHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetGroup(), ctx)
 		}
 		return
 	}
@@ -107,18 +107,18 @@ func CreateGroupHandler(ctx *gin.Context) {
 
 	var request kube_types.UserGroup
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	if errs := validation.ValidateCreateGroup(request); errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
 	if request.UserGroupMembers != nil {
 		if errs := validation.ValidateAddMembers(*request.UserGroupMembers); errs != nil {
-			gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+			gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 			return
 		}
 	}
@@ -129,7 +129,7 @@ func CreateGroupHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableCreateGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUnableCreateGroup(), ctx)
 		}
 		return
 	}
@@ -140,7 +140,7 @@ func CreateGroupHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetGroup(), ctx)
 		}
 		return
 	}
@@ -178,12 +178,12 @@ func UpdateGroupMemberHandler(ctx *gin.Context) {
 
 	var request kube_types.UserGroupMember
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	if errs := validation.ValidateUpdateMember(request); errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -193,13 +193,29 @@ func UpdateGroupMemberHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUpdateGroup(), ctx)
 		}
 		return
 	}
 
-	if group.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) {
-		gonic.Gonic(umErrors.ErrNotGroupOwner(), ctx)
+	if group.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) && httputil.MustGetUserRole(ctx.Request.Context()) != "admin" {
+		gonic.Gonic(umerrors.ErrNotGroupOwner(), ctx)
+		return
+	}
+
+	user, err := um.GetUserInfoByLogin(ctx.Request.Context(), ctx.Param("login"))
+	if err != nil {
+		if cherr, ok := err.(*cherry.Err); ok {
+			gonic.Gonic(cherr, ctx)
+		} else {
+			ctx.Error(err)
+			gonic.Gonic(umerrors.ErrUpdateGroup(), ctx)
+		}
+		return
+	}
+
+	if user.Role == "admin" {
+		gonic.Gonic(umerrors.ErrAddAdminGroup(), ctx)
 		return
 	}
 
@@ -208,7 +224,7 @@ func UpdateGroupMemberHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUpdateGroup(), ctx)
 		}
 		return
 	}
@@ -242,12 +258,12 @@ func AddGroupMembersHandler(ctx *gin.Context) {
 
 	var request kube_types.UserGroupMembers
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	if errs := validation.ValidateAddMembers(request); errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -257,13 +273,13 @@ func AddGroupMembersHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetGroup(), ctx)
 		}
 		return
 	}
 
 	if group.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) {
-		gonic.Gonic(umErrors.ErrNotGroupOwner(), ctx)
+		gonic.Gonic(umerrors.ErrNotGroupOwner(), ctx)
 		return
 	}
 
@@ -273,7 +289,7 @@ func AddGroupMembersHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableAddGroupMember(), ctx)
+			gonic.Gonic(umerrors.ErrUnableAddGroupMember(), ctx)
 		}
 		return
 	}
@@ -311,13 +327,13 @@ func DeleteGroupMemberHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetGroup(), ctx)
 		}
 		return
 	}
 
 	if group.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) {
-		gonic.Gonic(umErrors.ErrNotGroupOwner(), ctx)
+		gonic.Gonic(umerrors.ErrNotGroupOwner(), ctx)
 		return
 	}
 
@@ -326,7 +342,7 @@ func DeleteGroupMemberHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetGroup(), ctx)
 		}
 		return
 	}
@@ -360,13 +376,13 @@ func DeleteGroupHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetGroup(), ctx)
 		}
 		return
 	}
 
-	if group.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) {
-		gonic.Gonic(umErrors.ErrNotGroupOwner(), ctx)
+	if group.OwnerID != httputil.MustGetUserID(ctx.Request.Context()) && httputil.MustGetUserRole(ctx.Request.Context()) != m.RoleAdmin {
+		gonic.Gonic(umerrors.ErrNotGroupOwner(), ctx)
 		return
 	}
 
@@ -375,7 +391,7 @@ func DeleteGroupHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableDeleteGroup(), ctx)
+			gonic.Gonic(umerrors.ErrUnableDeleteGroup(), ctx)
 		}
 		return
 	}
@@ -419,12 +435,12 @@ func getGroupID(ctx *gin.Context) {
 
 	var ids models.IDList
 	if err := ctx.ShouldBindWith(&ids, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	if len(ids) < 1 {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetails("no group ids in request"), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetails("no group ids in request"), ctx)
 		return
 	}
 
@@ -434,7 +450,7 @@ func getGroupID(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUsersList(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetUsersList(), ctx)
 		}
 		return
 	}
@@ -463,12 +479,12 @@ func getGroupIDFull(ctx *gin.Context) {
 
 	var ids models.IDList
 	if err := ctx.ShouldBindWith(&ids, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	if len(ids) < 1 {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetails("no group ids in request"), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetails("no group ids in request"), ctx)
 		return
 	}
 
@@ -478,7 +494,7 @@ func getGroupIDFull(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUsersList(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetUsersList(), ctx)
 		}
 		return
 	}

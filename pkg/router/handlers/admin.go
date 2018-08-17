@@ -6,7 +6,7 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/models"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
-	"git.containerum.net/ch/user-manager/pkg/umErrors"
+	"git.containerum.net/ch/user-manager/pkg/umerrors"
 	"git.containerum.net/ch/user-manager/pkg/validation"
 	"github.com/containerum/cherry"
 	"github.com/containerum/cherry/adaptors/gonic"
@@ -38,13 +38,13 @@ func AdminUserCreateHandler(ctx *gin.Context) {
 
 	var request models.UserLogin
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateUserLogin(request)
 	if errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -54,7 +54,7 @@ func AdminUserCreateHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableCreateUser(), ctx)
+			gonic.Gonic(umerrors.ErrUnableCreateUser(), ctx)
 		}
 		return
 	}
@@ -84,7 +84,7 @@ func AdminUserActivateHandler(ctx *gin.Context) {
 
 	var request models.UserLogin
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
@@ -93,7 +93,7 @@ func AdminUserActivateHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableDeleteUser(), ctx)
+			gonic.Gonic(umerrors.ErrUnableDeleteUser(), ctx)
 		}
 		return
 	}
@@ -124,7 +124,7 @@ func AdminUserDeactivateHandler(ctx *gin.Context) {
 	var request models.UserLogin
 
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
@@ -134,7 +134,7 @@ func AdminUserDeactivateHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableDeleteUser(), ctx)
+			gonic.Gonic(umerrors.ErrUnableDeleteUser(), ctx)
 		}
 		return
 	}
@@ -165,7 +165,7 @@ func AdminSetAdminHandler(ctx *gin.Context) {
 	var request models.UserLogin
 
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
@@ -175,7 +175,7 @@ func AdminSetAdminHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableDeleteUser(), ctx)
+			gonic.Gonic(umerrors.ErrUnableDeleteUser(), ctx)
 		}
 		return
 	}
@@ -206,7 +206,7 @@ func AdminUnsetAdminHandler(ctx *gin.Context) {
 	var request models.UserLogin
 
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
@@ -216,7 +216,7 @@ func AdminUnsetAdminHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableDeleteUser(), ctx)
+			gonic.Gonic(umerrors.ErrUnableDeleteUser(), ctx)
 		}
 		return
 	}
@@ -249,7 +249,7 @@ func AdminResetPasswordHandler(ctx *gin.Context) {
 	var request models.UserLogin
 
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
@@ -259,7 +259,7 @@ func AdminResetPasswordHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableDeleteUser(), ctx)
+			gonic.Gonic(umerrors.ErrUnableDeleteUser(), ctx)
 		}
 		return
 	}

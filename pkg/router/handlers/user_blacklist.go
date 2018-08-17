@@ -7,7 +7,7 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/models"
 	m "git.containerum.net/ch/user-manager/pkg/router/middleware"
 	"git.containerum.net/ch/user-manager/pkg/server"
-	"git.containerum.net/ch/user-manager/pkg/umErrors"
+	"git.containerum.net/ch/user-manager/pkg/umerrors"
 	"git.containerum.net/ch/user-manager/pkg/validation"
 	"github.com/containerum/cherry"
 	"github.com/containerum/cherry/adaptors/gonic"
@@ -67,7 +67,7 @@ func BlacklistGetHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableGetUserBlacklist(), ctx)
+			gonic.Gonic(umerrors.ErrUnableGetUserBlacklist(), ctx)
 		}
 		return
 	}
@@ -97,13 +97,13 @@ func UserToBlacklistHandler(ctx *gin.Context) {
 
 	var request models.UserLogin
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateUserID(request)
 	if errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -113,7 +113,7 @@ func UserToBlacklistHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableBlacklistUser(), ctx)
+			gonic.Gonic(umerrors.ErrUnableBlacklistUser(), ctx)
 		}
 		return
 	}
@@ -143,13 +143,13 @@ func UserDeleteFromBlacklistHandler(ctx *gin.Context) {
 
 	var request models.UserLogin
 	if err := ctx.ShouldBindWith(&request, binding.JSON); err != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(err), ctx)
 		return
 	}
 
 	errs := validation.ValidateUserLogin(request)
 	if errs != nil {
-		gonic.Gonic(umErrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
+		gonic.Gonic(umerrors.ErrRequestValidationFailed().AddDetailsErr(errs...), ctx)
 		return
 	}
 
@@ -159,7 +159,7 @@ func UserDeleteFromBlacklistHandler(ctx *gin.Context) {
 			gonic.Gonic(cherr, ctx)
 		} else {
 			ctx.Error(err)
-			gonic.Gonic(umErrors.ErrUnableUnblacklistUser(), ctx)
+			gonic.Gonic(umerrors.ErrUnableUnblacklistUser(), ctx)
 		}
 		return
 	}

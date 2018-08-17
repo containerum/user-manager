@@ -73,11 +73,17 @@ func (pgdb *pgDB) GetGroupMembers(ctx context.Context, groupID string) ([]db.Use
 	return resp, err
 }
 
-func (pgdb *pgDB) GetUserGroupsIDsAccesses(ctx context.Context, userID string) (map[string]string, error) {
+func (pgdb *pgDB) GetUserGroupsIDsAccesses(ctx context.Context, userID string, isAdmin bool) (map[string]string, error) {
 	pgdb.log.Infoln("Get users groups", userID)
 	resp := make(map[string]string)
 
-	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT group_id, default_access FROM groups_members WHERE user_id = $1", userID)
+	var rows *sqlx.Rows
+	var err error
+	if isAdmin {
+		rows, err = pgdb.qLog.QueryxContext(ctx, "SELECT group_id, default_access FROM groups_members")
+	} else {
+		rows, err = pgdb.qLog.QueryxContext(ctx, "SELECT group_id, default_access FROM groups_members WHERE user_id = $1", userID)
+	}
 	if err != nil {
 		return nil, err
 	}
