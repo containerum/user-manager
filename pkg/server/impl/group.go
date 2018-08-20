@@ -143,14 +143,14 @@ func (u *serverImpl) GetGroupsList(ctx context.Context, userID string) (*kube_ty
 	role := httputil.MustGetUserRole(ctx)
 	u.log.WithField("userID", userID).Info("getting groups list")
 
-	groupsIDs, err := u.svc.DB.GetUserGroupsIDsAccesses(ctx, userID, role == "admin")
+	groupsLabels, err := u.svc.DB.GetUserGroupsIDsAccesses(ctx, userID, role == "admin")
 	if err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetGroup()
 	}
 
 	groups := make([]kube_types.UserGroup, 0)
-	for gr, perm := range groupsIDs {
+	for gr, perm := range groupsLabels {
 		group, err := u.svc.DB.GetGroup(ctx, gr)
 		if err != nil {
 			u.log.WithError(err)
