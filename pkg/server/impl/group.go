@@ -156,6 +156,10 @@ func (u *serverImpl) GetGroupsList(ctx context.Context, userID string) (*kube_ty
 			u.log.WithError(err)
 			return nil, cherry.ErrUnableGetGroup()
 		}
+		if group == nil {
+			return nil, cherry.ErrGroupNotExist()
+		}
+
 		membersCount, err := u.svc.DB.CountGroupMembers(ctx, gr)
 		if err != nil {
 			u.log.WithError(err)

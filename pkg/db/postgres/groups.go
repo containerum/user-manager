@@ -80,9 +80,9 @@ func (pgdb *pgDB) GetUserGroupsIDsAccesses(ctx context.Context, userID string, i
 	var rows *sqlx.Rows
 	var err error
 	if isAdmin {
-		rows, err = pgdb.qLog.QueryxContext(ctx, "SELECT group_id, default_access FROM groups_members")
+		rows, err = pgdb.qLog.QueryxContext(ctx, "SELECT groups.label, default_access FROM groups_members JOIN groups ON group_id = groups.id")
 	} else {
-		rows, err = pgdb.qLog.QueryxContext(ctx, "SELECT group_id, default_access FROM groups_members WHERE user_id = $1", userID)
+		rows, err = pgdb.qLog.QueryxContext(ctx, "SELECT groups.label, default_access FROM groups_members JOIN groups ON group_id = groups.id WHERE user_id = $1", userID)
 	}
 	if err != nil {
 		return nil, err
@@ -105,7 +105,7 @@ func (pgdb *pgDB) CountGroupMembers(ctx context.Context, groupID string) (*uint,
 	pgdb.log.Infoln("Count group members", groupID)
 
 	var membersCount uint
-	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT count(id) FROM groups_members WHERE group_id = $1", groupID)
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT count(groups_members.id) FROM groups_members JOIN groups ON group_id = groups.id WHERE groups.label = $1", groupID)
 	if err != nil {
 		return nil, err
 	}
