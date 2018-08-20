@@ -38,10 +38,10 @@ func (pgdb *pgDB) AddGroupMembers(ctx context.Context, member *db.UserGroupMembe
 	return rows.Scan(&member.ID)
 }
 
-func (pgdb *pgDB) GetGroup(ctx context.Context, groupID string) (*db.UserGroup, error) {
-	pgdb.log.Infoln("Get group", groupID)
+func (pgdb *pgDB) GetGroup(ctx context.Context, groupLabel string) (*db.UserGroup, error) {
+	pgdb.log.Infoln("Get group", groupLabel)
 	var group db.UserGroup
-	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT * FROM groups WHERE id = $1", groupID)
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT * FROM groups WHERE label = $1", groupLabel)
 	if err != nil {
 		return nil, err
 	}

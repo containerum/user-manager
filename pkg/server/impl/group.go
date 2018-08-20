@@ -122,7 +122,7 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 		CreatedAt:  group.CreatedAt.Time.Format(time.RFC3339),
 	}
 
-	members, err := u.svc.DB.GetGroupMembers(ctx, groupID)
+	members, err := u.svc.DB.GetGroupMembers(ctx, group.ID)
 	if err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetGroup()
