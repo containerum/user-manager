@@ -119,7 +119,6 @@ func (u *serverImpl) AdminDeactivateUser(ctx context.Context, request models.Use
 		return cherry.ErrChangeOwnPermissions()
 	}
 
-	user.IsDeleted = true
 	user.IsActive = false
 	err = u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
 		return tx.UpdateUser(ctx, user)
