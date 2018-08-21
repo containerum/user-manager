@@ -3,11 +3,12 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:d5b75b26866cdaf18921357e1dcf9da6fad12b5f921efb5f0da5aa7157242577"
+  digest = "1:0c9548f7d281b9307fede5d0695fbe761bef1babcd1f84f3738a7893158a614f"
   name = "git.containerum.net/ch/auth"
   packages = [
     ".",
     "proto",
+    "static",
   ]
   pruneopts = "UT"
   revision = "5ec6f11de6e7d388b0d877593cccbdeebfce8558"
@@ -18,7 +19,7 @@
   name = "git.containerum.net/ch/mail-templater"
   packages = ["pkg/models"]
   pruneopts = "NUT"
-  revision = "2a75924209631cf774db2d5cc84b299b3e61bb41"
+  revision = "0ac6106576a24dbb459cc02cec87d8549674a9a3"
 
 [[projects]]
   digest = "1:aba270497eb2d49f5cba6f4162d524b9a1195a24cbce8be20bf56a0051f47deb"
@@ -407,6 +408,7 @@
   input-imports = [
     "git.containerum.net/ch/auth",
     "git.containerum.net/ch/auth/proto",
+    "git.containerum.net/ch/auth/static",
     "git.containerum.net/ch/mail-templater/pkg/models",
     "github.com/containerum/cherry",
     "github.com/containerum/cherry/adaptors/cherrylog",
