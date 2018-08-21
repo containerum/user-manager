@@ -89,23 +89,23 @@ func (pgdb *pgDB) GetUserGroupsIDsAccesses(ctx context.Context, userID string, i
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var groupID string
+		var groupLabel string
 		var access string
-		err := rows.Scan(&groupID, &access)
+		err := rows.Scan(&groupLabel, &access)
 		if err != nil {
 			return nil, err
 		}
-		resp[groupID] = access
+		resp[groupLabel] = access
 	}
 
 	return resp, err
 }
 
-func (pgdb *pgDB) CountGroupMembers(ctx context.Context, groupID string) (*uint, error) {
-	pgdb.log.Infoln("Count group members", groupID)
+func (pgdb *pgDB) CountGroupMembers(ctx context.Context, groupName string) (*uint, error) {
+	pgdb.log.Infoln("Count group members", groupName)
 
 	var membersCount uint
-	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT count(groups_members.id) FROM groups_members JOIN groups ON group_id = groups.id WHERE groups.label = $1", groupID)
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT count(groups_members.id) FROM groups_members JOIN groups ON group_id = groups.id WHERE groups.label = $1", groupName)
 	if err != nil {
 		return nil, err
 	}

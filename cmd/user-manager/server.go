@@ -16,6 +16,7 @@ import (
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/router"
 	"git.containerum.net/ch/user-manager/pkg/server"
+	"github.com/containerum/kube-client/pkg/model"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 )
@@ -46,7 +47,13 @@ func initServer(c *cli.Context) error {
 	exitOnErr(err)
 	defer userManager.Close()
 
-	app := router.CreateRouter(&userManager, c.Bool(corsFlag))
+	status := model.ServiceStatus{
+		Name:     c.App.Name,
+		Version:  c.App.Version,
+		StatusOK: true,
+	}
+
+	app := router.CreateRouter(&userManager, &status, c.Bool(corsFlag))
 
 	if c.String(adminPwdFlag) != "" {
 		err := userManager.CreateFirstAdmin(c.String(adminPwdFlag))
