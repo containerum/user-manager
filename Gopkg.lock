@@ -18,7 +18,7 @@
   name = "git.containerum.net/ch/mail-templater"
   packages = ["pkg/models"]
   pruneopts = "NUT"
-  revision = "2a75924209631cf774db2d5cc84b299b3e61bb41"
+  revision = "0ac6106576a24dbb459cc02cec87d8549674a9a3"
 
 [[projects]]
   digest = "1:aba270497eb2d49f5cba6f4162d524b9a1195a24cbce8be20bf56a0051f47deb"
