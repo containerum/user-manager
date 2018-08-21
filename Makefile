@@ -6,8 +6,6 @@ CLI_DIR:=cmd/user-manager
 PACKAGE := $(shell go list -f '{{.ImportPath}}' ./$(CLI_DIR))
 PACKAGE := $(PACKAGE:%/$(CLI_DIR)=%)
 
-VERSION?=$(LATEST_TAG:v%=%)
-
 # make directory and store path to variable
 BUILDS_DIR:=$(PWD)/build
 EXECUTABLE:=user-manager
