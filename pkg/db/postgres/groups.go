@@ -38,10 +38,25 @@ func (pgdb *pgDB) AddGroupMembers(ctx context.Context, member *db.UserGroupMembe
 	return rows.Scan(&member.ID)
 }
 
-func (pgdb *pgDB) GetGroup(ctx context.Context, groupLabel string) (*db.UserGroup, error) {
+func (pgdb *pgDB) GetGroupByLabel(ctx context.Context, groupLabel string) (*db.UserGroup, error) {
 	pgdb.log.Infoln("Get group", groupLabel)
 	var group db.UserGroup
 	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT * FROM groups WHERE label = $1", groupLabel)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, rows.Err()
+	}
+	err = rows.StructScan(&group)
+	return &group, err
+}
+
+func (pgdb *pgDB) GetGroupByID(ctx context.Context, groupLabel string) (*db.UserGroup, error) {
+	pgdb.log.Infoln("Get group", groupLabel)
+	var group db.UserGroup
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT * FROM groups WHERE id = $1", groupLabel)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +88,7 @@ func (pgdb *pgDB) GetGroupMembers(ctx context.Context, groupID string) ([]db.Use
 	return resp, err
 }
 
-func (pgdb *pgDB) GetUserGroupsIDsAccesses(ctx context.Context, userID string, isAdmin bool) (map[string]string, error) {
+func (pgdb *pgDB) GetUserGroupsLabelsAccesses(ctx context.Context, userID string, isAdmin bool) (map[string]string, error) {
 	pgdb.log.Infoln("Get users groups", userID)
 	resp := make(map[string]string)
 

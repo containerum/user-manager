@@ -157,9 +157,10 @@ type DB interface {
 	DeleteToken(ctx context.Context, token string) error
 	UpdateToken(ctx context.Context, token *Token) error
 
-	GetGroup(ctx context.Context, groupID string) (*UserGroup, error)
+	GetGroupByLabel(ctx context.Context, groupID string) (*UserGroup, error)
+	GetGroupByID(ctx context.Context, groupID string) (*UserGroup, error)
 	GetGroupMembers(ctx context.Context, groupID string) ([]UserGroupMember, error)
-	GetUserGroupsIDsAccesses(ctx context.Context, userID string, isAdmin bool) (map[string]string, error)
+	GetUserGroupsLabelsAccesses(ctx context.Context, userID string, isAdmin bool) (map[string]string, error)
 	GetGroupListLabelID(ctx context.Context, ids []string) ([]UserGroup, error)
 	GetGroupListByIDs(ctx context.Context, ids []string) ([]UserGroup, error)
 	CreateGroup(ctx context.Context, group *UserGroup) error

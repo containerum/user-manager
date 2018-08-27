@@ -29,7 +29,7 @@ func (pgdb *pgDB) CreateLink(ctx context.Context, linkType models.LinkType, life
 	ret := &db.Link{User: user}
 
 	ret = &db.Link{
-		Link:      strings.ToUpper(fmt.Sprintf("%x", (sha256.Sum256([]byte(user.ID + string(linkType) + lifeTime.String() + now.String()))))),
+		Link:      strings.ToUpper(fmt.Sprintf("%x", sha256.Sum256([]byte(user.ID+string(linkType)+lifeTime.String()+now.String())))),
 		User:      user,
 		Type:      linkType,
 		CreatedAt: now,
