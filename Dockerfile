@@ -1,8 +1,8 @@
-FROM golang:1.9-alpine as builder
+FROM golang:1.10-alpine as builder
+RUN apk add --update make git
 WORKDIR src/git.containerum.net/ch/user-manager
 COPY . .
-WORKDIR cmd/user-manager
-RUN CGO_ENABLED=0 go build -v -tags "jsoniter" -ldflags="-w -s -extldflags '-static'" -o /bin/user-manager
+RUN VERSION=$(git describe --abbrev=0 --tags) make build-for-docker
 
 FROM alpine:3.7 as alpine
 RUN apk --no-cache add tzdata zip ca-certificates
@@ -13,7 +13,7 @@ RUN zip -r -0 /zoneinfo.zip .
 
 FROM alpine:3.7
 # app
-COPY --from=builder /bin/user-manager /
+COPY --from=builder /tmp/user-manager /
 # migrations
 COPY pkg/migrations /migrations
 # timezone data
@@ -21,6 +21,7 @@ ENV ZONEINFO /zoneinfo.zip
 COPY --from=alpine /zoneinfo.zip /
 # tls certificates
 COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
 ENV GIN_MODE=debug \
     CH_USER_DB="postgres" \
     CH_USER_PG_LOGIN="usermanager" \
@@ -43,4 +44,5 @@ ENV GIN_MODE=debug \
     CH_USER_TELEGRAM_BOT_CHAT_ID="" \
     CH_USER_LISTEN_ADDR=":8111" \
     CH_USER_USER_MANAGER="impl"
+
 ENTRYPOINT ["/user-manager"]

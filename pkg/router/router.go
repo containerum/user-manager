@@ -12,49 +12,51 @@ import (
 	"github.com/containerum/cherry/adaptors/cherrylog"
 	"github.com/containerum/cherry/adaptors/gonic"
 
-	utils "github.com/containerum/utils/httputil"
 	"github.com/gin-gonic/contrib/ginrus"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 
-	headers "github.com/containerum/utils/httputil"
+	"github.com/containerum/kube-client/pkg/model"
+	"github.com/containerum/utils/httputil"
 	"gopkg.in/gin-contrib/cors.v1"
 )
 
 //CreateRouter initialises router and middlewares
-func CreateRouter(um *server.UserManager, enableCORS bool) http.Handler {
+func CreateRouter(um *server.UserManager, status *model.ServiceStatus, enableCORS bool) http.Handler {
 	e := gin.New()
-	initMiddlewares(e, um, enableCORS)
-	initRoutes(e)
+	initMiddlewares(e, um)
+	initRoutes(e, status, enableCORS)
 	return e
 }
 
-func initMiddlewares(e *gin.Engine, um *server.UserManager, enableCORS bool) {
-	/* CORS */
-	if enableCORS {
-		cfg := cors.DefaultConfig()
-		cfg.AllowAllOrigins = true
-		cfg.AddAllowMethods(http.MethodDelete)
-		cfg.AddAllowHeaders(headers.UserRoleXHeader, headers.UserIDXHeader, headers.UserAgentXHeader, headers.UserClientXHeader, headers.UserIPXHeader, headers.TokenIDXHeader, "X-Session-ID")
-		e.Use(cors.New(cfg))
-	}
-	e.Group("/static").
-		StaticFS("/", static.HTTP)
+func initMiddlewares(e *gin.Engine, um *server.UserManager) {
 	/* System */
 	e.Use(ginrus.Ginrus(logrus.WithField("component", "gin"), time.RFC3339, true))
 	e.Use(gonic.Recovery(umerrors.ErrInternalError, cherrylog.NewLogrusAdapter(logrus.WithField("component", "gin"))))
 	/* Custom */
 	e.Use(m.RegisterServices(um))
-	e.Use(utils.PrepareContext)
-	e.Use(utils.SaveHeaders)
+	e.Use(httputil.PrepareContext)
+	e.Use(httputil.SaveHeaders)
 }
 
 // SetupRoutes sets up http router needed to handle requests from clients.
-func initRoutes(app *gin.Engine) {
-	requireIdentityHeaders := utils.RequireHeaders(umerrors.ErrRequiredHeadersNotProvided, headers.UserIDXHeader, headers.UserRoleXHeader)
-	requireLoginHeaders := utils.RequireHeaders(umerrors.ErrRequiredHeadersNotProvided, headers.UserAgentXHeader, headers.UserClientXHeader, headers.UserIPXHeader)
+func initRoutes(app *gin.Engine, status *model.ServiceStatus, enableCORS bool) {
+	requireIdentityHeaders := httputil.RequireHeaders(umerrors.ErrRequiredHeadersNotProvided, httputil.UserIDXHeader, httputil.UserRoleXHeader)
+	requireLoginHeaders := httputil.RequireHeaders(umerrors.ErrRequiredHeadersNotProvided, httputil.UserAgentXHeader, httputil.UserClientXHeader, httputil.UserIPXHeader)
 	//TODO
-	requireLogoutHeaders := utils.RequireHeaders(umerrors.ErrRequiredHeadersNotProvided, headers.TokenIDXHeader, "X-Session-ID")
+	requireLogoutHeaders := httputil.RequireHeaders(umerrors.ErrRequiredHeadersNotProvided, httputil.TokenIDXHeader, "X-Session-ID")
+
+	if enableCORS {
+		cfg := cors.DefaultConfig()
+		cfg.AllowAllOrigins = true
+		cfg.AddAllowMethods(http.MethodDelete)
+		cfg.AddAllowHeaders(httputil.UserRoleXHeader, httputil.UserIDXHeader, httputil.UserAgentXHeader, httputil.UserClientXHeader, httputil.UserIPXHeader, httputil.TokenIDXHeader, "X-Session-ID")
+		app.Use(cors.New(cfg))
+	}
+	app.Group("/static").
+		StaticFS("/", static.HTTP)
+
+	app.GET("/status", httputil.ServiceStatus(status))
 
 	root := app.Group("")
 	{

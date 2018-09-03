@@ -104,7 +104,7 @@ func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, reques
 func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.UserGroup, error) {
 	u.log.WithField("groupID", groupID).Info("getting group")
 
-	group, err := u.svc.DB.GetGroup(ctx, groupID)
+	group, err := u.svc.DB.GetGroupByID(ctx, groupID)
 	if err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetGroup()
@@ -122,7 +122,7 @@ func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.
 		CreatedAt:  group.CreatedAt.Time.Format(time.RFC3339),
 	}
 
-	members, err := u.svc.DB.GetGroupMembers(ctx, groupID)
+	members, err := u.svc.DB.GetGroupMembers(ctx, group.ID)
 	if err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetGroup()
@@ -143,19 +143,23 @@ func (u *serverImpl) GetGroupsList(ctx context.Context, userID string) (*kube_ty
 	role := httputil.MustGetUserRole(ctx)
 	u.log.WithField("userID", userID).Info("getting groups list")
 
-	groupsIDs, err := u.svc.DB.GetUserGroupsIDsAccesses(ctx, userID, role == "admin")
+	groupsLabels, err := u.svc.DB.GetUserGroupsLabelsAccesses(ctx, userID, role == "admin")
 	if err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetGroup()
 	}
 
 	groups := make([]kube_types.UserGroup, 0)
-	for gr, perm := range groupsIDs {
-		group, err := u.svc.DB.GetGroup(ctx, gr)
+	for gr, perm := range groupsLabels {
+		group, err := u.svc.DB.GetGroupByLabel(ctx, gr)
 		if err != nil {
 			u.log.WithError(err)
 			return nil, cherry.ErrUnableGetGroup()
 		}
+		if group == nil {
+			return nil, cherry.ErrGroupNotExist()
+		}
+
 		membersCount, err := u.svc.DB.CountGroupMembers(ctx, gr)
 		if err != nil {
 			u.log.WithError(err)

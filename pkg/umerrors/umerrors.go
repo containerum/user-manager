@@ -472,7 +472,7 @@ func ErrUserAlreadyActivated(params ...func(*cherry.Err)) *cherry.Err {
 }
 
 func ErrGroupNotExist(params ...func(*cherry.Err)) *cherry.Err {
-	err := &cherry.Err{Message: "Group with such id doesn't exist", StatusHTTP: 404, ID: cherry.ErrID{SID: "UserManager", Kind: 0x26}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	err := &cherry.Err{Message: "Group with such label doesn't exist", StatusHTTP: 404, ID: cherry.ErrID{SID: "UserManager", Kind: 0x26}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}
@@ -665,6 +665,18 @@ func ErrAddAdminGroup(params ...func(*cherry.Err)) *cherry.Err {
 
 func ErrUpdateGroup(params ...func(*cherry.Err)) *cherry.Err {
 	err := &cherry.Err{Message: "Unable to update group", StatusHTTP: 500, ID: cherry.ErrID{SID: "UserManager", Kind: 0x36}, Details: []string(nil), Fields: cherry.Fields(nil)}
+	for _, param := range params {
+		param(err)
+	}
+	for i, detail := range err.Details {
+		det := renderTemplate(detail)
+		err.Details[i] = det
+	}
+	return err
+}
+
+func ErrGroupAlreadyExist(params ...func(*cherry.Err)) *cherry.Err {
+	err := &cherry.Err{Message: "Group with such label already exist", StatusHTTP: 409, ID: cherry.ErrID{SID: "UserManager", Kind: 0x37}, Details: []string(nil), Fields: cherry.Fields(nil)}
 	for _, param := range params {
 		param(err)
 	}

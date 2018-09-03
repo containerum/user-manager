@@ -123,7 +123,19 @@ func CreateGroupHandler(ctx *gin.Context) {
 		}
 	}
 
-	id, err := um.CreateGroup(ctx.Request.Context(), request)
+	gr, gerr := um.GetGroup(ctx.Request.Context(), request.Label)
+	if cherr, ok := gerr.(*cherry.Err); ok {
+		if gr != nil && !cherr.Equals(umerrors.ErrGroupNotExist()) {
+			gonic.Gonic(umerrors.ErrGroupAlreadyExist(), ctx)
+			return
+		}
+	}
+	if gr != nil && gerr == nil {
+		gonic.Gonic(umerrors.ErrGroupAlreadyExist(), ctx)
+		return
+	}
+
+	_, err := um.CreateGroup(ctx.Request.Context(), request)
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
@@ -134,7 +146,7 @@ func CreateGroupHandler(ctx *gin.Context) {
 		return
 	}
 
-	resp, err := um.GetGroup(ctx.Request.Context(), *id)
+	resp, err := um.GetGroup(ctx.Request.Context(), request.Label)
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)

@@ -38,10 +38,25 @@ func (pgdb *pgDB) AddGroupMembers(ctx context.Context, member *db.UserGroupMembe
 	return rows.Scan(&member.ID)
 }
 
-func (pgdb *pgDB) GetGroup(ctx context.Context, groupID string) (*db.UserGroup, error) {
-	pgdb.log.Infoln("Get group", groupID)
+func (pgdb *pgDB) GetGroupByLabel(ctx context.Context, groupLabel string) (*db.UserGroup, error) {
+	pgdb.log.Infoln("Get group", groupLabel)
 	var group db.UserGroup
-	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT * FROM groups WHERE id = $1", groupID)
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT * FROM groups WHERE label = $1", groupLabel)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, rows.Err()
+	}
+	err = rows.StructScan(&group)
+	return &group, err
+}
+
+func (pgdb *pgDB) GetGroupByID(ctx context.Context, groupLabel string) (*db.UserGroup, error) {
+	pgdb.log.Infoln("Get group", groupLabel)
+	var group db.UserGroup
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT * FROM groups WHERE id = $1", groupLabel)
 	if err != nil {
 		return nil, err
 	}
@@ -73,39 +88,39 @@ func (pgdb *pgDB) GetGroupMembers(ctx context.Context, groupID string) ([]db.Use
 	return resp, err
 }
 
-func (pgdb *pgDB) GetUserGroupsIDsAccesses(ctx context.Context, userID string, isAdmin bool) (map[string]string, error) {
+func (pgdb *pgDB) GetUserGroupsLabelsAccesses(ctx context.Context, userID string, isAdmin bool) (map[string]string, error) {
 	pgdb.log.Infoln("Get users groups", userID)
 	resp := make(map[string]string)
 
 	var rows *sqlx.Rows
 	var err error
 	if isAdmin {
-		rows, err = pgdb.qLog.QueryxContext(ctx, "SELECT group_id, default_access FROM groups_members")
+		rows, err = pgdb.qLog.QueryxContext(ctx, "SELECT groups.label, default_access FROM groups_members JOIN groups ON group_id = groups.id")
 	} else {
-		rows, err = pgdb.qLog.QueryxContext(ctx, "SELECT group_id, default_access FROM groups_members WHERE user_id = $1", userID)
+		rows, err = pgdb.qLog.QueryxContext(ctx, "SELECT groups.label, default_access FROM groups_members JOIN groups ON group_id = groups.id WHERE user_id = $1", userID)
 	}
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var groupID string
+		var groupLabel string
 		var access string
-		err := rows.Scan(&groupID, &access)
+		err := rows.Scan(&groupLabel, &access)
 		if err != nil {
 			return nil, err
 		}
-		resp[groupID] = access
+		resp[groupLabel] = access
 	}
 
 	return resp, err
 }
 
-func (pgdb *pgDB) CountGroupMembers(ctx context.Context, groupID string) (*uint, error) {
-	pgdb.log.Infoln("Count group members", groupID)
+func (pgdb *pgDB) CountGroupMembers(ctx context.Context, groupName string) (*uint, error) {
+	pgdb.log.Infoln("Count group members", groupName)
 
 	var membersCount uint
-	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT count(id) FROM groups_members WHERE group_id = $1", groupID)
+	rows, err := pgdb.qLog.QueryxContext(ctx, "SELECT count(groups_members.id) FROM groups_members JOIN groups ON group_id = groups.id WHERE groups.label = $1", groupName)
 	if err != nil {
 		return nil, err
 	}
