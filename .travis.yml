@@ -28,8 +28,8 @@ before_deploy:
   - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${TRAVIS_TAG}"
   - yq write --inplace charts/$NAME/values.yaml image.tag "${TRAVIS_TAG}"
   - mkdir -p /tmp/charts
-  - helm package charts/$NAME --version="${TRAVIS_TAG}" --dependency-update --destination /tmp/charts
   - helm repo add chartmuseum ${MUSEUM}
+  - helm package charts/$NAME --version="${TRAVIS_TAG}" --dependency-update --destination /tmp/charts
 
 deploy:
   - provider: releases
