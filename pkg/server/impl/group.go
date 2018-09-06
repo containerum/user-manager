@@ -3,6 +3,8 @@ package impl
 import (
 	"context"
 
+	"errors"
+
 	"time"
 
 	"git.containerum.net/ch/user-manager/pkg/db"
@@ -23,6 +25,13 @@ func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGro
 	usr, err := u.svc.DB.GetUserByID(ctx, newGroup.OwnerID)
 	if err != nil {
 		return nil, err
+	}
+	if err := u.loginUserChecks(usr); err != nil {
+		u.log.WithError(err)
+		return nil, err
+	}
+	if !usr.IsActive {
+		return nil, errors.New("Owner is not active")
 	}
 
 	newGroup.OwnerLogin = usr.Login
@@ -65,6 +74,14 @@ func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, reques
 		if err != nil {
 			u.log.WithError(err)
 			errs = append(errs, err)
+			continue
+		}
+		if err := u.loginUserChecks(usr); err != nil {
+			u.log.WithError(err)
+			errs = append(errs, err)
+			continue
+		}
+		if !usr.IsActive {
 			continue
 		}
 
