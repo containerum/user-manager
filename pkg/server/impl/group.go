@@ -58,7 +58,7 @@ func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGro
 	}
 
 	if request.UserGroupMembers != nil {
-		if err := u.AddGroupMembers(ctx, newGroup.ID, *request.UserGroupMembers); err != nil {
+		if err := u.AddGroupMembers(ctx, newGroup.Label, *request.UserGroupMembers); err != nil {
 			u.log.WithError(err).Warnln("Unable to add group member")
 		}
 	}
@@ -70,10 +70,9 @@ func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGro
 	return &newGroup.ID, nil
 }
 
-func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, request kube_types.UserGroupMembers) error {
-	u.log.WithField("groupID", groupID).Info("adding group members")
-
-	group, err := u.svc.DB.GetGroupByID(ctx, groupID)
+func (u *serverImpl) AddGroupMembers(ctx context.Context, groupLabel string, request kube_types.UserGroupMembers) error {
+	u.log.WithField("groupLabel", groupLabel).Info("adding group members")
+	group, err := u.svc.DB.GetGroupByLabel(ctx, groupLabel)
 	if err != nil {
 		return err
 	}
@@ -108,7 +107,7 @@ func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, reques
 
 		newGroupMember := &db.UserGroupMember{
 			UserID:  usr.ID,
-			GroupID: groupID,
+			GroupID: group.ID,
 			Access:  string(member.Access),
 		}
 
