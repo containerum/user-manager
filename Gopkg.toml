@@ -71,4 +71,4 @@ required = ["git.containerum.net/ch/auth"]
 
 [[constraint]]
   name = "github.com/containerum/kube-client"
-  version = "^0.23.18"
+  version = "^0.23.32"

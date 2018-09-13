@@ -2,6 +2,7 @@ package clients
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"git.containerum.net/ch/auth/proto"
@@ -28,7 +29,7 @@ type httpPermissionsClient struct {
 
 // NewHTTPPermissionsClient returns client for resource-service working via restful api
 func NewHTTPPermissionsClient(serverURL string) PermissionsClient {
-	log := logrus.WithField("component", "resource_service_client")
+	log := logrus.WithField("component", "permissions_client")
 	client := resty.New().
 		SetHostURL(serverURL).
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
@@ -46,8 +47,8 @@ func NewHTTPPermissionsClient(serverURL string) PermissionsClient {
 func (c *httpPermissionsClient) GetUserAccess(ctx context.Context, user *db.User) (*authProto.ResourcesAccess, error) {
 	c.log.WithField("user_id", user.ID).Info("Getting user access from permissions service")
 	headersMap := utils.RequestHeadersMap(ctx)
-	headersMap[headers.UserIDXHeader] = user.ID
-	headersMap[headers.UserRoleXHeader] = user.Role
+	headersMap[http.CanonicalHeaderKey(headers.UserIDXHeader)] = user.ID
+	headersMap[http.CanonicalHeaderKey(headers.UserRoleXHeader)] = user.Role
 	resp, err := c.rest.R().SetContext(ctx).
 		SetResult(authProto.ResourcesAccess{}).
 		SetHeaders(headersMap). // forward request headers to other our service
@@ -64,8 +65,8 @@ func (c *httpPermissionsClient) GetUserAccess(ctx context.Context, user *db.User
 func (c *httpPermissionsClient) DeleteUserNamespaces(ctx context.Context, user *db.User) error {
 	c.log.WithField("user_id", user.ID).Info("Deleting user namespaces")
 	headersMap := utils.RequestHeadersMap(ctx)
-	headersMap["X-User-Id"] = user.ID
-	headersMap[headers.UserRoleXHeader] = user.Role
+	headersMap[http.CanonicalHeaderKey(headers.UserIDXHeader)] = user.ID
+	headersMap[http.CanonicalHeaderKey(headers.UserRoleXHeader)] = user.Role
 	resp, err := c.rest.R().SetContext(ctx).
 		SetResult(authProto.ResourcesAccess{}).
 		SetHeaders(headersMap). // forward request headers to other our service

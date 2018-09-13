@@ -3,13 +3,14 @@ package main
 import (
 	"errors"
 
+	"git.containerum.net/ch/user-manager/pkg/server"
+	"git.containerum.net/ch/user-manager/pkg/server/impl"
+
 	"fmt"
 
 	"git.containerum.net/ch/user-manager/pkg/clients"
 	"git.containerum.net/ch/user-manager/pkg/db"
 	"git.containerum.net/ch/user-manager/pkg/db/postgres"
-	"git.containerum.net/ch/user-manager/pkg/server"
-	"git.containerum.net/ch/user-manager/pkg/server/impl"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -33,13 +34,15 @@ const (
 	dbMigrationsFlag      = "db_migrations"
 	mailFlag              = "mail"
 	mailURLFlag           = "mail_url"
-	recaptchaFlag         = "racaptcha"
+	recaptchaFlag         = "recaptcha"
 	recaptchaKeyFlag      = "recaptcha_key"
 	oauthClientsFlag      = "oauth_clients"
 	authFlag              = "auth"
 	authHTTPAddrFlag      = "auth_http_addr"
 	permissionsFlag       = "permissions"
 	permissionsURLFlag    = "permissions_url"
+	eventsFlag            = "events"
+	eventsURLFlag         = "events_url"
 	telegramFlag          = "telegram"
 	telegramBotIDFlag     = "telegram_bot_id"
 	telegramBotTokenFlag  = "telegram_bot_token"
@@ -154,6 +157,18 @@ var flags = []cli.Flag{
 		Name:   permissionsURLFlag,
 		Value:  "http://permissions:4242",
 		Usage:  "Permissions service URL",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_USER_EVENTS",
+		Name:   eventsFlag,
+		Value:  serviceClientHTTP,
+		Usage:  "Events-API service kind",
+	},
+	cli.StringFlag{
+		EnvVar: "CH_USER_EVENTS_URL",
+		Name:   eventsURLFlag,
+		Value:  "http://events-api:1667",
+		Usage:  "Events-API service URL",
 	},
 	cli.BoolFlag{
 		EnvVar: "CH_USER_TELEGRAM",
@@ -277,6 +292,15 @@ func getTelegramClient(c *cli.Context) (clients.TelegramClient, error) {
 		return clients.NewTelegramClient(c.String(telegramBotIDFlag), c.String(telegramBotTokenFlag), c.String(telegramBotChatIDFlag))
 	}
 	return nil, nil
+}
+
+func getEventsClient(c *cli.Context) (clients.EventsClient, error) {
+	switch c.String(eventsFlag) {
+	case serviceClientHTTP:
+		return clients.NewHTTPEventsClient(c.String(eventsURLFlag)), nil
+	default:
+		return nil, errors.New("invalid events-api client")
+	}
 }
 
 func getUserManager(c *cli.Context, services server.Services) (server.UserManager, error) {
