@@ -71,7 +71,7 @@ func GetGroupsListHandler(ctx *gin.Context) {
 func GetGroupHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	resp, err := um.GetGroup(ctx.Request.Context(), ctx.Param("group"))
+	resp, err := um.GetGroupByLabel(ctx.Request.Context(), ctx.Param("group"))
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
@@ -123,7 +123,7 @@ func CreateGroupHandler(ctx *gin.Context) {
 		}
 	}
 
-	gr, gerr := um.GetGroup(ctx.Request.Context(), request.Label)
+	gr, gerr := um.GetGroupByLabel(ctx.Request.Context(), request.Label)
 	if cherr, ok := gerr.(*cherry.Err); ok {
 		if gr != nil && !cherr.Equals(umerrors.ErrGroupNotExist()) {
 			gonic.Gonic(umerrors.ErrGroupAlreadyExist(), ctx)
@@ -146,7 +146,7 @@ func CreateGroupHandler(ctx *gin.Context) {
 		return
 	}
 
-	resp, err := um.GetGroup(ctx.Request.Context(), request.Label)
+	resp, err := um.GetGroupByLabel(ctx.Request.Context(), request.Label)
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
@@ -199,7 +199,7 @@ func UpdateGroupMemberHandler(ctx *gin.Context) {
 		return
 	}
 
-	group, err := um.GetGroup(ctx.Request.Context(), ctx.Param("group"))
+	group, err := um.GetGroupByLabel(ctx.Request.Context(), ctx.Param("group"))
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
@@ -279,7 +279,7 @@ func AddGroupMembersHandler(ctx *gin.Context) {
 		return
 	}
 
-	group, err := um.GetGroup(ctx.Request.Context(), ctx.Param("group"))
+	group, err := um.GetGroupByLabel(ctx.Request.Context(), ctx.Param("group"))
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
@@ -333,7 +333,7 @@ func AddGroupMembersHandler(ctx *gin.Context) {
 func DeleteGroupMemberHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	group, err := um.GetGroup(ctx.Request.Context(), ctx.Param("group"))
+	group, err := um.GetGroupByLabel(ctx.Request.Context(), ctx.Param("group"))
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
@@ -382,7 +382,7 @@ func DeleteGroupMemberHandler(ctx *gin.Context) {
 func DeleteGroupHandler(ctx *gin.Context) {
 	um := ctx.MustGet(m.UMServices).(server.UserManager)
 
-	group, err := um.GetGroup(ctx.Request.Context(), ctx.Param("group"))
+	group, err := um.GetGroupByLabel(ctx.Request.Context(), ctx.Param("group"))
 	if err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
@@ -398,7 +398,7 @@ func DeleteGroupHandler(ctx *gin.Context) {
 		return
 	}
 
-	if err := um.DeleteGroup(ctx.Request.Context(), ctx.Param("group")); err != nil {
+	if err := um.DeleteGroup(ctx.Request.Context(), *group); err != nil {
 		if cherr, ok := err.(*cherry.Err); ok {
 			gonic.Gonic(cherr, ctx)
 		} else {
