@@ -48,6 +48,7 @@ func NewHTTPEventsClient(serverURL string) EventsClient {
 }
 
 func (c *httpEventsClient) UserRegistered(ctx context.Context, userName string) error {
+	c.log.WithField("username", userName).Debugln("User registered")
 	var event = model.Event{
 		Kind:         model.EventInfo,
 		Time:         time.Now().Format(time.RFC3339),
@@ -59,6 +60,7 @@ func (c *httpEventsClient) UserRegistered(ctx context.Context, userName string) 
 }
 
 func (c *httpEventsClient) UserActivated(ctx context.Context, userName string) error {
+	c.log.WithField("username", userName).Debugln("User activated")
 	var event = model.Event{
 		Kind:         model.EventInfo,
 		Time:         time.Now().Format(time.RFC3339),
@@ -70,6 +72,7 @@ func (c *httpEventsClient) UserActivated(ctx context.Context, userName string) e
 }
 
 func (c *httpEventsClient) UserDeleted(ctx context.Context, userName string) error {
+	c.log.WithField("username", userName).Debugln("User deleted")
 	var event = model.Event{
 		Kind:         model.EventInfo,
 		Time:         time.Now().Format(time.RFC3339),
@@ -81,6 +84,7 @@ func (c *httpEventsClient) UserDeleted(ctx context.Context, userName string) err
 }
 
 func (c *httpEventsClient) GroupCreated(ctx context.Context, groupName string) error {
+	c.log.WithField("groupname", groupName).Debugln("Group created")
 	var event = model.Event{
 		Kind:         model.EventInfo,
 		Time:         time.Now().Format(time.RFC3339),
@@ -92,6 +96,7 @@ func (c *httpEventsClient) GroupCreated(ctx context.Context, groupName string) e
 }
 
 func (c *httpEventsClient) GroupDeleted(ctx context.Context, groupName string) error {
+	c.log.WithField("groupname", groupName).Debugln("Group deleted")
 	var event = model.Event{
 		Kind:         model.EventInfo,
 		Time:         time.Now().Format(time.RFC3339),
@@ -103,6 +108,7 @@ func (c *httpEventsClient) GroupDeleted(ctx context.Context, groupName string) e
 }
 
 func (c *httpEventsClient) UserAddedToGroup(ctx context.Context, userName, groupName string) error {
+	c.log.WithField("groupname", groupName).WithField("username", userName).Debugln("User added to group")
 	var event = model.Event{
 		Kind:         model.EventInfo,
 		Time:         time.Now().Format(time.RFC3339),
@@ -117,6 +123,7 @@ func (c *httpEventsClient) UserAddedToGroup(ctx context.Context, userName, group
 }
 
 func (c *httpEventsClient) UserRemovedFromGroup(ctx context.Context, userName, groupName string) error {
+	c.log.WithField("groupname", groupName).WithField("username", userName).Debugln("User removed from group")
 	var event = model.Event{
 		Kind:         model.EventInfo,
 		Time:         time.Now().Format(time.RFC3339),
@@ -143,5 +150,52 @@ func sendUserEvent(c *httpEventsClient, ctx context.Context, event model.Event) 
 	if resp.Error() != nil {
 		return resp.Error().(*cherry.Err)
 	}
+	return nil
+}
+
+type dummyEventsClient struct {
+	log *logrus.Entry
+}
+
+// NewDummyEventsClient returns dummy client for events-api working via restful api
+func NewDummyEventsClient() EventsClient {
+	log := logrus.WithField("component", "dummy_events_api_client")
+	return &dummyEventsClient{
+		log: log,
+	}
+}
+
+func (c *dummyEventsClient) UserRegistered(ctx context.Context, userName string) error {
+	c.log.WithField("username", userName).Debugln("User registered")
+	return nil
+}
+
+func (c *dummyEventsClient) UserActivated(ctx context.Context, userName string) error {
+	c.log.WithField("username", userName).Debugln("User activated")
+	return nil
+}
+
+func (c *dummyEventsClient) UserDeleted(ctx context.Context, userName string) error {
+	c.log.WithField("username", userName).Debugln("User deleted")
+	return nil
+}
+
+func (c *dummyEventsClient) GroupCreated(ctx context.Context, groupName string) error {
+	c.log.WithField("groupname", groupName).Debugln("Group created")
+	return nil
+}
+
+func (c *dummyEventsClient) GroupDeleted(ctx context.Context, groupName string) error {
+	c.log.WithField("groupname", groupName).Debugln("Group deleted")
+	return nil
+}
+
+func (c *dummyEventsClient) UserAddedToGroup(ctx context.Context, userName, groupName string) error {
+	c.log.WithField("groupname", groupName).WithField("username", userName).Debugln("User added to group")
+	return nil
+}
+
+func (c *dummyEventsClient) UserRemovedFromGroup(ctx context.Context, userName, groupName string) error {
+	c.log.WithField("groupname", groupName).WithField("username", userName).Debugln("User removed from group")
 	return nil
 }

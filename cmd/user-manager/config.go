@@ -298,6 +298,8 @@ func getEventsClient(c *cli.Context) (clients.EventsClient, error) {
 	switch c.String(eventsFlag) {
 	case serviceClientHTTP:
 		return clients.NewHTTPEventsClient(c.String(eventsURLFlag)), nil
+	case serviceClientDummy:
+		return clients.NewDummyEventsClient(), nil
 	default:
 		return nil, errors.New("invalid events-api client")
 	}
