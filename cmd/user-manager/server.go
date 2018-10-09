@@ -42,6 +42,7 @@ func initServer(c *cli.Context) error {
 		AuthClient:        getService(getAuthClient(c)).(clients.AuthClient),
 		ReCaptchaClient:   getService(getReCaptchaClient(c)).(clients.ReCaptchaClient),
 		PermissionsClient: getService(getPermissionsClient(c)).(clients.PermissionsClient),
+		EventsClient:      getService(getEventsClient(c)).(clients.EventsClient),
 		TelegramClient:    tgClient,
 	})
 	exitOnErr(err)

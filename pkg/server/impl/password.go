@@ -53,16 +53,14 @@ func (u *serverImpl) ChangePassword(ctx context.Context, request models.Password
 	if err != nil {
 		return nil, err
 	}
-	go func() {
-		mailErr := u.svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
-			ID:    user.ID,
-			Name:  user.Login,
-			Email: user.Login,
-		})
-		if mailErr != nil {
-			u.log.WithError(mailErr).Error("password change email send failed")
-		}
-	}()
+	mailErr := u.svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
+		ID:    user.ID,
+		Name:  user.Login,
+		Email: user.Login,
+	})
+	if mailErr != nil {
+		u.log.WithError(mailErr).Error("password change email send failed")
+	}
 
 	return tokens, nil
 }
@@ -150,17 +148,14 @@ func (u *serverImpl) RestorePassword(ctx context.Context, request models.Passwor
 		return nil, err
 	}
 
-	go func() {
-		err := u.svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
-			ID:        link.User.ID,
-			Name:      link.User.Login,
-			Email:     link.User.Login,
-			Variables: map[string]interface{}{},
-		})
-		if err != nil {
-			u.log.WithError(err).Error("password changed email send failed")
-		}
-	}()
+	if err := u.svc.MailClient.SendPasswordChangedMail(ctx, &mttypes.Recipient{
+		ID:        link.User.ID,
+		Name:      link.User.Login,
+		Email:     link.User.Login,
+		Variables: map[string]interface{}{},
+	}); err != nil {
+		u.log.WithError(err).Error("password changed email send failed")
+	}
 
 	return tokens, nil
 }

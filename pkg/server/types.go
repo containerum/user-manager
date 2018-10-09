@@ -68,14 +68,15 @@ type UserManager interface {
 
 	//User groups
 	GetGroupsList(ctx context.Context, userID string) (*kube_types.UserGroups, error)
-	GetGroup(ctx context.Context, groupID string) (*kube_types.UserGroup, error)
+	GetGroupByID(ctx context.Context, groupID string) (*kube_types.UserGroup, error)
+	GetGroupByLabel(ctx context.Context, groupLabel string) (*kube_types.UserGroup, error)
 	GetGroupListLabelID(ctx context.Context, ids []string) (*models.LoginID, error)
 	GetGroupListByIDs(ctx context.Context, ids []string) (*kube_types.UserGroups, error)
 	CreateGroup(ctx context.Context, request kube_types.UserGroup) (*string, error)
 	AddGroupMembers(ctx context.Context, groupID string, request kube_types.UserGroupMembers) error
 	DeleteGroupMember(ctx context.Context, group kube_types.UserGroup, username string) error
 	UpdateGroupMemberAccess(ctx context.Context, group kube_types.UserGroup, username, access string) error
-	DeleteGroup(ctx context.Context, groupID string) error
+	DeleteGroup(ctx context.Context, group kube_types.UserGroup) error
 
 	CreateFirstAdmin(password string) error
 	io.Closer
@@ -89,4 +90,5 @@ type Services struct {
 	ReCaptchaClient   clients.ReCaptchaClient
 	PermissionsClient clients.PermissionsClient
 	TelegramClient    clients.TelegramClient
+	EventsClient      clients.EventsClient
 }

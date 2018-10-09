@@ -2,6 +2,7 @@ package clients
 
 import (
 	"context"
+	"net/http"
 
 	"time"
 
@@ -47,11 +48,11 @@ func (c *httpAuthClient) CreateToken(ctx context.Context, in *authProto.CreateTo
 	c.log.Debugf("create token %+v", in)
 
 	headersMap := httputil.RequestXHeadersMap(ctx)
-	headersMap[httputil.UserAgentXHeader] = in.GetUserAgent()
-	headersMap[httputil.UserClientXHeader] = in.GetFingerprint()
-	headersMap[httputil.UserIDXHeader] = in.GetUserId()
-	headersMap[httputil.UserIPXHeader] = in.GetUserIp()
-	headersMap[httputil.UserRoleXHeader] = in.GetUserRole()
+	headersMap[http.CanonicalHeaderKey(httputil.UserAgentXHeader)] = in.GetUserAgent()
+	headersMap[http.CanonicalHeaderKey(httputil.UserClientXHeader)] = in.GetFingerprint()
+	headersMap[http.CanonicalHeaderKey(httputil.UserIDXHeader)] = in.GetUserId()
+	headersMap[http.CanonicalHeaderKey(httputil.UserIPXHeader)] = in.GetUserIp()
+	headersMap[http.CanonicalHeaderKey(httputil.UserRoleXHeader)] = in.GetUserRole()
 	resp, err := c.client.R().
 		SetContext(ctx).
 		SetHeaders(headersMap).
@@ -75,7 +76,7 @@ func (c *httpAuthClient) DeleteToken(ctx context.Context, in *authProto.DeleteTo
 
 	zero := &empty.Empty{}
 	headersMap := httputil.RequestXHeadersMap(ctx)
-	headersMap[httputil.UserIDXHeader] = in.GetUserId()
+	headersMap[http.CanonicalHeaderKey(httputil.UserIDXHeader)] = in.GetUserId()
 	resp, err := c.client.R().
 		SetContext(ctx).
 		SetHeaders(headersMap).

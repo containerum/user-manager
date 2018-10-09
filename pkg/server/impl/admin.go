@@ -69,6 +69,10 @@ func (u *serverImpl) AdminCreateUser(ctx context.Context, request models.UserLog
 		return nil, cherry.ErrUnableCreateUser()
 	}
 
+	if err := u.svc.EventsClient.UserRegistered(ctx, newUser.Login); err != nil {
+		u.log.WithError(err).Warnln("Unable to add event")
+	}
+
 	return &models.UserLogin{
 		ID:       newUser.ID,
 		Login:    newUser.Login,
@@ -98,6 +102,10 @@ func (u *serverImpl) AdminActivateUser(ctx context.Context, request models.UserL
 	})
 	if err := u.handleDBError(err); err != nil {
 		return cherry.ErrUnableActivate()
+	}
+
+	if err := u.svc.EventsClient.UserActivated(ctx, request.Login); err != nil {
+		u.log.WithError(err).Warnln("Unable to add event")
 	}
 
 	return nil

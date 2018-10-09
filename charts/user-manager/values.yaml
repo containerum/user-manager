@@ -19,6 +19,7 @@ env:
   global:
     GIN_MODE: debug
     DEBUG: true
+    TEXTLOG: true
     PORT: ":8111"
     PG_LOGIN: "usermanager"
     PG_DBNAME: "usermanager"
