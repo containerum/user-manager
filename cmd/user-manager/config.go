@@ -159,13 +159,13 @@ var flags = []cli.Flag{
 		Usage:  "Permissions service URL",
 	},
 	cli.StringFlag{
-		EnvVar: "CH_USER_EVENTS",
+		EnvVar: "EVENTS",
 		Name:   eventsFlag,
 		Value:  serviceClientHTTP,
 		Usage:  "Events-API service kind",
 	},
 	cli.StringFlag{
-		EnvVar: "CH_USER_EVENTS_URL",
+		EnvVar: "EVENTS_URL",
 		Name:   eventsURLFlag,
 		Value:  "http://events-api:1667",
 		Usage:  "Events-API service URL",
