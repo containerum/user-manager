@@ -43,7 +43,7 @@ ENV GIN_MODE=debug \
     TELEGRAM_BOT_TOKEN="" \
     TELEGRAM_BOT_CHAT_ID="" \
     PORT=":8111" \
-    USER_MANAGER="impl"
+    USER_MANAGER="impl" \
     EVENTS="http" \
     EVENTS_URL="http://events-api:1667"
 
