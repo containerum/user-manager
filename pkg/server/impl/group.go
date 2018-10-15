@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+	"errors"
 
 	"time"
 
@@ -23,6 +24,13 @@ func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGro
 	usr, err := u.svc.DB.GetUserByID(ctx, newGroup.OwnerID)
 	if err != nil {
 		return nil, err
+	}
+	if err := u.loginUserChecks(usr); err != nil {
+		u.log.WithError(err)
+		return nil, err
+	}
+	if !usr.IsActive {
+		return nil, errors.New("Owner is not active")
 	}
 
 	newGroup.OwnerLogin = usr.Login
@@ -50,13 +58,24 @@ func (u *serverImpl) CreateGroup(ctx context.Context, request kube_types.UserGro
 	}
 
 	if request.UserGroupMembers != nil {
-		_ = u.AddGroupMembers(ctx, newGroup.ID, *request.UserGroupMembers)
+		if err := u.AddGroupMembers(ctx, newGroup.Label, *request.UserGroupMembers); err != nil {
+			u.log.WithError(err).Warnln("Unable to add group member")
+		}
 	}
+
+	if err := u.svc.EventsClient.GroupCreated(ctx, request.Label); err != nil {
+		u.log.WithError(err).Warnln("Unable to add event")
+	}
+
 	return &newGroup.ID, nil
 }
 
-func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, request kube_types.UserGroupMembers) error {
-	u.log.WithField("groupID", groupID).Info("adding group members")
+func (u *serverImpl) AddGroupMembers(ctx context.Context, groupLabel string, request kube_types.UserGroupMembers) error {
+	u.log.WithField("groupLabel", groupLabel).Info("adding group members")
+	group, err := u.svc.DB.GetGroupByLabel(ctx, groupLabel)
+	if err != nil {
+		return err
+	}
 
 	var errs []error
 	var created int
@@ -65,6 +84,14 @@ func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, reques
 		if err != nil {
 			u.log.WithError(err)
 			errs = append(errs, err)
+			continue
+		}
+		if err := u.loginUserChecks(usr); err != nil {
+			u.log.WithError(err)
+			errs = append(errs, err)
+			continue
+		}
+		if !usr.IsActive {
 			continue
 		}
 
@@ -80,7 +107,7 @@ func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, reques
 
 		newGroupMember := &db.UserGroupMember{
 			UserID:  usr.ID,
-			GroupID: groupID,
+			GroupID: group.ID,
 			Access:  string(member.Access),
 		}
 
@@ -92,6 +119,9 @@ func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, reques
 			errs = append(errs, err)
 			continue
 		}
+		if err := u.svc.EventsClient.UserAddedToGroup(ctx, member.Username, group.Label); err != nil {
+			u.log.WithError(err).Warnln("Unable to add event")
+		}
 		created++
 	}
 
@@ -101,10 +131,48 @@ func (u *serverImpl) AddGroupMembers(ctx context.Context, groupID string, reques
 	return nil
 }
 
-func (u *serverImpl) GetGroup(ctx context.Context, groupID string) (*kube_types.UserGroup, error) {
+func (u *serverImpl) GetGroupByID(ctx context.Context, groupID string) (*kube_types.UserGroup, error) {
 	u.log.WithField("groupID", groupID).Info("getting group")
 
 	group, err := u.svc.DB.GetGroupByID(ctx, groupID)
+	if err != nil {
+		u.log.WithError(err)
+		return nil, cherry.ErrUnableGetGroup()
+	}
+
+	if group == nil {
+		return nil, cherry.ErrGroupNotExist()
+	}
+
+	ret := kube_types.UserGroup{
+		ID:         group.ID,
+		Label:      group.Label,
+		OwnerID:    group.OwnerID,
+		OwnerLogin: group.OwnerLogin,
+		CreatedAt:  group.CreatedAt.Time.Format(time.RFC3339),
+	}
+
+	members, err := u.svc.DB.GetGroupMembers(ctx, group.ID)
+	if err != nil {
+		u.log.WithError(err)
+		return nil, cherry.ErrUnableGetGroup()
+	}
+
+	ret.UserGroupMembers = &kube_types.UserGroupMembers{Members: make([]kube_types.UserGroupMember, 0)}
+	for _, member := range members {
+		ret.Members = append(ret.Members, kube_types.UserGroupMember{
+			Username: member.Login,
+			ID:       member.UserID,
+			Access:   kube_types.AccessLevel(member.Access),
+		})
+	}
+	return &ret, nil
+}
+
+func (u *serverImpl) GetGroupByLabel(ctx context.Context, groupLabel string) (*kube_types.UserGroup, error) {
+	u.log.WithField("groupLabel", groupLabel).Info("getting group")
+
+	group, err := u.svc.DB.GetGroupByLabel(ctx, groupLabel)
 	if err != nil {
 		u.log.WithError(err)
 		return nil, cherry.ErrUnableGetGroup()
@@ -206,6 +274,11 @@ func (u *serverImpl) DeleteGroupMember(ctx context.Context, group kube_types.Use
 		}
 		return cherry.ErrUnableDeleteGroupMember().AddDetailsErr(err)
 	}
+
+	if err := u.svc.EventsClient.UserRemovedFromGroup(ctx, username, group.Label); err != nil {
+		u.log.WithError(err).Warnln("Unable to add event")
+	}
+
 	return nil
 }
 
@@ -239,17 +312,19 @@ func (u *serverImpl) UpdateGroupMemberAccess(ctx context.Context, group kube_typ
 	return nil
 }
 
-func (u *serverImpl) DeleteGroup(ctx context.Context, groupID string) error {
-	u.log.WithField("groupID", groupID).Info("deleting group")
+func (u *serverImpl) DeleteGroup(ctx context.Context, group kube_types.UserGroup) error {
+	u.log.WithField("groupLabel", group.Label).Info("deleting group")
 
 	err := u.svc.DB.Transactional(ctx, func(ctx context.Context, tx db.DB) error {
-		return tx.DeleteGroup(ctx, groupID)
+		return tx.DeleteGroup(ctx, group.ID)
 	})
 	if err := u.handleDBError(err); err != nil {
 		u.log.WithError(err)
 		return cherry.ErrUnableDeleteGroup().AddDetailsErr(err)
 	}
-
+	if err := u.svc.EventsClient.GroupDeleted(ctx, group.Label); err != nil {
+		u.log.WithError(err).Warnln("Unable to add event")
+	}
 	return nil
 }
 

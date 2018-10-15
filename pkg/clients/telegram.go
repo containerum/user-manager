@@ -22,10 +22,9 @@ type TelegramClient interface {
 type httpTelegramClient struct {
 	log    *logrus.Entry
 	client *resty.Client
+	chatID string
+	tgPath string
 }
-
-var tgPath string
-var chatID string
 
 type TelegramResponse struct {
 	Ok     bool `json:"ok"`
@@ -45,9 +44,6 @@ type TelegramResponse struct {
 func NewTelegramClient(botid, token, chatid string) (TelegramClient, error) {
 	log := logrus.WithField("component", "telegram_client")
 
-	chatID = chatid
-	tgPath = fmt.Sprintf("/bot%s:%s/sendMessage", botid, token)
-
 	client := resty.New().
 		SetHostURL("https://api.telegram.org/").
 		SetLogger(log.WriterLevel(logrus.DebugLevel)).
@@ -59,6 +55,8 @@ func NewTelegramClient(botid, token, chatid string) (TelegramClient, error) {
 	return &httpTelegramClient{
 		log:    log,
 		client: client,
+		chatID: chatid,
+		tgPath: fmt.Sprintf("/bot%s:%s/sendMessage", botid, token),
 	}, nil
 }
 
@@ -70,9 +68,9 @@ func (c *httpTelegramClient) SendRegistrationMessage(ctx context.Context, userLo
 	resp, err := c.client.R().
 		SetContext(ctx).
 		SetResult(TelegramResponse{}).
-		SetQueryParam("chat_id", chatID).
+		SetQueryParam("chat_id", c.chatID).
 		SetQueryParam("text", msg).
-		Get(tgPath)
+		Get(c.tgPath)
 	if err != nil {
 		return err
 	}
@@ -90,9 +88,9 @@ func (c *httpTelegramClient) SendActivationMessage(ctx context.Context, userLogi
 	resp, err := c.client.R().
 		SetContext(ctx).
 		SetResult(TelegramResponse{}).
-		SetQueryParam("chat_id", chatID).
+		SetQueryParam("chat_id", c.chatID).
 		SetQueryParam("text", msg).
-		Get(tgPath)
+		Get(c.tgPath)
 	if err != nil {
 		return err
 	}

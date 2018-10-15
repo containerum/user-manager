@@ -1,10 +1,14 @@
-FROM golang:1.9-alpine as builder
+FROM golang:1.10-alpine as builder
+RUN apk add --update make git
 WORKDIR src/git.containerum.net/ch/auth
 COPY . .
-RUN go build -v -ldflags="-w -s -extldflags '-static'" -tags="jsoniter" -o /bin/auth ./cmd/auth
+RUN VERSION=$(git describe --abbrev=0 --tags) make build-for-docker
 
 FROM alpine:3.7
-COPY --from=builder /bin/auth /
+
+VOLUME ["/keys", "/storage"]
+
+COPY --from=builder /tmp/auth /
 ENV CH_AUTH_HTTP_LISTENADDR=0.0.0.0:1111 \
     CH_AUTH_GRPC_LISTENADDR=0.0.0.0:1112 \
     CH_AUTH_LOG_MODE=text \
@@ -20,8 +24,6 @@ ENV CH_AUTH_HTTP_LISTENADDR=0.0.0.0:1111 \
     CH_AUTH_BUNT_STORAGE_FILE=/storage/storage.db \
     CH_AUTH_TRACER=zipkin \
     CH_AUTH_ZIPKIN_COLLECTOR=nop
-
-VOLUME ["/keys", "/storage"]
 
 EXPOSE 1111 1112
 

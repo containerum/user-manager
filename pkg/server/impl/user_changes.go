@@ -112,15 +112,19 @@ func (u *serverImpl) CreateUser(ctx context.Context, request models.RegisterRequ
 		return nil, cherry.ErrUnableCreateUser()
 	}
 
+	if err := u.linkSend(ctx, link); err != nil {
+		return nil, err
+	}
+
+	if err := u.svc.EventsClient.UserRegistered(ctx, newUser.Login); err != nil {
+		u.log.WithError(err).Warnln("Unable to add event")
+	}
+
 	if u.svc.TelegramClient != nil {
 		err := u.svc.TelegramClient.SendRegistrationMessage(ctx, link.User.Login)
 		if err != nil {
 			u.log.WithError(err).Debug("telegram message send failed")
 		}
-	}
-
-	if err := u.linkSend(ctx, link); err != nil {
-		return nil, err
 	}
 
 	return &models.UserLogin{
@@ -165,16 +169,17 @@ func (u *serverImpl) ActivateUser(ctx context.Context, request models.Link) (*au
 		return nil, err
 	}
 
-	go func() {
-		err := u.svc.MailClient.SendActivationMail(ctx, &mttypes.Recipient{
-			ID:    link.User.ID,
-			Name:  link.User.Login,
-			Email: link.User.Login,
-		})
-		if err != nil {
-			u.log.WithError(err).Error("activation email send failed")
-		}
-	}()
+	if err := u.svc.MailClient.SendActivationMail(ctx, &mttypes.Recipient{
+		ID:    link.User.ID,
+		Name:  link.User.Login,
+		Email: link.User.Login,
+	}); err != nil {
+		u.log.WithError(err).Error("activation email send failed")
+	}
+
+	if err := u.svc.EventsClient.UserActivated(ctx, link.User.Login); err != nil {
+		u.log.WithError(err).Warnln("Unable to add event")
+	}
 
 	if u.svc.TelegramClient != nil {
 		err := u.svc.TelegramClient.SendActivationMessage(ctx, link.User.Login)
@@ -231,16 +236,13 @@ func (u *serverImpl) BlacklistUser(ctx context.Context, request models.UserLogin
 		return cherry.ErrUnableDeleteUser()
 	}
 
-	go func() {
-		err := u.svc.MailClient.SendBlockedMail(ctx, &mttypes.Recipient{
-			ID:    user.ID,
-			Name:  user.Login,
-			Email: user.Login,
-		})
-		if err != nil {
-			u.log.WithError(err).Error("email send failed")
-		}
-	}()
+	if err := u.svc.MailClient.SendBlockedMail(ctx, &mttypes.Recipient{
+		ID:    user.ID,
+		Name:  user.Login,
+		Email: user.Login,
+	}); err != nil {
+		u.log.WithError(err).Error("email send failed")
+	}
 
 	return nil
 }
@@ -269,16 +271,13 @@ func (u *serverImpl) UnBlacklistUser(ctx context.Context, request models.UserLog
 		return cherry.ErrUnableUnblacklistUser()
 	}
 
-	go func() {
-		err := u.svc.MailClient.SendUnBlockedMail(ctx, &mttypes.Recipient{
-			ID:    user.ID,
-			Name:  user.Login,
-			Email: user.Login,
-		})
-		if err != nil {
-			u.log.WithError(err).Error("email send failed")
-		}
-	}()
+	if err := u.svc.MailClient.SendUnBlockedMail(ctx, &mttypes.Recipient{
+		ID:    user.ID,
+		Name:  user.Login,
+		Email: user.Login,
+	}); err != nil {
+		u.log.WithError(err).Error("email send failed")
+	}
 
 	return nil
 }
@@ -376,16 +375,17 @@ func (u *serverImpl) PartiallyDeleteUser(ctx context.Context) error {
 		return cherry.ErrUnableDeleteUser()
 	}
 
-	go func() {
-		err := u.svc.MailClient.SendAccDeletedMail(ctx, &mttypes.Recipient{
-			ID:    user.ID,
-			Name:  user.Login,
-			Email: user.Login,
-		})
-		if err != nil {
-			u.log.WithError(err).Error("delete account email send failed")
-		}
-	}()
+	if err := u.svc.MailClient.SendAccDeletedMail(ctx, &mttypes.Recipient{
+		ID:    user.ID,
+		Name:  user.Login,
+		Email: user.Login,
+	}); err != nil {
+		u.log.WithError(err).Error("delete account email send failed")
+	}
+
+	if err := u.svc.EventsClient.UserDeleted(ctx, user.Login); err != nil {
+		u.log.WithError(err).Warnln("Unable to add event")
+	}
 
 	return nil
 }
