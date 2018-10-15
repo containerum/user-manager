@@ -32,49 +32,49 @@ spec:
             - name: {{ $key  }}
               value: {{ $val | quote }}
             {{- end }}
-            {{- if .Values.env.local.CH_USER_PG_ADDR }}
-            - name: CH_USER_PG_ADDR
-              value: "{{ .Values.env.local.CH_USER_PG_ADDR }}"
+            {{- if .Values.env.local.PG_ADDR }}
+            - name: PG_ADDR
+              value: "{{ .Values.env.local.PG_ADDR }}"
             {{- else }}
-            - name: CH_USER_PG_ADDR
+            - name: PG_ADDR
               value: "{{ .Release.Name }}-postgresql:5432"
             {{- end }}
-            {{- if .Values.env.local.CH_USER_PERMISSIONS_URL }}
-            - name: CH_USER_PERMISSIONS_URL
-              value: "{{ .Values.env.local.CH_USER_PERMISSIONS_URL }}"
+            {{- if .Values.env.local.PERMISSIONS_URL }}
+            - name: PERMISSIONS_URL
+              value: "{{ .Values.env.local.PERMISSIONS_URL }}"
             {{- else }}
-            - name: CH_USER_PERMISSIONS_URL
+            - name: PERMISSIONS_URL
               value: "http://{{ .Release.Name }}-permissions:4242"
             {{- end }}
-            {{- if .Values.env.local.CH_USER_AUTH_HTTP_ADDR }}
-            - name: CH_USER_AUTH_HTTP_ADDR
-              value: "{{ .Values.env.local.CH_USER_AUTH_HTTP_ADDR }}"
+            {{- if .Values.env.local.AUTH_URL }}
+            - name: AUTH_URL
+              value: "{{ .Values.env.local.AUTH_URL }}"
             {{- else }}
-            - name: CH_USER_AUTH_HTTP_ADDR
+            - name: AUTH_URL
               value: "http://{{ .Release.Name }}-auth:1111"
             {{- end }}
-            {{- if .Values.env.local.CH_USER_MAIL_URL }}
-            - name: CH_USER_MAIL_URL
-              value: "{{ .Values.env.local.CH_USER_MAIL_URL }}"
+            {{- if .Values.env.local.MAIL_URL }}
+            - name: MAIL_URL
+              value: "{{ .Values.env.local.MAIL_URL }}"
             {{- else }}
-            - name: CH_USER_MAIL_URL
+            - name: MAIL_URL
               value: "http://{{ .Release.Name }}-mail:7070"
             {{- end }}
-            {{- if .Values.env.local.CH_USER_PG_PASSWORD }}
-            - name: CH_USER_PG_PASSWORD
+            {{- if .Values.env.local.PG_PASSWORD }}
+            - name: PG_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ template "fullname" . }}
                   key: pg-password
             {{- else if .Values.tags.platformdb }}
-            - name: CH_USER_PG_PASSWORD
+            - name: PG_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Release.Name }}-postgresql
                   key: postgres-password
             {{- end }}
-            {{- if .Values.env.local.CH_USER_ADMIN_PASSWORD }}
-            - name: CH_USER_ADMIN_PASSWORD
+            {{- if .Values.env.local.ADMIN_PASSWORD }}
+            - name: ADMIN_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ template "fullname" . }}
