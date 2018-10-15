@@ -20,7 +20,7 @@ env:
     GIN_MODE: debug
     DEBUG: true
     TEXTLOG: true
-    PORT: ":8111"
+    PORT: "8111"
     PG_LOGIN: "usermanager"
     PG_DBNAME: "usermanager"
     PG_NOSSL: true
